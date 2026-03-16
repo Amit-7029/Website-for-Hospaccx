@@ -146,6 +146,31 @@ function normalizeDayList(opdDays) {
   return { days: matchedDays, strict };
 }
 
+function nextAllowedDateFromToday(doctor) {
+  const { days, strict } = normalizeDayList(doctor.opdDays);
+  const today = new Date();
+  if (!strict || days.length === 0) {
+    return new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+      .toISOString()
+      .split("T")[0];
+  }
+
+  for (let offset = 0; offset < 14; offset += 1) {
+    const candidate = new Date(today);
+    candidate.setDate(today.getDate() + offset);
+    const candidateDay = DAYS[candidate.getDay()];
+    if (days.includes(candidateDay)) {
+      return new Date(candidate.getTime() - candidate.getTimezoneOffset() * 60000)
+        .toISOString()
+        .split("T")[0];
+    }
+  }
+
+  return new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+    .toISOString()
+    .split("T")[0];
+}
+
 function toMinutes(timeLabel) {
   const match = timeLabel.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/i);
   if (!match) {
@@ -195,6 +220,7 @@ function extractTimeRanges(timing) {
 function populateTimeSelect(doctorName) {
   const timeSelect = document.getElementById("time");
   const helper = document.getElementById("doctorScheduleHelper");
+  const dateInput = document.getElementById("date");
   if (!timeSelect || !helper) {
     return;
   }
@@ -238,8 +264,12 @@ function populateTimeSelect(doctorName) {
 
   helper.textContent = `${doctor.name} | ${timeLine} | ${opdLine}`;
 
-  const dateInput = document.getElementById("date");
-  if (dateInput && dateInput.value) {
+  if (dateInput) {
+    const minDate = nextAllowedDateFromToday(doctor);
+    dateInput.min = minDate;
+    if (!dateInput.value || !validateDoctorDate(doctor, dateInput)) {
+      dateInput.value = minDate;
+    }
     validateDoctorDate(doctor, dateInput);
   }
 }
@@ -248,17 +278,18 @@ function validateDoctorDate(doctor, dateInput) {
   const { days, strict } = normalizeDayList(doctor.opdDays);
   if (!dateInput.value || !strict) {
     dateInput.setCustomValidity("");
-    return;
+    return true;
   }
 
   const selectedDate = new Date(`${dateInput.value}T00:00:00`);
   const selectedDay = DAYS[selectedDate.getDay()];
   if (days.includes(selectedDay)) {
     dateInput.setCustomValidity("");
-    return;
+    return true;
   }
 
   dateInput.setCustomValidity(`Please select a ${doctor.opdDays} appointment date for ${doctor.name}.`);
+  return false;
 }
 
 function setMinimumDate() {

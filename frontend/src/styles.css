@@ -85,7 +85,9 @@ a {
     overflow: hidden;
     padding-bottom: 4.5rem;
     background:
-        radial-gradient(circle at top right, rgba(140, 133, 255, 0.24), transparent 22%),
+        linear-gradient(rgba(21, 13, 51, 0.52), rgba(31, 19, 70, 0.68)),
+        radial-gradient(circle at top right, rgba(140, 133, 255, 0.18), transparent 24%),
+        url("/images/hospaccx image for background in website.jpeg") center/cover no-repeat,
         linear-gradient(145deg, #1f1346 0%, #2f1c6a 55%, #4f31b7 100%);
     color: #fff;
 }
