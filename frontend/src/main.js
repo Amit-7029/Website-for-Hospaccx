@@ -12,6 +12,8 @@ const DAYS = [
   "SATURDAY"
 ];
 
+const DAY_INDEX = Object.fromEntries(DAYS.map((day, index) => [day, index]));
+
 function renderDepartments() {
   const container = document.getElementById("departmentGrid");
   if (!container) {
@@ -146,29 +148,93 @@ function normalizeDayList(opdDays) {
   return { days: matchedDays, strict };
 }
 
-function nextAllowedDateFromToday(doctor) {
-  const { days, strict } = normalizeDayList(doctor.opdDays);
-  const today = new Date();
-  if (!strict || days.length === 0) {
-    return new Date(today.getTime() - today.getTimezoneOffset() * 60000)
-      .toISOString()
-      .split("T")[0];
+function formatDateValue(date) {
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    .toISOString()
+    .split("T")[0];
+}
+
+function formatDateLabel(date) {
+  return date.toLocaleDateString("en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+}
+
+function weekOfMonth(date) {
+  return Math.floor((date.getDate() - 1) / 7) + 1;
+}
+
+function isLastWeekdayOfMonth(date) {
+  const nextWeek = new Date(date);
+  nextWeek.setDate(date.getDate() + 7);
+  return nextWeek.getMonth() !== date.getMonth();
+}
+
+function doctorAvailableOnDate(doctor, date) {
+  const rule = doctor.opdDays.toUpperCase().replace(/\s+/g, " ").trim();
+  const dayName = DAYS[date.getDay()];
+
+  if (rule === "-" || rule.includes("BY APPOINTMENT") || rule.includes("EVERY DAY") || rule.includes("EVERYDAY")) {
+    return true;
   }
 
-  for (let offset = 0; offset < 14; offset += 1) {
+  if (rule.includes("LAST SUNDAY OF EVERY MONTH")) {
+    return dayName === "SUNDAY" && isLastWeekdayOfMonth(date);
+  }
+
+  if (rule.includes("FIRST AND THIRD SUNDAY OF EVERY MONTH")) {
+    return dayName === "SUNDAY" && [1, 3].includes(weekOfMonth(date));
+  }
+
+  if (rule.includes("EVERY MONTH FIRST 3 SATURDAY")) {
+    return dayName === "SATURDAY" && weekOfMonth(date) <= 3;
+  }
+
+  const { days } = normalizeDayList(rule);
+  return days.includes(dayName);
+}
+
+function allowedDatesForDoctor(doctor, totalDays = 120) {
+  const dates = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (let offset = 0; offset < totalDays; offset += 1) {
     const candidate = new Date(today);
     candidate.setDate(today.getDate() + offset);
-    const candidateDay = DAYS[candidate.getDay()];
-    if (days.includes(candidateDay)) {
-      return new Date(candidate.getTime() - candidate.getTimezoneOffset() * 60000)
-        .toISOString()
-        .split("T")[0];
+    if (doctorAvailableOnDate(doctor, candidate)) {
+      dates.push(candidate);
     }
   }
 
-  return new Date(today.getTime() - today.getTimezoneOffset() * 60000)
-    .toISOString()
-    .split("T")[0];
+  return dates;
+}
+
+function populateDateSelect(doctorName) {
+  const dateSelect = document.getElementById("date");
+  const helper = document.getElementById("doctorScheduleHelper");
+  if (!dateSelect || !helper) {
+    return;
+  }
+
+  const doctor = doctors.find((entry) => entry.name === doctorName);
+  if (!doctor) {
+    dateSelect.innerHTML = '<option value="">Select a doctor first</option>';
+    dateSelect.disabled = true;
+    return;
+  }
+
+  const dates = allowedDatesForDoctor(doctor);
+  dateSelect.innerHTML = dates.length
+    ? '<option value="">Select an appointment date</option>' +
+      dates
+        .map((date) => `<option value="${formatDateValue(date)}">${formatDateLabel(date)}</option>`)
+        .join("")
+    : '<option value="">No valid dates available</option>';
+  dateSelect.disabled = dates.length === 0;
 }
 
 function toMinutes(timeLabel) {
@@ -220,7 +286,7 @@ function extractTimeRanges(timing) {
 function populateTimeSelect(doctorName) {
   const timeSelect = document.getElementById("time");
   const helper = document.getElementById("doctorScheduleHelper");
-  const dateInput = document.getElementById("date");
+  const dateSelect = document.getElementById("date");
   if (!timeSelect || !helper) {
     return;
   }
@@ -263,46 +329,18 @@ function populateTimeSelect(doctorName) {
     : `Timing: ${doctor.timing}`;
 
   helper.textContent = `${doctor.name} | ${timeLine} | ${opdLine}`;
-
-  if (dateInput) {
-    const minDate = nextAllowedDateFromToday(doctor);
-    dateInput.min = minDate;
-    if (!dateInput.value || !validateDoctorDate(doctor, dateInput)) {
-      dateInput.value = minDate;
-    }
-    validateDoctorDate(doctor, dateInput);
+  if (dateSelect) {
+    populateDateSelect(doctor.name);
   }
-}
-
-function validateDoctorDate(doctor, dateInput) {
-  const { days, strict } = normalizeDayList(doctor.opdDays);
-  if (!dateInput.value || !strict) {
-    dateInput.setCustomValidity("");
-    return true;
-  }
-
-  const selectedDate = new Date(`${dateInput.value}T00:00:00`);
-  const selectedDay = DAYS[selectedDate.getDay()];
-  if (days.includes(selectedDay)) {
-    dateInput.setCustomValidity("");
-    return true;
-  }
-
-  dateInput.setCustomValidity(`Please select a ${doctor.opdDays} appointment date for ${doctor.name}.`);
-  return false;
 }
 
 function setMinimumDate() {
-  const dateInput = document.getElementById("date");
-  if (!dateInput) {
+  const dateSelect = document.getElementById("date");
+  if (!dateSelect) {
     return;
   }
-
-  const today = new Date();
-  const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
-    .toISOString()
-    .split("T")[0];
-  dateInput.min = localDate;
+  dateSelect.innerHTML = '<option value="">Select a doctor first</option>';
+  dateSelect.disabled = true;
 }
 
 function setupAppointmentForm() {
@@ -313,7 +351,6 @@ function setupAppointmentForm() {
 
   const departmentSelect = document.getElementById("department");
   const doctorSelect = document.getElementById("doctor");
-  const dateInput = document.getElementById("date");
 
   if (departmentSelect) {
     departmentSelect.addEventListener("change", (event) => {
@@ -327,18 +364,6 @@ function setupAppointmentForm() {
     });
   }
 
-  if (dateInput) {
-    dateInput.addEventListener("change", () => {
-      const doctor = doctors.find((entry) => entry.name === doctorSelect?.value);
-      if (doctor) {
-        validateDoctorDate(doctor, dateInput);
-      } else {
-        dateInput.setCustomValidity("");
-      }
-      dateInput.reportValidity();
-    });
-  }
-
   form.addEventListener("submit", (event) => {
     event.preventDefault();
 
@@ -347,14 +372,6 @@ function setupAppointmentForm() {
     }
 
     const formData = new FormData(form);
-    const selectedDoctor = doctors.find((doctor) => doctor.name === formData.get("doctor"));
-    if (selectedDoctor && dateInput) {
-      validateDoctorDate(selectedDoctor, dateInput);
-      if (!form.reportValidity()) {
-        return;
-      }
-    }
-
     const message = [
       "Hello, I want to book an appointment.",
       "",
