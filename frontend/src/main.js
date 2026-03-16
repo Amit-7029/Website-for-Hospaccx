@@ -37,11 +37,18 @@ function renderDoctors() {
     .map(
       (doctor) => `
         <article class="doctor-card">
-          <p class="doctor-card__department">${doctor.department}</p>
-          <h3>${doctor.name}</h3>
+          <div class="doctor-card__header">
+            <span class="doctor-card__avatar doctor-card__avatar--${doctor.gender}" aria-hidden="true">
+              <span class="doctor-card__avatar-icon">${doctor.gender === "female" ? "♀" : "♂"}</span>
+            </span>
+            <div>
+              <p class="doctor-card__department">${doctor.department}</p>
+              <h3>${doctor.name}</h3>
+              <span class="doctor-card__badge">${doctor.gender === "female" ? "Female doctor" : "Male doctor"}</span>
+            </div>
+          </div>
           <p class="doctor-card__qualification">${doctor.qualification}</p>
           <ul class="doctor-card__meta">
-            <li><strong>Fees:</strong> INR ${doctor.charges}</li>
             <li><strong>Timing:</strong> ${doctor.timing}</li>
             <li><strong>OPD Days:</strong> ${doctor.opdDays}</li>
           </ul>

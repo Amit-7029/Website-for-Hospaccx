@@ -497,12 +497,57 @@ button {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.doctor-card__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.9rem;
+}
+
+.doctor-card__avatar {
+    width: 68px;
+    height: 68px;
+    flex: 0 0 68px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.doctor-card__avatar--male {
+    background: linear-gradient(135deg, #6f83ff, #5340d6);
+}
+
+.doctor-card__avatar--female {
+    background: linear-gradient(135deg, #ff7bbd, #e54893);
+}
+
+.doctor-card__avatar-icon {
+    color: #fff;
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
 .doctor-card__department {
     margin: 0 0 0.55rem;
     color: var(--primary);
     font-size: 0.78rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
+    font-weight: 700;
+}
+
+.doctor-card__badge {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 0.15rem;
+    padding: 0.28rem 0.72rem;
+    border-radius: 999px;
+    background: rgba(103, 61, 230, 0.08);
+    color: var(--primary);
+    font-size: 0.78rem;
     font-weight: 700;
 }
 

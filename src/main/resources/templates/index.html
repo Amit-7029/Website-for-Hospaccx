@@ -350,11 +350,24 @@
             </div>
             <div class="doctor-grid">
                 <article class="doctor-card" th:each="doctor : ${doctors}">
-                    <p class="doctor-card__department" th:text="${doctor.department}">Department</p>
-                    <h3 th:text="${doctor.name}">Doctor Name</h3>
+                    <div class="doctor-card__header">
+                        <span
+                            class="doctor-card__avatar"
+                            th:classappend="${#strings.containsIgnoreCase(doctor.name, 'NANDITA')} ? ' doctor-card__avatar--female' : ' doctor-card__avatar--male'">
+                            <span
+                                class="doctor-card__avatar-icon"
+                                th:text="${#strings.containsIgnoreCase(doctor.name, 'NANDITA')} ? '♀' : '♂'">♂</span>
+                        </span>
+                        <div>
+                            <p class="doctor-card__department" th:text="${doctor.department}">Department</p>
+                            <h3 th:text="${doctor.name}">Doctor Name</h3>
+                            <span
+                                class="doctor-card__badge"
+                                th:text="${#strings.containsIgnoreCase(doctor.name, 'NANDITA')} ? 'Female doctor' : 'Male doctor'">Male doctor</span>
+                        </div>
+                    </div>
                     <p class="doctor-card__qualification" th:text="${doctor.qualification}">Qualification</p>
                     <ul class="doctor-card__meta">
-                        <li><strong>Fees:</strong> <span th:text="'INR ' + ${doctor.charges}">INR 0</span></li>
                         <li><strong>Timing:</strong> <span th:text="${doctor.timing}">Timing</span></li>
                         <li><strong>OPD Days:</strong> <span th:text="${doctor.opdDays}">Days</span></li>
                     </ul>
