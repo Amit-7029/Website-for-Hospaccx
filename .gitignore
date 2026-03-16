@@ -1,0 +1,11 @@
+.m2/
+.codex/
+apache-maven-3.9.14/
+target/
+spring.log
+spring-error.log
+logo-hospaccx.png
+settings.xml
+*.class
+*.log
+*.tmp
