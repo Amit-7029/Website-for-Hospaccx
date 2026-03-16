@@ -553,6 +553,16 @@ button {
     font-weight: 700;
 }
 
+.appointment-form__helper {
+    margin: -0.2rem 0 0;
+    padding: 0.85rem 1rem;
+    border-radius: 14px;
+    background: rgba(103, 61, 230, 0.06);
+    color: var(--muted);
+    font-size: 0.94rem;
+    line-height: 1.6;
+}
+
 .appointment-form input,
 .appointment-form select {
     width: 100%;

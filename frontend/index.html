@@ -330,11 +330,6 @@
                     <input type="text" id="name" name="name" placeholder="Your full name" required>
                 </label>
 
-                <label for="email">
-                    <span>Contact Email</span>
-                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
-                </label>
-
                 <label for="phone">
                     <span>Phone Number</span>
                     <input type="text" id="phone" name="phone" placeholder="Enter your phone number" required>
@@ -347,6 +342,17 @@
                     </select>
                 </label>
 
+                <label for="doctor">
+                    <span>Select Doctor</span>
+                    <select id="doctor" name="doctor" required disabled>
+                        <option value="">Select a department first</option>
+                    </select>
+                </label>
+
+                <p class="appointment-form__helper" id="doctorScheduleHelper">
+                    Select a doctor to view available timing and OPD days.
+                </p>
+
                 <div class="appointment-form__row">
                     <label for="date">
                         <span>Date</span>
@@ -354,7 +360,9 @@
                     </label>
                     <label for="time">
                         <span>Time</span>
-                        <input type="time" id="time" name="time" required>
+                        <select id="time" name="time" required disabled>
+                            <option value="">Select a doctor first</option>
+                        </select>
                     </label>
                 </div>
 
