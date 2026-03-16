@@ -322,6 +322,45 @@ button {
     border: 1px solid rgba(103, 61, 230, 0.12);
 }
 
+.hero__qr-card {
+    margin-top: 1.2rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 112px;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.05rem;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(103, 61, 230, 0.08), rgba(0, 176, 144, 0.08));
+    border: 1px solid rgba(103, 61, 230, 0.12);
+}
+
+.hero__qr-copy {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.hero__qr-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.hero__qr-copy strong {
+    line-height: 1.6;
+}
+
+.hero__qr-image {
+    width: 112px;
+    height: 112px;
+    object-fit: cover;
+    border-radius: 18px;
+    background: #fff;
+    padding: 0.35rem;
+    box-shadow: 0 14px 32px rgba(31, 19, 70, 0.12);
+}
+
 .hero__panel-callout span,
 .info-card span {
     display: block;
@@ -733,5 +772,14 @@ button {
     .gallery-card img,
     .gallery-card--large img {
         height: 240px;
+    }
+
+    .hero__qr-card {
+        grid-template-columns: 1fr;
+    }
+
+    .hero__qr-image {
+        width: 124px;
+        height: 124px;
     }
 }
