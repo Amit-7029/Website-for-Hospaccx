@@ -44,7 +44,6 @@ function renderDoctors() {
             <div>
               <p class="doctor-card__department">${doctor.department}</p>
               <h3>${doctor.name}</h3>
-              <span class="doctor-card__badge">${doctor.gender === "female" ? "Female doctor" : "Male doctor"}</span>
             </div>
           </div>
           <p class="doctor-card__qualification">${doctor.qualification}</p>

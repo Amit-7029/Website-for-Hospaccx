@@ -361,9 +361,6 @@
                         <div>
                             <p class="doctor-card__department" th:text="${doctor.department}">Department</p>
                             <h3 th:text="${doctor.name}">Doctor Name</h3>
-                            <span
-                                class="doctor-card__badge"
-                                th:text="${#strings.containsIgnoreCase(doctor.name, 'NANDITA')} ? 'Female doctor' : 'Male doctor'">Male doctor</span>
                         </div>
                     </div>
                     <p class="doctor-card__qualification" th:text="${doctor.qualification}">Qualification</p>

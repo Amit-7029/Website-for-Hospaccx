@@ -2,6 +2,7 @@
 .codex/
 apache-maven-3.9.14/
 target/
+.vercel/
 spring.log
 spring-error.log
 logo-hospaccx.png
