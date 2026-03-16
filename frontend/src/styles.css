@@ -456,6 +456,20 @@ button {
     color: var(--muted);
     font-size: 0.96rem;
     line-height: 1.6;
+    display: grid;
+    gap: 0.65rem;
+}
+
+.gallery-card__link {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(103, 61, 230, 0.08);
+    color: var(--primary);
+    font-size: 0.88rem;
+    font-weight: 700;
 }
 
 .department-card__index {

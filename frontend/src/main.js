@@ -63,7 +63,10 @@ function renderGallery() {
       (item) => `
         <figure class="gallery-card${item.large ? " gallery-card--large" : ""}">
           <img src="${item.src}" alt="${item.alt}">
-          <figcaption>${item.caption}</figcaption>
+          <figcaption>
+            <span>${item.caption}</span>
+            ${item.link ? `<a class="gallery-card__link" href="${item.link}" target="_blank" rel="noreferrer">Open location</a>` : ""}
+          </figcaption>
         </figure>
       `
     )
