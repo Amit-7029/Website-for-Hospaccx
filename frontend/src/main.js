@@ -38,8 +38,11 @@ function renderDoctors() {
       (doctor) => `
         <article class="doctor-card">
           <div class="doctor-card__header">
-            <span class="doctor-card__avatar doctor-card__avatar--${doctor.gender}" aria-hidden="true">
-              <span class="doctor-card__avatar-icon">${doctor.gender === "female" ? "♀" : "♂"}</span>
+            <span class="doctor-card__avatar" aria-hidden="true">
+              <img
+                src="${doctor.gender === "female" ? "/images/doctor-female.jpeg" : "/images/doctor-male.jpeg"}"
+                alt=""
+                class="doctor-card__avatar-image">
             </span>
             <div>
               <p class="doctor-card__department">${doctor.department}</p>

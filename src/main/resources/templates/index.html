@@ -351,12 +351,11 @@
             <div class="doctor-grid">
                 <article class="doctor-card" th:each="doctor : ${doctors}">
                     <div class="doctor-card__header">
-                        <span
-                            class="doctor-card__avatar"
-                            th:classappend="${#strings.containsIgnoreCase(doctor.name, 'NANDITA')} ? ' doctor-card__avatar--female' : ' doctor-card__avatar--male'">
-                            <span
-                                class="doctor-card__avatar-icon"
-                                th:text="${#strings.containsIgnoreCase(doctor.name, 'NANDITA')} ? '♀' : '♂'">♂</span>
+                        <span class="doctor-card__avatar">
+                            <img
+                                class="doctor-card__avatar-image"
+                                th:src="${#strings.containsIgnoreCase(doctor.name, 'NANDITA')} ? @{/images/doctor icon female.jpeg} : @{/images/doctor icon male.jpeg}"
+                                alt="">
                         </span>
                         <div>
                             <p class="doctor-card__department" th:text="${doctor.department}">Department</p>
