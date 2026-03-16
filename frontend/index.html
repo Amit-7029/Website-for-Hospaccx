@@ -1,18 +1,17 @@
-<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!doctype html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banerjee Diagnostic Foundation and Hospaccx</title>
     <meta
         name="description"
         content="Banerjee Diagnostic Foundation is a trusted diagnostic center in Sainthia Birbhum offering CT Scan, Blood Test, Pathology Lab and advanced medical diagnostic services.">
-    <title>Banerjee Diagnostic Foundation and Hospaccx</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="icon" type="image/png" href="/images/logo-hospaccx.png">
     <link rel="apple-touch-icon" href="/images/logo-hospaccx.png">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
 <div class="topbar">
@@ -22,7 +21,7 @@
             <a href="tel:+919732029834">+91 97320 29834</a>
             <a href="mailto:bdf.snt@gmail.com">bdf.snt@gmail.com</a>
             <a href="mailto:hospaccx.snt@gmail.com">hospaccx.snt@gmail.com</a>
-            <a href="https://maps.app.goo.gl/vfxaeTEMkdFBnAsW8">Open Map</a>
+            <a href="https://maps.app.goo.gl/vfxaeTEMkdFBnAsW8" target="_blank" rel="noreferrer">Open Map</a>
         </div>
     </div>
 </div>
@@ -129,7 +128,7 @@
                 <h3>Clinic Highlights</h3>
                 <div class="about-card__stats">
                     <article>
-                        <strong th:text="${#lists.size(doctors)}">0</strong>
+                        <strong id="doctorCount">0</strong>
                         <span>Available specialists</span>
                     </article>
                     <article>
@@ -155,13 +154,7 @@
                 <p class="eyebrow">Departments</p>
                 <h2>Department cards covering the full doctor roster</h2>
             </div>
-            <div class="department-grid">
-                <article class="department-card" th:each="department, stat : ${departments}">
-                    <span class="department-card__index" th:text="${stat.count < 10 ? '0' + stat.count : stat.count}">01</span>
-                    <h3 th:text="${department}">Department</h3>
-                    <p>Specialist consultation and OPD support available under this department.</p>
-                </article>
-            </div>
+            <div class="department-grid" id="departmentGrid"></div>
         </div>
     </section>
 
@@ -267,32 +260,7 @@
                 <p class="eyebrow">Gallery</p>
                 <h2>A closer look at our center</h2>
             </div>
-            <div class="gallery-grid">
-                <figure class="gallery-card gallery-card--large">
-                    <img src="/images/dignostic center front in day.jpg" alt="Banerjee Diagnostic Foundation and Hospaccx front view in daylight">
-                    <figcaption>Center front view in daylight</figcaption>
-                </figure>
-                <figure class="gallery-card">
-                    <img src="/images/reception.jpg" alt="Reception area">
-                    <figcaption>Reception and patient assistance desk</figcaption>
-                </figure>
-                <figure class="gallery-card">
-                    <img src="/images/reception (2).jpg" alt="Reception interior">
-                    <figcaption>Comfortable and patient-friendly interior</figcaption>
-                </figure>
-                <figure class="gallery-card">
-                    <img src="/images/WhatsApp Image 2026-03-15 at 6.57.54 PM.jpeg" alt="Healthcare facility interior">
-                    <figcaption>Clinical service environment</figcaption>
-                </figure>
-                <figure class="gallery-card">
-                    <img src="/images/WhatsApp Image 2026-03-15 at 6.57.54 PM (1).jpeg" alt="Diagnostic center view">
-                    <figcaption>Diagnostic and patient-care space</figcaption>
-                </figure>
-                <figure class="gallery-card">
-                    <img src="/images/WhatsApp Image 2026-03-15 at 6.57.54 PM (2).jpeg" alt="Hospital facility view">
-                    <figcaption>Healthcare support and infrastructure</figcaption>
-                </figure>
-            </div>
+            <div class="gallery-grid" id="galleryGrid"></div>
         </div>
     </section>
 
@@ -341,19 +309,7 @@
                 <p class="eyebrow">Doctors</p>
                 <h2>Doctors information</h2>
             </div>
-            <div class="doctor-grid">
-                <article class="doctor-card" th:each="doctor : ${doctors}">
-                    <p class="doctor-card__department" th:text="${doctor.department}">Department</p>
-                    <h3 th:text="${doctor.name}">Doctor Name</h3>
-                    <p class="doctor-card__qualification" th:text="${doctor.qualification}">Qualification</p>
-                    <ul class="doctor-card__meta">
-                        <li><strong>Fees:</strong> <span th:text="'INR ' + ${doctor.charges}">INR 0</span></li>
-                        <li><strong>Timing:</strong> <span th:text="${doctor.timing}">Timing</span></li>
-                        <li><strong>OPD Days:</strong> <span th:text="${doctor.opdDays}">Days</span></li>
-                    </ul>
-                    <a href="#appointment" class="doctor-card__action">Book Appointment</a>
-                </article>
-            </div>
+            <div class="doctor-grid" id="doctorGrid"></div>
         </div>
     </section>
 
@@ -368,44 +324,37 @@
                 </p>
             </div>
 
-            <form th:action="@{/book-appointment}" th:object="${appointment}" method="post" class="appointment-form" id="whatsappAppointmentForm" novalidate>
-                <label>
+            <form class="appointment-form" id="whatsappAppointmentForm" novalidate>
+                <label for="name">
                     <span>Name</span>
-                    <input type="text" th:field="*{name}" placeholder="Your full name">
-                    <small class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></small>
+                    <input type="text" id="name" name="name" placeholder="Your full name" required>
                 </label>
 
-                <label>
+                <label for="email">
                     <span>Contact Email</span>
-                    <input type="email" th:field="*{email}" placeholder="you@example.com">
-                    <small class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
                 </label>
 
-                <label>
+                <label for="phone">
                     <span>Phone Number</span>
-                    <input type="text" th:field="*{phone}" placeholder="Enter your phone number">
-                    <small class="error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></small>
+                    <input type="text" id="phone" name="phone" placeholder="Enter your phone number" required>
                 </label>
 
-                <label>
+                <label for="department">
                     <span>Department</span>
-                    <select th:field="*{department}">
+                    <select id="department" name="department" required>
                         <option value="">Select a department</option>
-                        <option th:each="department : ${departments}" th:value="${department}" th:text="${department}"></option>
                     </select>
-                    <small class="error" th:if="${#fields.hasErrors('department')}" th:errors="*{department}"></small>
                 </label>
 
                 <div class="appointment-form__row">
-                    <label>
+                    <label for="date">
                         <span>Date</span>
-                        <input type="date" th:field="*{date}">
-                        <small class="error" th:if="${#fields.hasErrors('date')}" th:errors="*{date}"></small>
+                        <input type="date" id="date" name="date" required>
                     </label>
-                    <label>
+                    <label for="time">
                         <span>Time</span>
-                        <input type="time" th:field="*{time}">
-                        <small class="error" th:if="${#fields.hasErrors('time')}" th:errors="*{time}"></small>
+                        <input type="time" id="time" name="time" required>
                     </label>
                 </div>
 
@@ -437,9 +386,9 @@
                     <article class="info-card">
                         <span>Social</span>
                         <strong>
-                            <a href="https://www.instagram.com/banerjeediagnostic_hospaccx?igsh=dnZ4Zmwya24xeXNm">Instagram</a>
+                            <a href="https://www.instagram.com/banerjeediagnostic_hospaccx?igsh=dnZ4Zmwya24xeXNm" target="_blank" rel="noreferrer">Instagram</a>
                             /
-                            <a href="https://www.facebook.com/share/18Q34JyaVn/">Facebook</a>
+                            <a href="https://www.facebook.com/share/18Q34JyaVn/" target="_blank" rel="noreferrer">Facebook</a>
                         </strong>
                     </article>
                 </div>
@@ -484,42 +433,7 @@
         </div>
     </div>
 </footer>
-<script>
-    (function () {
-        var form = document.getElementById("whatsappAppointmentForm");
-        if (!form) {
-            return;
-        }
 
-        form.addEventListener("submit", function (event) {
-            if (!form.checkValidity()) {
-                return;
-            }
-
-            event.preventDefault();
-
-            var name = form.querySelector("[name='name']").value.trim();
-            var email = form.querySelector("[name='email']").value.trim();
-            var phone = form.querySelector("[name='phone']").value.trim();
-            var department = form.querySelector("[name='department']").value.trim();
-            var date = form.querySelector("[name='date']").value.trim();
-            var time = form.querySelector("[name='time']").value.trim();
-
-            var message = [
-                "Hello, I want to book an appointment.",
-                "",
-                "Name: " + name,
-                "Email: " + email,
-                "Phone: " + phone,
-                "Department: " + department,
-                "Preferred Date: " + date,
-                "Preferred Time: " + time
-            ].join("\n");
-
-            var whatsappUrl = "https://wa.me/917384251751?text=" + encodeURIComponent(message);
-            window.location.href = whatsappUrl;
-        });
-    })();
-</script>
+<script type="module" src="/src/main.js"></script>
 </body>
 </html>
