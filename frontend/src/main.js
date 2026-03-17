@@ -1,7 +1,7 @@
 import "./styles.css";
 import { departments, doctors } from "./data/doctors";
 import { galleryItems } from "./data/gallery";
-import { blogPosts, facilities, insuranceSupport, testimonials, treatments, trustIndicators } from "./data/content";
+import { blogPosts, facilities, testimonials, treatments, trustIndicators } from "./data/content";
 
 const DAYS = [
   "SUNDAY",
@@ -34,10 +34,6 @@ function renderDepartments() {
       `
     )
     .join("");
-}
-
-function doctorProfileUrl(doctor) {
-  return `/doctor-profile.html?doctor=${encodeURIComponent(doctor.name)}`;
 }
 
 function renderDoctors(selectedDepartment = "") {
@@ -90,7 +86,6 @@ function renderDoctors(selectedDepartment = "") {
             <li><strong>OPD Days:</strong> ${doctor.opdDays}</li>
           </ul>
           <div class="card-actions">
-            <a href="${doctorProfileUrl(doctor)}" class="button button--secondary">View Profile</a>
             <a href="/?doctor=${encodeURIComponent(doctor.name)}#appointment" class="doctor-card__action">Book Appointment</a>
           </div>
         </article>
@@ -172,24 +167,6 @@ function renderTreatmentPreviews() {
           <h3>${item.title}</h3>
           <p>${item.summary}</p>
           <a href="/treatments.html#${item.slug}" class="resource-card__link">Read details</a>
-        </article>
-      `
-    )
-    .join("");
-}
-
-function renderInsurancePreview() {
-  const container = document.getElementById("insuranceSupportList");
-  if (!container) {
-    return;
-  }
-
-  container.innerHTML = insuranceSupport
-    .map(
-      (item) => `
-        <article class="mini-list__item">
-          <h3>${item.title}</h3>
-          <p>${item.description}</p>
         </article>
       `
     )
@@ -525,7 +502,6 @@ renderGallery();
 renderTrustIndicators();
 renderFacilities();
 renderTreatmentPreviews();
-renderInsurancePreview();
 renderBlogPreview();
 renderTestimonials();
 populateDepartmentSelect();
