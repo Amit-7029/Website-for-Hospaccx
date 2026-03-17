@@ -7,11 +7,42 @@
     <meta
         name="description"
         content="Banerjee Diagnostic Foundation is a trusted diagnostic center in Sainthia Birbhum offering CT Scan, Blood Test, Pathology Lab and advanced medical diagnostic services.">
+    <meta property="og:title" content="Banerjee Diagnostic Foundation and Hospaccx">
+    <meta property="og:description" content="Trusted diagnostics, specialist consultations, and patient-focused care in Sainthia, Birbhum.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://website-for-hospaccx.vercel.app">
+    <meta property="og:image" content="https://website-for-hospaccx.vercel.app/images/hospital-front.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="icon" type="image/png" href="/images/logo-hospaccx.png">
     <link rel="apple-touch-icon" href="/images/logo-hospaccx.png">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "MedicalClinic",
+          "name": "Banerjee Diagnostic Foundation and Hospaccx",
+          "image": "https://website-for-hospaccx.vercel.app/images/hospital-front.jpg",
+          "url": "https://website-for-hospaccx.vercel.app",
+          "telephone": "+91-97320-29834",
+          "email": "bdf.snt@gmail.com",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "R.K. Road / R.K. Tala Road, Netaji Pally",
+            "addressLocality": "Sainthia",
+            "addressRegion": "West Bengal",
+            "postalCode": "731234",
+            "addressCountry": "IN"
+          },
+          "medicalSpecialty": [
+            "Cardiology",
+            "General Medicine",
+            "Orthopedics",
+            "Pediatrics",
+            "Diagnostics"
+          ]
+        }
+    </script>
 </head>
 <body>
 <div class="topbar">
@@ -158,6 +189,16 @@
         </div>
     </section>
 
+    <section class="section section--soft">
+        <div class="container">
+            <div class="section__heading">
+                <p class="eyebrow">Trust Indicators</p>
+                <h2>Healthcare credibility built on trust, continuity, and accessible diagnostics</h2>
+            </div>
+            <div class="trust-grid" id="trustGrid"></div>
+        </div>
+    </section>
+
     <section id="departments" class="section section--soft">
         <div class="container">
             <div class="section__heading">
@@ -241,6 +282,30 @@
         </div>
     </section>
 
+    <section class="section section--soft">
+        <div class="container">
+            <div class="section__heading">
+                <p class="eyebrow">Facilities</p>
+                <h2>Professional hospital facilities designed around patient needs</h2>
+            </div>
+            <div class="facility-grid" id="facilityGrid"></div>
+        </div>
+    </section>
+
+    <section class="section emergency-strip">
+        <div class="container emergency-strip__content">
+            <div>
+                <p class="eyebrow">Emergency Information</p>
+                <h2>24x7 emergency support and ICU care guidance</h2>
+                <p>For urgent care situations, connect immediately with the hospital team for emergency, ICU, and diagnostic support.</p>
+            </div>
+            <div class="emergency-strip__actions">
+                <a href="tel:+919732029834" class="button button--secondary">Emergency Call</a>
+                <span>Available support: ICU care, emergency services, rapid diagnostics</span>
+            </div>
+        </div>
+    </section>
+
     <section id="pharmacies" class="section section--soft">
         <div class="container">
             <div class="section__heading">
@@ -271,6 +336,9 @@
                 <h2>A closer look at our center</h2>
             </div>
             <div class="gallery-grid" id="galleryGrid"></div>
+            <div class="section__actions">
+                <a href="/gallery.html" class="button button--secondary">Open Full Gallery</a>
+            </div>
         </div>
     </section>
 
@@ -319,7 +387,61 @@
                 <p class="eyebrow">Doctors</p>
                 <h2>Doctors information</h2>
             </div>
+            <div class="filter-bar">
+                <label for="doctorDepartmentFilter" class="filter-bar__label">Filter by department</label>
+                <select id="doctorDepartmentFilter" class="filter-bar__select">
+                    <option value="">All departments</option>
+                </select>
+            </div>
             <div class="doctor-grid" id="doctorGrid"></div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="section__heading">
+                <p class="eyebrow">Treatments</p>
+                <h2>Helpful treatment and procedure information for patients and families</h2>
+            </div>
+            <div class="resource-grid" id="treatmentPreviewGrid"></div>
+            <div class="section__actions">
+                <a href="/treatments.html" class="button button--secondary">View Treatment Pages</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section--soft">
+        <div class="container">
+            <div class="section__heading">
+                <p class="eyebrow">Patient Reviews</p>
+                <h2>Patient feedback that strengthens trust in care</h2>
+            </div>
+            <div class="testimonial-slider">
+                <button class="slider-button" id="testimonialPrev" type="button" aria-label="Previous testimonials">‹</button>
+                <div class="testimonial-slider__track" id="testimonialTrack"></div>
+                <button class="slider-button" id="testimonialNext" type="button" aria-label="Next testimonials">›</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container two-card-grid">
+            <article class="feature-panel">
+                <div class="section__heading">
+                    <p class="eyebrow">Insurance & Schemes</p>
+                    <h2>Support for Swasthya Sathi, cashless care, and insurance coordination</h2>
+                </div>
+                <div class="mini-list" id="insuranceSupportList"></div>
+                <a href="/insurance.html" class="button button--secondary">Explore Support</a>
+            </article>
+            <article class="feature-panel">
+                <div class="section__heading">
+                    <p class="eyebrow">Medical Blog</p>
+                    <h2>Health education and awareness articles for patients</h2>
+                </div>
+                <div class="mini-list" id="blogPreviewList"></div>
+                <a href="/blog.html" class="button button--secondary">Read Articles</a>
+            </article>
         </div>
     </section>
 
@@ -416,6 +538,13 @@
                     If you have any health concerns or need diagnostic services, feel free to contact us.
                     Our dedicated team is always ready to support you with trusted healthcare and reliable diagnostic services.
                 </p>
+                <div class="contact-actions">
+                    <a href="https://maps.app.goo.gl/vfxaeTEMkdFBnAsW8" target="_blank" rel="noreferrer" class="button button--secondary">Get Directions</a>
+                    <div class="contact-timings">
+                        <strong>Hospital Timings</strong>
+                        <span>Daily support with OPD schedules based on doctor availability and emergency support access.</span>
+                    </div>
+                </div>
             </div>
 
             <div class="map-card">
@@ -445,6 +574,10 @@
             <a href="#doctors">Doctors</a>
             <a href="#appointment">Appointment</a>
             <a href="#contact">Contact</a>
+            <a href="/treatments.html">Treatments</a>
+            <a href="/blog.html">Blog</a>
+            <a href="/insurance.html">Insurance</a>
+            <a href="/gallery.html">Gallery Page</a>
         </div>
         <div>
             <p>Email: <a href="mailto:bdf.snt@gmail.com">bdf.snt@gmail.com</a></p>

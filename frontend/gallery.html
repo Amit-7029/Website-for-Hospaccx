@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Photo Gallery | Banerjee Diagnostic Foundation and Hospaccx</title>
+    <meta name="description" content="Hospital building, diagnostics, reception, and patient care photo gallery for Banerjee Diagnostic Foundation and Hospaccx.">
+    <link rel="icon" type="image/png" href="/images/logo-hospaccx.png">
+    <link rel="apple-touch-icon" href="/images/logo-hospaccx.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<main class="subpage">
+    <section class="page-hero">
+        <div class="container">
+            <a href="/" class="page-hero__back">← Back to Homepage</a>
+            <p class="eyebrow">Photo Gallery</p>
+            <h1>Hospital building, reception, diagnostics, and patient care spaces</h1>
+            <p class="subtitle">Explore the center through a larger gallery view with click-to-open image lightbox support.</p>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container gallery-grid" id="fullGalleryGrid"></div>
+    </section>
+</main>
+
+<div class="lightbox" id="lightbox" hidden>
+    <button type="button" class="lightbox__close" id="lightboxClose">×</button>
+    <img id="lightboxImage" alt="">
+</div>
+
+<script type="module" src="/src/gallery-page.js"></script>
+</body>
+</html>

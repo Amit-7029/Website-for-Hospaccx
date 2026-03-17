@@ -1,6 +1,7 @@
 import "./styles.css";
 import { departments, doctors } from "./data/doctors";
 import { galleryItems } from "./data/gallery";
+import { blogPosts, facilities, insuranceSupport, testimonials, treatments, trustIndicators } from "./data/content";
 
 const DAYS = [
   "SUNDAY",
@@ -12,7 +13,9 @@ const DAYS = [
   "SATURDAY"
 ];
 
-const DAY_INDEX = Object.fromEntries(DAYS.map((day, index) => [day, index]));
+function slugify(value) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
 
 function renderDepartments() {
   const container = document.getElementById("departmentGrid");
@@ -33,19 +36,39 @@ function renderDepartments() {
     .join("");
 }
 
-function renderDoctors() {
+function doctorProfileUrl(doctor) {
+  return `/doctor-profile.html?doctor=${encodeURIComponent(doctor.name)}`;
+}
+
+function renderDoctors(selectedDepartment = "") {
   const container = document.getElementById("doctorGrid");
   const doctorCount = document.getElementById("doctorCount");
+  const filter = document.getElementById("doctorDepartmentFilter");
 
   if (doctorCount) {
     doctorCount.textContent = String(doctors.length);
+  }
+
+  if (filter && !filter.dataset.ready) {
+    filter.insertAdjacentHTML(
+      "beforeend",
+      departments.map((department) => `<option value="${department}">${department}</option>`).join("")
+    );
+    filter.dataset.ready = "true";
+    filter.addEventListener("change", (event) => {
+      renderDoctors(event.target.value);
+    });
   }
 
   if (!container) {
     return;
   }
 
-  container.innerHTML = doctors
+  const filteredDoctors = selectedDepartment
+    ? doctors.filter((doctor) => doctor.department === selectedDepartment)
+    : doctors;
+
+  container.innerHTML = filteredDoctors
     .map(
       (doctor) => `
         <article class="doctor-card">
@@ -66,7 +89,10 @@ function renderDoctors() {
             <li><strong>Timing:</strong> ${doctor.timing}</li>
             <li><strong>OPD Days:</strong> ${doctor.opdDays}</li>
           </ul>
-          <a href="#appointment" class="doctor-card__action">Book Appointment</a>
+          <div class="card-actions">
+            <a href="${doctorProfileUrl(doctor)}" class="button button--secondary">View Profile</a>
+            <a href="/?doctor=${encodeURIComponent(doctor.name)}#appointment" class="doctor-card__action">Book Appointment</a>
+          </div>
         </article>
       `
     )
@@ -94,6 +120,132 @@ function renderGallery() {
     .join("");
 }
 
+function renderTrustIndicators() {
+  const container = document.getElementById("trustGrid");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = trustIndicators
+    .map(
+      (item) => `
+        <article class="trust-card">
+          <strong>${item.value}</strong>
+          <span>${item.label}</span>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderFacilities() {
+  const container = document.getElementById("facilityGrid");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = facilities
+    .map(
+      (facility) => `
+        <article class="facility-card">
+          <span class="facility-card__icon">${facility.icon}</span>
+          <h3>${facility.title}</h3>
+          <p>${facility.description}</p>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderTreatmentPreviews() {
+  const container = document.getElementById("treatmentPreviewGrid");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = treatments
+    .slice(0, 4)
+    .map(
+      (item) => `
+        <article class="resource-card">
+          <p class="resource-card__eyebrow">Treatment</p>
+          <h3>${item.title}</h3>
+          <p>${item.summary}</p>
+          <a href="/treatments.html#${item.slug}" class="resource-card__link">Read details</a>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderInsurancePreview() {
+  const container = document.getElementById("insuranceSupportList");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = insuranceSupport
+    .map(
+      (item) => `
+        <article class="mini-list__item">
+          <h3>${item.title}</h3>
+          <p>${item.description}</p>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderBlogPreview() {
+  const container = document.getElementById("blogPreviewList");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = blogPosts
+    .slice(0, 3)
+    .map(
+      (post) => `
+        <article class="mini-list__item">
+          <p class="resource-card__eyebrow">${post.category} • ${post.readTime}</p>
+          <h3>${post.title}</h3>
+          <p>${post.excerpt}</p>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderTestimonials() {
+  const track = document.getElementById("testimonialTrack");
+  if (!track) {
+    return;
+  }
+
+  track.innerHTML = testimonials
+    .map(
+      (item) => `
+        <article class="testimonial-slide">
+          <div class="testimonial-slide__stars">${"★".repeat(item.rating)}${"☆".repeat(5 - item.rating)}</div>
+          <p>${item.feedback}</p>
+          <strong>${item.name}</strong>
+        </article>
+      `
+    )
+    .join("");
+
+  const previousButton = document.getElementById("testimonialPrev");
+  const nextButton = document.getElementById("testimonialNext");
+
+  previousButton?.addEventListener("click", () => {
+    track.scrollBy({ left: -360, behavior: "smooth" });
+  });
+
+  nextButton?.addEventListener("click", () => {
+    track.scrollBy({ left: 360, behavior: "smooth" });
+  });
+}
+
 function populateDepartmentSelect() {
   const select = document.getElementById("department");
   if (!select) {
@@ -102,18 +254,17 @@ function populateDepartmentSelect() {
 
   select.insertAdjacentHTML(
     "beforeend",
-    departments
-      .map((department) => `<option value="${department}">${department}</option>`)
-      .join("")
+    departments.map((department) => `<option value="${department}">${department}</option>`).join("")
   );
 }
 
 function populateDoctorSelect(department) {
   const doctorSelect = document.getElementById("doctor");
   const timeSelect = document.getElementById("time");
+  const dateSelect = document.getElementById("date");
   const helper = document.getElementById("doctorScheduleHelper");
 
-  if (!doctorSelect || !timeSelect || !helper) {
+  if (!doctorSelect || !timeSelect || !dateSelect || !helper) {
     return;
   }
 
@@ -121,31 +272,17 @@ function populateDoctorSelect(department) {
 
   doctorSelect.innerHTML = matchingDoctors.length
     ? '<option value="">Select a doctor</option>' +
-      matchingDoctors
-        .map(
-          (doctor) =>
-            `<option value="${doctor.name}">${doctor.name}</option>`
-        )
-        .join("")
+      matchingDoctors.map((doctor) => `<option value="${doctor.name}">${doctor.name}</option>`).join("")
     : '<option value="">Select a department first</option>';
 
   doctorSelect.disabled = matchingDoctors.length === 0;
+  dateSelect.innerHTML = '<option value="">Select a doctor first</option>';
+  dateSelect.disabled = true;
   timeSelect.innerHTML = '<option value="">Select a doctor first</option>';
   timeSelect.disabled = true;
   helper.textContent = matchingDoctors.length
     ? "Select a doctor to see the available appointment slots."
     : "Select a department to choose from the available doctors.";
-}
-
-function normalizeDayList(opdDays) {
-  const text = opdDays.toUpperCase();
-  if (text.includes("EVERYDAY") || text.includes("EVERY DAY") || text === "-") {
-    return { days: DAYS, strict: false };
-  }
-
-  const matchedDays = DAYS.filter((day) => text.includes(day));
-  const strict = matchedDays.length > 0 && !text.includes("FIRST") && !text.includes("LAST") && !text.includes("MONTH");
-  return { days: matchedDays, strict };
 }
 
 function formatDateValue(date) {
@@ -193,8 +330,7 @@ function doctorAvailableOnDate(doctor, date) {
     return dayName === "SATURDAY" && weekOfMonth(date) <= 3;
   }
 
-  const { days } = normalizeDayList(rule);
-  return days.includes(dayName);
+  return DAYS.some((day) => rule.includes(day)) ? rule.includes(dayName) : true;
 }
 
 function allowedDatesForDoctor(doctor, totalDays = 120) {
@@ -213,26 +349,16 @@ function allowedDatesForDoctor(doctor, totalDays = 120) {
   return dates;
 }
 
-function populateDateSelect(doctorName) {
+function populateDateSelect(doctor) {
   const dateSelect = document.getElementById("date");
-  const helper = document.getElementById("doctorScheduleHelper");
-  if (!dateSelect || !helper) {
-    return;
-  }
-
-  const doctor = doctors.find((entry) => entry.name === doctorName);
-  if (!doctor) {
-    dateSelect.innerHTML = '<option value="">Select a doctor first</option>';
-    dateSelect.disabled = true;
+  if (!dateSelect) {
     return;
   }
 
   const dates = allowedDatesForDoctor(doctor);
   dateSelect.innerHTML = dates.length
     ? '<option value="">Select an appointment date</option>' +
-      dates
-        .map((date) => `<option value="${formatDateValue(date)}">${formatDateLabel(date)}</option>`)
-        .join("")
+      dates.map((date) => `<option value="${formatDateValue(date)}">${formatDateLabel(date)}</option>`).join("")
     : '<option value="">No valid dates available</option>';
   dateSelect.disabled = dates.length === 0;
 }
@@ -246,11 +372,9 @@ function toMinutes(timeLabel) {
   let hours = Number(match[1]) % 12;
   const minutes = Number(match[2] || "0");
   const meridiem = match[3].toUpperCase();
-
   if (meridiem === "PM") {
     hours += 12;
   }
-
   return hours * 60 + minutes;
 }
 
@@ -274,7 +398,6 @@ function extractTimeRanges(timing) {
   while ((match = regex.exec(timing)) !== null) {
     const start = toMinutes(match[1].replace(/\s+/g, ""));
     const end = toMinutes(match[2].replace(/\s+/g, ""));
-
     if (start !== null && end !== null && end >= start) {
       ranges.push({ start, end });
     }
@@ -283,24 +406,14 @@ function extractTimeRanges(timing) {
   return ranges;
 }
 
-function populateTimeSelect(doctorName) {
+function populateTimeSelect(doctor) {
   const timeSelect = document.getElementById("time");
   const helper = document.getElementById("doctorScheduleHelper");
-  const dateSelect = document.getElementById("date");
   if (!timeSelect || !helper) {
     return;
   }
 
-  const doctor = doctors.find((entry) => entry.name === doctorName);
-  if (!doctor) {
-    timeSelect.innerHTML = '<option value="">Select a doctor first</option>';
-    timeSelect.disabled = true;
-    helper.textContent = "Select a doctor to view available timing and OPD days.";
-    return;
-  }
-
   const ranges = extractTimeRanges(doctor.timing);
-  const { days } = normalizeDayList(doctor.opdDays);
 
   if (doctor.timing.toUpperCase().includes("BY APPOINTMENT")) {
     timeSelect.innerHTML = '<option value="By Appointment">By Appointment</option>';
@@ -323,24 +436,29 @@ function populateTimeSelect(doctorName) {
     timeSelect.disabled = slots.length === 0;
   }
 
-  const opdLine = doctor.opdDays === "-" ? "Available by prior appointment." : `OPD Days: ${doctor.opdDays}`;
-  const timeLine = doctor.timing.toUpperCase().includes("BY APPOINTMENT")
-    ? "Timing: By appointment"
-    : `Timing: ${doctor.timing}`;
-
-  helper.textContent = `${doctor.name} | ${timeLine} | ${opdLine}`;
-  if (dateSelect) {
-    populateDateSelect(doctor.name);
-  }
+  helper.textContent = `${doctor.name} | Timing: ${doctor.timing} | OPD Days: ${doctor.opdDays}`;
 }
 
-function setMinimumDate() {
-  const dateSelect = document.getElementById("date");
-  if (!dateSelect) {
+function prefillDoctorFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const doctorName = params.get("doctor");
+  if (!doctorName) {
     return;
   }
-  dateSelect.innerHTML = '<option value="">Select a doctor first</option>';
-  dateSelect.disabled = true;
+
+  const doctor = doctors.find((entry) => entry.name === doctorName);
+  const departmentSelect = document.getElementById("department");
+  const doctorSelect = document.getElementById("doctor");
+
+  if (!doctor || !departmentSelect || !doctorSelect) {
+    return;
+  }
+
+  departmentSelect.value = doctor.department;
+  populateDoctorSelect(doctor.department);
+  doctorSelect.value = doctor.name;
+  populateDateSelect(doctor);
+  populateTimeSelect(doctor);
 }
 
 function setupAppointmentForm() {
@@ -352,21 +470,21 @@ function setupAppointmentForm() {
   const departmentSelect = document.getElementById("department");
   const doctorSelect = document.getElementById("doctor");
 
-  if (departmentSelect) {
-    departmentSelect.addEventListener("change", (event) => {
-      populateDoctorSelect(event.target.value);
-    });
-  }
+  departmentSelect?.addEventListener("change", (event) => {
+    populateDoctorSelect(event.target.value);
+  });
 
-  if (doctorSelect) {
-    doctorSelect.addEventListener("change", (event) => {
-      populateTimeSelect(event.target.value);
-    });
-  }
+  doctorSelect?.addEventListener("change", (event) => {
+    const doctor = doctors.find((entry) => entry.name === event.target.value);
+    if (!doctor) {
+      return;
+    }
+    populateDateSelect(doctor);
+    populateTimeSelect(doctor);
+  });
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-
     if (!form.reportValidity()) {
       return;
     }
@@ -388,9 +506,29 @@ function setupAppointmentForm() {
   });
 }
 
+function setupInitialFormState() {
+  const dateSelect = document.getElementById("date");
+  const timeSelect = document.getElementById("time");
+  if (dateSelect) {
+    dateSelect.innerHTML = '<option value="">Select a doctor first</option>';
+    dateSelect.disabled = true;
+  }
+  if (timeSelect) {
+    timeSelect.innerHTML = '<option value="">Select a doctor first</option>';
+    timeSelect.disabled = true;
+  }
+}
+
 renderDepartments();
 renderDoctors();
 renderGallery();
+renderTrustIndicators();
+renderFacilities();
+renderTreatmentPreviews();
+renderInsurancePreview();
+renderBlogPreview();
+renderTestimonials();
 populateDepartmentSelect();
-setMinimumDate();
+setupInitialFormState();
 setupAppointmentForm();
+prefillDoctorFromQuery();
