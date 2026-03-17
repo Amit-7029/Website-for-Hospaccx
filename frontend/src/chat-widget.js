@@ -1,7 +1,6 @@
 const STORAGE_KEYS = {
   language: "hospaccx-chat-language",
-  history: "hospaccx-chat-history",
-  open: "hospaccx-chat-open"
+  history: "hospaccx-chat-history"
 };
 
 const WHATSAPP_URL = "https://wa.me/917384251751";
@@ -117,7 +116,7 @@ function getStoredHistory() {
 }
 
 function setStoredHistory(history) {
-  localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(history.slice(-20)));
+  localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(history.slice(-15)));
 }
 
 function createMessageElement(message) {
@@ -146,9 +145,13 @@ function createWidget() {
   const root = document.createElement("div");
   root.className = "chat-widget";
   root.innerHTML = `
-    <button type="button" class="chat-widget__launcher" aria-label="Open chat assistant">
-      <span class="chat-widget__launcher-icon" aria-hidden="true">AI</span>
-      <span class="chat-widget__launcher-text"></span>
+    <button type="button" class="chat-widget__launcher" aria-label="Chat with us" title="Chat with us">
+      <span class="chat-widget__launcher-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" class="chat-widget__launcher-svg" focusable="false" aria-hidden="true">
+          <path d="M12 3C6.477 3 2 7.03 2 12c0 2.095.814 4.02 2.18 5.55L3 21l4.051-1.06A10.82 10.82 0 0 0 12 21c5.523 0 10-4.03 10-9s-4.477-9-10-9Zm-4.5 8.5h9a1 1 0 1 1 0 2h-9a1 1 0 1 1 0-2Zm0-4h9a1 1 0 1 1 0 2h-9a1 1 0 1 1 0-2Z"></path>
+        </svg>
+      </span>
+      <span class="chat-widget__tooltip">Chat with us</span>
     </button>
     <section class="chat-widget__panel" hidden aria-live="polite">
       <header class="chat-widget__header">
@@ -156,7 +159,10 @@ function createWidget() {
           <strong class="chat-widget__title"></strong>
           <span class="chat-widget__status"></span>
         </div>
-        <button type="button" class="chat-widget__close" aria-label="Close chat">×</button>
+        <div class="chat-widget__header-actions">
+          <button type="button" class="chat-widget__minimize" aria-label="Minimize chat">−</button>
+          <button type="button" class="chat-widget__close" aria-label="Close chat">×</button>
+        </div>
       </header>
       <div class="chat-widget__language-selector">
         <p class="chat-widget__language-title"></p>
@@ -224,6 +230,7 @@ function initChatWidget() {
   const panel = root.querySelector(".chat-widget__panel");
   const launcher = root.querySelector(".chat-widget__launcher");
   const closeButton = root.querySelector(".chat-widget__close");
+  const minimizeButton = root.querySelector(".chat-widget__minimize");
   const languageSelector = root.querySelector(".chat-widget__language-selector");
   const quickActions = root.querySelector(".chat-widget__quick-actions");
   const messagesContainer = root.querySelector(".chat-widget__messages");
@@ -233,6 +240,39 @@ function initChatWidget() {
 
   let currentLanguage = localStorage.getItem(STORAGE_KEYS.language) || detectPreferredLanguage();
   let history = getStoredHistory();
+  let isOpen = false;
+  let closeTimer = null;
+
+  function setOpenState(nextOpen) {
+    if (nextOpen === isOpen) {
+      return;
+    }
+
+    if (closeTimer) {
+      clearTimeout(closeTimer);
+      closeTimer = null;
+    }
+
+    isOpen = nextOpen;
+    root.classList.toggle("is-open", nextOpen);
+
+    if (nextOpen) {
+      panel.hidden = false;
+      ensureGreeting();
+      syncLanguageUI();
+      requestAnimationFrame(() => {
+        input.focus();
+        scrollMessages(messagesContainer);
+      });
+      return;
+    }
+
+    panel.classList.add("is-closing");
+    closeTimer = window.setTimeout(() => {
+      panel.hidden = true;
+      panel.classList.remove("is-closing");
+    }, 220);
+  }
 
   function syncLanguageUI() {
     setLanguageLabels(root, currentLanguage);
@@ -329,19 +369,15 @@ function initChatWidget() {
   }
 
   launcher.addEventListener("click", () => {
-    const nextState = panel.hidden;
-    panel.hidden = !nextState ? true : false;
-    localStorage.setItem(STORAGE_KEYS.open, String(nextState));
-    if (nextState) {
-      ensureGreeting();
-      syncLanguageUI();
-      input.focus();
-    }
+    setOpenState(true);
   });
 
   closeButton.addEventListener("click", () => {
-    panel.hidden = true;
-    localStorage.setItem(STORAGE_KEYS.open, "false");
+    setOpenState(false);
+  });
+
+  minimizeButton.addEventListener("click", () => {
+    setOpenState(false);
   });
 
   root.querySelectorAll("[data-language]").forEach((button) => {
@@ -357,11 +393,8 @@ function initChatWidget() {
 
   syncLanguageUI();
   renderHistory();
-
-  if (localStorage.getItem(STORAGE_KEYS.open) === "true") {
-    panel.hidden = false;
-    ensureGreeting();
-  }
+  panel.hidden = true;
+  root.classList.remove("is-open");
 }
 
 initChatWidget();
