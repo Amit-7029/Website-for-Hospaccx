@@ -413,6 +413,12 @@
                 </label>
             </div>
             <div class="doctor-poster-grid" id="doctorPosterGrid"></div>
+            <div class="section__heading section__heading--nested">
+                <p class="eyebrow">Doctor Posters</p>
+                <h3>Poster gallery for doctors and visiting specialists</h3>
+                <p class="section__note">Tap any poster to open a larger preview.</p>
+            </div>
+            <div class="poster-grid" id="doctorPosterImageGrid"></div>
         </div>
     </section>
 
@@ -601,6 +607,15 @@
     <div class="modal-panel modal-panel--doctor" role="dialog" aria-modal="true" aria-labelledby="doctorModalTitle">
         <button type="button" class="modal-close" id="doctorModalClose" aria-label="Close doctor details">×</button>
         <div id="doctorModalBody"></div>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="posterModal" hidden>
+    <div class="modal-panel modal-panel--poster" role="dialog" aria-modal="true" aria-labelledby="posterModalTitle">
+        <button type="button" class="modal-close" id="posterModalClose" aria-label="Close poster preview">×</button>
+        <div class="poster-preview">
+            <img id="posterModalImage" src="" alt="">
+        </div>
     </div>
 </div>
 

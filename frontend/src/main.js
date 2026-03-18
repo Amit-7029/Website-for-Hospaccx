@@ -1,5 +1,6 @@
 import "./styles.css";
 import { galleryItems } from "./data/gallery";
+import { doctorPosters } from "./data/doctor-posters";
 import { blogPosts, facilities, testimonials, treatments, trustIndicators } from "./data/content";
 import { loadDoctors } from "./firebase/doctors-store";
 
@@ -386,6 +387,28 @@ function renderDoctorsGallery() {
   });
 }
 
+function renderDoctorPosterImages() {
+  const container = document.getElementById("doctorPosterImageGrid");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = doctorPosters
+    .map(
+      (poster) => `
+        <button type="button" class="poster-card" data-poster-src="${escapeHtml(poster.src)}" data-poster-title="${escapeHtml(poster.title)}">
+          <img src="${escapeHtml(poster.src)}" alt="${escapeHtml(poster.title)}" loading="lazy">
+          <span>${escapeHtml(poster.title)}</span>
+        </button>
+      `
+    )
+    .join("");
+
+  container.querySelectorAll("[data-poster-src]").forEach((button) => {
+    button.addEventListener("click", () => openPosterModal(button.dataset.posterSrc, button.dataset.posterTitle));
+  });
+}
+
 function openDoctorModal(doctorId) {
   const modal = document.getElementById("doctorModal");
   const body = document.getElementById("doctorModalBody");
@@ -445,27 +468,64 @@ function closeDoctorModal() {
   document.body.classList.remove("modal-open");
 }
 
+function openPosterModal(src, title) {
+  const modal = document.getElementById("posterModal");
+  const image = document.getElementById("posterModalImage");
+
+  if (!modal || !image || !src) {
+    return;
+  }
+
+  image.src = src;
+  image.alt = title || "Doctor poster";
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+}
+
+function closePosterModal() {
+  const modal = document.getElementById("posterModal");
+  const image = document.getElementById("posterModalImage");
+  if (!modal || !image) {
+    return;
+  }
+
+  image.src = "";
+  image.alt = "";
+  modal.hidden = true;
+  document.body.classList.remove("modal-open");
+}
+
 function bindDoctorGalleryControls() {
   const search = document.getElementById("doctorPosterSearch");
-  const modal = document.getElementById("doctorModal");
-  const closeButton = document.getElementById("doctorModalClose");
+  const doctorModal = document.getElementById("doctorModal");
+  const doctorCloseButton = document.getElementById("doctorModalClose");
+  const posterModal = document.getElementById("posterModal");
+  const posterCloseButton = document.getElementById("posterModalClose");
 
   search?.addEventListener("input", (event) => {
     state.searchQuery = event.target.value;
     renderDoctorsGallery();
   });
 
-  closeButton?.addEventListener("click", closeDoctorModal);
+  doctorCloseButton?.addEventListener("click", closeDoctorModal);
+  posterCloseButton?.addEventListener("click", closePosterModal);
 
-  modal?.addEventListener("click", (event) => {
-    if (event.target === modal) {
+  doctorModal?.addEventListener("click", (event) => {
+    if (event.target === doctorModal) {
       closeDoctorModal();
+    }
+  });
+
+  posterModal?.addEventListener("click", (event) => {
+    if (event.target === posterModal) {
+      closePosterModal();
     }
   });
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeDoctorModal();
+      closePosterModal();
     }
   });
 }
@@ -758,6 +818,7 @@ async function initializeDoctors() {
     renderDoctors();
     renderGalleryTabs();
     renderDoctorsGallery();
+    renderDoctorPosterImages();
     populateDepartmentSelect();
     setupInitialFormState();
     setupAppointmentForm();
