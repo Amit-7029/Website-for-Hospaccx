@@ -8,7 +8,8 @@ const HOSPITAL = {
   whatsapp: "https://wa.me/917384251751",
   map: "https://maps.app.goo.gl/vfxaeTEMkdFBnAsW8",
   emails: ["bdf.snt@gmail.com", "hospaccx.snt@gmail.com"],
-  appointment: "Patients can book through the existing website appointment form and continue to WhatsApp for confirmation."
+  appointment:
+    "Patients can book through the existing website appointment form and continue to WhatsApp for confirmation."
 };
 
 const LANGUAGE_LABELS = {
@@ -19,13 +20,13 @@ const LANGUAGE_LABELS = {
 
 const EMERGENCY_MESSAGES = {
   hi: "Yeh emergency ho sakta hai. Turant hospital visit karein ya call karein.",
-  bn: "এটি জরুরি হতে পারে। দয়া করে দ্রুত হাসপাতালে আসুন বা ফোন করুন।",
+  bn: "\u098f\u099f\u09bf \u099c\u09b0\u09c1\u09b0\u09bf \u09b9\u09a4\u09c7 \u09aa\u09be\u09b0\u09c7\u0964 \u09a6\u09af\u09bc\u09be \u0995\u09b0\u09c7 \u09a6\u09cd\u09b0\u09c1\u09a4 \u09b9\u09be\u09b8\u09aa\u09be\u09a4\u09be\u09b2\u09c7 \u0986\u09b8\u09c1\u09a8 \u09ac\u09be \u09ab\u09cb\u09a8 \u0995\u09b0\u09c1\u09a8\u0964",
   en: "This may be an emergency. Please visit the hospital immediately or call."
 };
 
 const FALLBACK_GREETINGS = {
   hi: "Namaste! Main kaise madad kar sakta hoon?",
-  bn: "নমস্কার! আমি কিভাবে সাহায্য করতে পারি?",
+  bn: "\u09a8\u09ae\u09b8\u09cd\u0995\u09be\u09b0! \u0986\u09ae\u09bf \u0995\u09bf\u09ad\u09be\u09ac\u09c7 \u09b8\u09be\u09b9\u09be\u09af\u09cd\u09af \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09bf?",
   en: "Hello! How can I help you?"
 };
 
@@ -43,15 +44,15 @@ const URGENT_KEYWORDS = [
   "fits",
   "severe",
   "critical",
-  "জরুরি",
-  "শ্বাস",
-  "ব্যথা",
-  "রক্ত",
-  "बेहोश",
-  "खून",
-  "सांस",
-  "सीने में दर्द",
-  "इमरजेंसी"
+  "\u099c\u09b0\u09c1\u09b0\u09bf",
+  "\u09b6\u09cd\u09ac\u09be\u09b8",
+  "\u09ac\u09cd\u09af\u09a5\u09be",
+  "\u09b0\u0995\u09cd\u09a4",
+  "\u092c\u0947\u0939\u094b\u0936",
+  "\u0916\u0942\u0928",
+  "\u0938\u093e\u0902\u0938",
+  "\u0938\u0940\u0928\u0947 \u092e\u0947\u0902 \u0926\u0930\u094d\u0926",
+  "\u0907\u092e\u0930\u091c\u0947\u0902\u0938\u0940"
 ];
 
 function buildKnowledgeBase() {
@@ -122,6 +123,19 @@ function isEmergency(text) {
   return URGENT_KEYWORDS.some((keyword) => value.includes(keyword));
 }
 
+function normalizeMessages(messages) {
+  return (Array.isArray(messages) ? messages : [])
+    .filter((message) => message && typeof message.content === "string")
+    .slice(-15);
+}
+
+function recentConversation(messages) {
+  return normalizeMessages(messages)
+    .filter((message) => message.role === "user")
+    .map((message) => message.content)
+    .join(" ");
+}
+
 function findMatchingDepartment(text) {
   const normalized = normalize(text);
   return departments.find((department) => normalized.includes(department.toLowerCase())) || null;
@@ -132,64 +146,83 @@ function findDoctor(text) {
   return doctors.find((doctor) => normalized.includes(doctor.name.toLowerCase())) || null;
 }
 
-function fallbackResponse(message, language) {
-  const text = normalize(message);
-  const matchedDoctor = findDoctor(message);
-  const matchedDepartment = findMatchingDepartment(message);
+function pickDepartmentFromSymptoms(text) {
+  const value = normalize(text);
+  if (value.includes("heart") || value.includes("chest pain") || value.includes("palpitation")) {
+    return "CARDIOLOGY";
+  }
+  if (value.includes("child") || value.includes("baby") || value.includes("fever in child")) {
+    return "PEDIATRIC";
+  }
+  if (value.includes("bone") || value.includes("joint") || value.includes("knee") || value.includes("back pain")) {
+    return "ORTHOPEDIC";
+  }
+  if (value.includes("cough") || value.includes("breathing") || value.includes("asthma")) {
+    return "CHEST SPECIALIST";
+  }
+  if (value.includes("sugar") || value.includes("bp") || value.includes("weakness") || value.includes("fever")) {
+    return "GENERAL MEDICINE";
+  }
+  return null;
+}
+
+function fallbackResponse(messages, language) {
+  const combinedText = recentConversation(messages);
+  const latestUserMessage = [...normalizeMessages(messages)].reverse().find((message) => message.role === "user")?.content || "";
+  const text = normalize(combinedText || latestUserMessage);
+  const matchedDoctor = findDoctor(combinedText || latestUserMessage);
+  const matchedDepartment = findMatchingDepartment(combinedText || latestUserMessage) || pickDepartmentFromSymptoms(combinedText || latestUserMessage);
 
   if (matchedDoctor) {
     const base = `${matchedDoctor.name} (${matchedDoctor.department}) - ${matchedDoctor.qualification}. Timing: ${matchedDoctor.timing}. OPD Days: ${matchedDoctor.opdDays}.`;
     if (language === "hi") {
-      return `${base} Appointment ke liye website form use karke WhatsApp par continue kariye. Agar symptoms serious hain to doctor consultation zaroor lijiye.`;
+      return `${base} Aap website ke appointment form se is doctor ko select karke WhatsApp par request bhej sakte hain. Agar symptoms zyada hain to jaldi consultation book kariye.`;
     }
     if (language === "bn") {
-      return `${base} অ্যাপয়েন্টমেন্টের জন্য ওয়েবসাইটের ফর্ম ব্যবহার করে WhatsApp-এ এগিয়ে যান। উপসর্গ গুরুতর হলে অবশ্যই ডাক্তারের পরামর্শ নিন।`;
+      return `${base} \u0986\u09aa\u09a8\u09bf \u0993\u09af\u09bc\u09c7\u09ac\u09b8\u09be\u0987\u099f\u09c7\u09b0 appointment form \u09a6\u09bf\u09af\u09bc\u09c7 \u098f\u0987 \u09a1\u09be\u0995\u09cd\u09a4\u09be\u09b0\u0995\u09c7 select \u0995\u09b0\u09c7 WhatsApp-\u098f request \u09aa\u09be\u09a0\u09be\u09a4\u09c7 \u09aa\u09be\u09b0\u09c7\u09a8\u0964 \u0989\u09aa\u09b8\u09b0\u09cd\u0997 \u09ac\u09c7\u09b6\u09bf \u09b9\u09b2\u09c7 \u09a4\u09be\u09a1\u09bc\u09be\u09a4\u09be\u09a1\u09bc\u09bf consultation \u09ac\u09c1\u0995 \u0995\u09b0\u09c1\u09a8\u0964`;
     }
-    return `${base} Use the website appointment form and continue on WhatsApp to request a booking. Please consult a doctor for proper evaluation.`;
+    return `${base} You can select this doctor in the website appointment form and continue on WhatsApp to send your request. If the symptoms are troubling, it is best to book a consultation soon.`;
   }
 
-  if (text.includes("appointment") || text.includes("book") || text.includes("অ্যাপয়েন্টমেন্ট") || text.includes("बुक")) {
+  if (text.includes("appointment") || text.includes("book") || text.includes("\u0985\u09cd\u09af\u09be\u09aa\u09af\u09bc\u09c7\u09a8\u09cd\u099f\u09ae\u09c7\u09a8\u09cd\u099f") || text.includes("\u092c\u0941\u0915")) {
     if (language === "hi") {
-      return "Appointment ke liye form me naam, phone, department aur doctor select kijiye. Uske baad WhatsApp par continue karke request bhej sakte hain.";
+      return "Appointment ke liye form me naam, phone, department aur doctor select kijiye. Phir WhatsApp par continue karke request bhej dijiye. Zarurat ho to main relevant department bhi suggest kar sakta hoon.";
     }
     if (language === "bn") {
-      return "অ্যাপয়েন্টমেন্টের জন্য ফর্মে নাম, ফোন, বিভাগ এবং ডাক্তার নির্বাচন করুন। তারপর WhatsApp-এ গিয়ে অনুরোধ পাঠাতে পারবেন।";
+      return "\u0985\u09cd\u09af\u09be\u09aa\u09af\u09bc\u09c7\u09a8\u09cd\u099f\u09ae\u09c7\u09a8\u09cd\u099f\u09c7\u09b0 \u099c\u09a8\u09cd\u09af form-\u098f \u09a8\u09be\u09ae, \u09ab\u09cb\u09a8, \u09ac\u09bf\u09ad\u09be\u0997 \u098f\u09ac\u0982 \u09a1\u09be\u0995\u09cd\u09a4\u09be\u09b0 select \u0995\u09b0\u09c1\u09a8\u0964 \u09a4\u09be\u09b0\u09aa\u09b0 WhatsApp-\u098f continue \u0995\u09b0\u09c7 request \u09aa\u09be\u09a0\u09be\u09a8\u0964 \u099a\u09be\u0987\u09b2\u09c7 \u0986\u09ae\u09bf relevant department-\u0993 suggest \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09bf\u0964";
     }
-    return "To book an appointment, use the form on the website, select the department and doctor, then continue on WhatsApp for confirmation.";
+    return "To book an appointment, fill in your name, phone number, department, and doctor in the website form, then continue on WhatsApp to send the request. I can also help suggest the right department.";
   }
 
   if (
     text.includes("diagnostic") ||
-    text.includes("ডায়াগনস্টিক") ||
-    text.includes("পরিষেবা") ||
     text.includes("service") ||
-    text.includes("সার্ভিস") ||
-    text.includes("ডায়াগনস্টিক সার্ভিস") ||
     text.includes("test") ||
     text.includes("scan") ||
     text.includes("pathology") ||
-    text.includes("রিপোর্ট") ||
-    text.includes("পরীক্ষা") ||
-    text.includes("टेस्ट") ||
-    text.includes("डायग्नोस्टिक")
+    text.includes("\u09a1\u09be\u09af\u09bc\u09be\u0997\u09a8\u09b8\u09cd\u099f\u09bf\u0995") ||
+    text.includes("\u09aa\u09b0\u09bf\u09b7\u09c7\u09ac\u09be") ||
+    text.includes("\u09aa\u09b0\u09c0\u0995\u09cd\u09b7\u09be") ||
+    text.includes("\u091f\u0947\u0938\u094d\u091f") ||
+    text.includes("\u0921\u093e\u092f\u0917\u094d\u0928\u094b\u0938\u094d\u091f\u093f\u0915")
   ) {
     if (language === "hi") {
-      return "Hum CT Scan, Digital X-Ray, ECG, ECHO, USG, pathology tests aur preventive check-ups provide karte hain. Sahi test ke liye doctor consultation helpful rahega.";
+      return "Yahan CT Scan, Digital X-Ray, ECG, ECHO, USG, pathology tests, uroflowmetry aur preventive check-ups available hain. Agar aap symptoms batayenge to main relevant doctor ya department suggest kar sakta hoon.";
     }
     if (language === "bn") {
-      return "আমাদের এখানে CT Scan, Digital X-Ray, ECG, ECHO, USG, pathology test এবং preventive check-up করা হয়। সঠিক পরীক্ষা নির্ধারণে ডাক্তারের পরামর্শ নেওয়া ভাল।";
+      return "\u098f\u0996\u09be\u09a8\u09c7 CT Scan, Digital X-Ray, ECG, ECHO, USG, pathology test, uroflowmetry \u098f\u09ac\u0982 preventive check-up \u0995\u09b0\u09be \u09b9\u09af\u09bc\u0964 \u0986\u09aa\u09a8\u09bf \u0989\u09aa\u09b8\u09b0\u09cd\u0997 \u09ac\u09b2\u09b2\u09c7 \u0986\u09ae\u09bf relevant doctor \u09ac\u09be department suggest \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09bf\u0964";
     }
-    return "The center provides CT Scan, Digital X-Ray, ECG, ECHO, USG, pathology tests, uroflowmetry, and preventive health check-ups. A doctor consultation can help choose the right test.";
+    return "The center provides CT Scan, Digital X-Ray, ECG, ECHO, USG, pathology tests, uroflowmetry, and preventive health check-ups. If you tell me the symptoms or concern, I can suggest the relevant doctor or department.";
   }
 
   if (matchedDepartment) {
     if (language === "hi") {
-      return `${matchedDepartment} department available hai. Doctor list dekhkar appointment form se specialist select kijiye. Main chahein to aapko booking ki taraf guide kar sakta hoon.`;
+      return `${matchedDepartment} department relevant lag raha hai. Aap doctor list dekhkar appointment form se specialist select kar sakte hain. Zarurat ho to main next step bhi bata sakta hoon.`;
     }
     if (language === "bn") {
-      return `${matchedDepartment} বিভাগ উপলব্ধ আছে। ডাক্তার তালিকা দেখে ফর্মের মাধ্যমে বিশেষজ্ঞ নির্বাচন করতে পারবেন। চাইলে আমি আপনাকে বুকিং-এর দিকে গাইড করতে পারি।`;
+      return `${matchedDepartment} department \u0986\u09aa\u09a8\u09be\u09b0 \u099c\u09a8\u09cd\u09af relevant \u09b9\u09a4\u09c7 \u09aa\u09be\u09b0\u09c7\u0964 \u0986\u09aa\u09a8\u09bf doctor list \u09a6\u09c7\u0996\u09c7 appointment form \u09a5\u09c7\u0995\u09c7 specialist select \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09c7\u09a8\u0964 \u099a\u09be\u0987\u09b2\u09c7 \u0986\u09ae\u09bf next step-\u0993 \u09ac\u09b2\u09c7 \u09a6\u09bf\u09a4\u09c7 \u09aa\u09be\u09b0\u09bf\u0964`;
     }
-    return `${matchedDepartment} is available. You can review the doctor list and select the specialist from the appointment form. I can also guide you toward booking.`;
+    return `${matchedDepartment} looks like the relevant department. You can check the doctor list and select the specialist from the appointment form. If you want, I can guide you with the next step as well.`;
   }
 
   if (
@@ -198,25 +231,25 @@ function fallbackResponse(message, language) {
     text.includes("fever") ||
     text.includes("sugar") ||
     text.includes("cough") ||
-    text.includes("ব্যথা") ||
-    text.includes("জ্বর") ||
-    text.includes("दर्द") ||
-    text.includes("बुखार")
+    text.includes("\u09ac\u09cd\u09af\u09a5\u09be") ||
+    text.includes("\u099c\u09cd\u09ac\u09b0") ||
+    text.includes("\u0926\u0930\u094d\u0926") ||
+    text.includes("\u092c\u0941\u0916\u093e\u0930")
   ) {
     if (language === "hi") {
-      return "Main basic guidance de sakta hoon, lekin diagnosis ya dawa suggest nahi kar sakta. Symptoms ke hisab se General Medicine, Cardiology, Orthopedic, Pediatric ya Chest Specialist relevant ho sakta hai. Best rahega ki doctor consultation book karein.";
+      return "Main basic guidance de sakta hoon, lekin diagnosis ya dawa suggest nahi kar sakta. Aapke symptoms ke hisab se doctor consultation best rahega. Agar aap symptoms thoda aur clearly batayen, to main relevant department suggest kar dunga.";
     }
     if (language === "bn") {
-      return "আমি সাধারণ দিকনির্দেশ দিতে পারি, কিন্তু রোগ নির্ণয় বা ওষুধ বলতে পারি না। উপসর্গ অনুযায়ী General Medicine, Cardiology, Orthopedic, Pediatric বা Chest Specialist উপযুক্ত হতে পারে। ডাক্তারের অ্যাপয়েন্টমেন্ট নেওয়াই ভাল।";
+      return "\u0986\u09ae\u09bf basic guidance \u09a6\u09bf\u09a4\u09c7 \u09aa\u09be\u09b0\u09bf, \u0995\u09bf\u09a8\u09cd\u09a4\u09c1 diagnosis \u09ac\u09be medicine suggest \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09bf \u09a8\u09be\u0964 \u0986\u09aa\u09a8\u09be\u09b0 symptoms \u0985\u09a8\u09c1\u09af\u09be\u09af\u09bc\u09c0 doctor consultation \u09a8\u09c7\u0993\u09af\u09bc\u09be\u0987 best\u0964 \u0986\u09aa\u09a8\u09bf symptoms \u0986\u09b0\u0993 \u09ad\u09be\u09b2\u09ad\u09be\u09ac\u09c7 \u09ac\u09b2\u09b2\u09c7 \u0986\u09ae\u09bf relevant department suggest \u0995\u09b0\u09ac\u0964";
     }
-    return "I can offer basic guidance, but I cannot diagnose or suggest medicines. Depending on the symptoms, General Medicine, Cardiology, Orthopedic, Pediatric, or Chest Specialist care may be relevant. The safest next step is to book a doctor consultation.";
+    return "I can give basic guidance, but I cannot diagnose or suggest medicines. The safest next step is a doctor consultation. If you describe the symptoms a little more clearly, I can suggest the relevant department.";
   }
 
   if (language === "hi") {
-    return `${FALLBACK_GREETINGS.hi} Aap services, doctors, diagnostics, emergency support, ya appointment booking ke bare me pooch sakte hain.`;
+    return `${FALLBACK_GREETINGS.hi} Aap doctors, diagnostics, emergency support, departments, ya appointment booking ke bare me pooch sakte hain.`;
   }
   if (language === "bn") {
-    return `${FALLBACK_GREETINGS.bn} আপনি services, doctors, diagnostics, emergency support বা appointment booking সম্পর্কে জানতে পারেন।`;
+    return `${FALLBACK_GREETINGS.bn} \u0986\u09aa\u09a8\u09bf doctors, diagnostics, emergency support, departments \u09ac\u09be appointment booking \u09b8\u09ae\u09cd\u09aa\u09b0\u09cd\u0995\u09c7 \u099c\u09be\u09a8\u09a4\u09c7 \u09aa\u09be\u09b0\u09c7\u09a8\u0964`;
   }
   return `${FALLBACK_GREETINGS.en} You can ask about doctors, diagnostics, emergency support, departments, or appointment booking.`;
 }
@@ -236,6 +269,13 @@ Tone:
 - English: simple conversational English
 - Hindi: simple Hinglish
 - Bengali: natural easy Bengali
+
+Behavior:
+- Be warm, short, and patient-friendly.
+- Use the recent conversation context.
+- If a patient mentions symptoms, suggest a relevant department when possible.
+- Encourage appointment booking when appropriate.
+- Mention WhatsApp booking when it helps.
 
 Safety:
 - Do not prescribe medicines.
@@ -259,14 +299,14 @@ ${KNOWLEDGE_BASE}
     },
     body: JSON.stringify({
       model,
-      temperature: 0.3,
-      max_output_tokens: 280,
+      temperature: 0.35,
+      max_output_tokens: 320,
       input: [
         {
           role: "system",
           content: [{ type: "input_text", text: systemPrompt }]
         },
-        ...messages.map((message) => ({
+        ...normalizeMessages(messages).map((message) => ({
           role: message.role === "assistant" ? "assistant" : "user",
           content: [{ type: "input_text", text: String(message.content || "") }]
         }))
@@ -297,7 +337,9 @@ export default async function handler(req, res) {
         : req.body || {};
     const { messages = [], language = "en" } = parsedBody;
     const safeLanguage = detectLanguage(language);
-    const latestUserMessage = [...messages].reverse().find((message) => message.role === "user")?.content || "";
+    const normalizedMessages = normalizeMessages(messages);
+    const latestUserMessage =
+      [...normalizedMessages].reverse().find((message) => message.role === "user")?.content || "";
 
     if (isEmergency(latestUserMessage)) {
       res.status(200).json({
@@ -311,13 +353,13 @@ export default async function handler(req, res) {
     let reply = null;
 
     try {
-      reply = await queryOpenAI(messages, safeLanguage);
+      reply = await queryOpenAI(normalizedMessages, safeLanguage);
     } catch (error) {
       console.error("Chat AI fallback triggered:", error);
     }
 
     if (!reply) {
-      reply = fallbackResponse(latestUserMessage, safeLanguage);
+      reply = fallbackResponse(normalizedMessages, safeLanguage);
     }
 
     res.status(200).json({

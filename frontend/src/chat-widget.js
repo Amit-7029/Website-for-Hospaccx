@@ -5,19 +5,21 @@ const STORAGE_KEYS = {
 
 const WHATSAPP_URL = "https://wa.me/917384251751";
 const QUICK_ACTIONS = ["appointment", "emergency", "diagnostics", "whatsapp"];
+const MAX_HISTORY = 15;
 
 const COPY = {
   en: {
-    launcher: "Chat with Hospaccx Assistant",
     title: "Hospaccx Assistant",
     status: "Multilingual patient guidance",
-    chooseLanguage: "Choose your language / भाषा चुनें / ভাষা নির্বাচন করুন",
+    tooltip: "Chat with us",
+    chooseLanguage:
+      "Choose your language / \u092d\u093e\u0937\u093e \u091a\u0941\u0928\u0947\u0902 / \u09ad\u09be\u09b7\u09be \u09a8\u09bf\u09b0\u09cd\u09ac\u09be\u099a\u09a8 \u0995\u09b0\u09c1\u09a8",
     languageButtons: {
       en: "English",
-      hi: "हिन्दी",
-      bn: "বাংলা"
+      hi: "\u0939\u093f\u0928\u094d\u0926\u0940",
+      bn: "\u09ac\u09be\u0982\u09b2\u09be"
     },
-    greeting: "Hello! How can I help you?",
+    greeting: "Hello! How can I help you today?",
     placeholder: "Type your question...",
     send: "Send",
     typing: "Hospaccx Assistant is typing...",
@@ -33,20 +35,22 @@ const COPY = {
       diagnostics: "Tell me about your diagnostic services.",
       whatsapp: "Continue on WhatsApp"
     },
-    whatsappLabel: "Continue on WhatsApp",
-    languageChanged: "Language updated. How can I help you?"
+    languageChanged: "Language updated. How can I help you now?",
+    fallback:
+      "Please try again in a moment. If needed, continue on WhatsApp or call the clinic directly."
   },
   hi: {
-    launcher: "Hospaccx Assistant se baat karein",
     title: "Hospaccx Assistant",
     status: "Hindi | Bengali | English support",
-    chooseLanguage: "Choose your language / भाषा चुनें / ভাষা নির্বাচন করুন",
+    tooltip: "Chat with us",
+    chooseLanguage:
+      "Choose your language / \u092d\u093e\u0937\u093e \u091a\u0941\u0928\u0947\u0902 / \u09ad\u09be\u09b7\u09be \u09a8\u09bf\u09b0\u09cd\u09ac\u09be\u099a\u09a8 \u0995\u09b0\u09c1\u09a8",
     languageButtons: {
       en: "English",
-      hi: "हिन्दी",
-      bn: "বাংলা"
+      hi: "\u0939\u093f\u0928\u094d\u0926\u0940",
+      bn: "\u09ac\u09be\u0982\u09b2\u09be"
     },
-    greeting: "Namaste! Main kaise madad kar sakta hoon?",
+    greeting: "Namaste! Main aaj aapki kaise madad kar sakta hoon?",
     placeholder: "Apna sawal likhiye...",
     send: "Send",
     typing: "Hospaccx Assistant likh raha hai...",
@@ -62,23 +66,28 @@ const COPY = {
       diagnostics: "Diagnostic services ke bare me batayein.",
       whatsapp: "WhatsApp par continue karna hai."
     },
-    whatsappLabel: "Continue on WhatsApp",
-    languageChanged: "Language set ho gayi. Ab aap pooch sakte hain."
+    languageChanged: "Language set ho gayi. Ab aap apna sawal pooch sakte hain.",
+    fallback:
+      "Abhi thodi der me phir se try kijiye. Zarurat ho to WhatsApp ya phone se clinic se connect kariye."
   },
   bn: {
-    launcher: "Hospaccx Assistant-এর সাথে কথা বলুন",
     title: "Hospaccx Assistant",
-    status: "বাংলা | हिन्दी | English support",
-    chooseLanguage: "Choose your language / भाषा चुनें / ভাষা নির্বাচন করুন",
+    status: "\u09ac\u09be\u0982\u09b2\u09be | \u0939\u093f\u0928\u094d\u0926\u0940 | English support",
+    tooltip: "Chat with us",
+    chooseLanguage:
+      "Choose your language / \u092d\u093e\u0937\u093e \u091a\u0941\u0928\u0947\u0902 / \u09ad\u09be\u09b7\u09be \u09a8\u09bf\u09b0\u09cd\u09ac\u09be\u099a\u09a8 \u0995\u09b0\u09c1\u09a8",
     languageButtons: {
       en: "English",
-      hi: "हिन्दी",
-      bn: "বাংলা"
+      hi: "\u0939\u093f\u0928\u094d\u0926\u0940",
+      bn: "\u09ac\u09be\u0982\u09b2\u09be"
     },
-    greeting: "নমস্কার! আমি কিভাবে সাহায্য করতে পারি?",
-    placeholder: "আপনার প্রশ্ন লিখুন...",
+    greeting:
+      "\u09a8\u09ae\u09b8\u09cd\u0995\u09be\u09b0! \u0986\u09ae\u09bf \u0986\u099c \u0986\u09aa\u09a8\u09be\u0995\u09c7 \u0995\u09bf\u09ad\u09be\u09ac\u09c7 \u09b8\u09be\u09b9\u09be\u09af\u09cd\u09af \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09bf?",
+    placeholder:
+      "\u0986\u09aa\u09a8\u09be\u09b0 \u09aa\u09cd\u09b0\u09b6\u09cd\u09a8 \u09b2\u09bf\u0996\u09c1\u09a8...",
     send: "Send",
-    typing: "Hospaccx Assistant লিখছে...",
+    typing:
+      "Hospaccx Assistant \u09b2\u09bf\u0996\u099b\u09c7...",
     quick: {
       appointment: "Book Appointment",
       emergency: "Emergency Help",
@@ -86,13 +95,19 @@ const COPY = {
       whatsapp: "WhatsApp Chat"
     },
     prompts: {
-      appointment: "আমি অ্যাপয়েন্টমেন্ট বুক করতে চাই।",
-      emergency: "আমার জরুরি সাহায্য দরকার।",
-      diagnostics: "ডায়াগনস্টিক পরিষেবা সম্পর্কে বলুন।",
-      whatsapp: "WhatsApp-এ চালিয়ে যেতে চাই।"
+      appointment:
+        "\u0986\u09ae\u09bf \u0985\u09cd\u09af\u09be\u09aa\u09af\u09bc\u09c7\u09a8\u09cd\u099f\u09ae\u09c7\u09a8\u09cd\u099f \u09ac\u09c1\u0995 \u0995\u09b0\u09a4\u09c7 \u099a\u09be\u0987\u0964",
+      emergency:
+        "\u0986\u09ae\u09be\u09b0 \u099c\u09b0\u09c1\u09b0\u09bf \u09b8\u09be\u09b9\u09be\u09af\u09cd\u09af \u09a6\u09b0\u0995\u09be\u09b0\u0964",
+      diagnostics:
+        "\u09a1\u09be\u09af\u09bc\u09be\u0997\u09a8\u09b8\u09cd\u099f\u09bf\u0995 \u09aa\u09b0\u09bf\u09b7\u09c7\u09ac\u09be \u09b8\u09ae\u09cd\u09aa\u09b0\u09cd\u0995\u09c7 \u09ac\u09b2\u09c1\u09a8\u0964",
+      whatsapp:
+        "WhatsApp-\u098f \u099a\u09be\u09b2\u09bf\u09af\u09bc\u09c7 \u09af\u09c7\u09a4\u09c7 \u099a\u09be\u0987\u0964"
     },
-    whatsappLabel: "Continue on WhatsApp",
-    languageChanged: "ভাষা সেট হয়েছে। এখন আপনি প্রশ্ন করতে পারেন।"
+    languageChanged:
+      "\u09ad\u09be\u09b7\u09be \u09b8\u09c7\u099f \u09b9\u09af\u09bc\u09c7\u099b\u09c7\u0964 \u098f\u0996\u09a8 \u0986\u09aa\u09a8\u09bf \u0986\u09aa\u09a8\u09be\u09b0 \u09aa\u09cd\u09b0\u09b6\u09cd\u09a8 \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09c7\u09a8\u0964",
+    fallback:
+      "\u0985\u09a8\u09c1\u0997\u09cd\u09b0\u09b9 \u0995\u09b0\u09c7 \u098f\u0995\u099f\u09c1 \u09aa\u09b0\u09c7 \u0986\u09ac\u09be\u09b0 \u099a\u09c7\u09b7\u09cd\u099f\u09be \u0995\u09b0\u09c1\u09a8\u0964 \u09aa\u09cd\u09b0\u09af\u09bc\u09cb\u099c\u09a8\u09c7 WhatsApp \u09ac\u09be \u09ab\u09cb\u09a8\u09c7 \u0995\u09cd\u09b2\u09bf\u09a8\u09bf\u0995\u09c7\u09b0 \u09b8\u09be\u09a5\u09c7 \u09af\u09cb\u0997\u09be\u09af\u09cb\u0997 \u0995\u09b0\u09c1\u09a8\u0964"
   }
 };
 
@@ -107,21 +122,28 @@ function detectPreferredLanguage() {
   return "en";
 }
 
+function normalizeHistory(history) {
+  return history
+    .filter((message) => message && typeof message.content === "string" && message.content.trim())
+    .slice(-MAX_HISTORY);
+}
+
 function getStoredHistory() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.history) || "[]");
+    return normalizeHistory(JSON.parse(localStorage.getItem(STORAGE_KEYS.history) || "[]"));
   } catch {
     return [];
   }
 }
 
 function setStoredHistory(history) {
-  localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(history.slice(-15)));
+  localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(normalizeHistory(history)));
 }
 
 function createMessageElement(message) {
   const wrapper = document.createElement("div");
   wrapper.className = `chat-widget__message chat-widget__message--${message.role}`;
+  wrapper.dataset.messageRole = message.role;
   const bubble = document.createElement("div");
   bubble.className = "chat-widget__bubble";
   bubble.textContent = message.content;
@@ -155,13 +177,13 @@ function createWidget() {
     </button>
     <section class="chat-widget__panel" hidden aria-live="polite">
       <header class="chat-widget__header">
-        <div>
+        <div class="chat-widget__header-copy">
           <strong class="chat-widget__title"></strong>
           <span class="chat-widget__status"></span>
         </div>
         <div class="chat-widget__header-actions">
-          <button type="button" class="chat-widget__minimize" aria-label="Minimize chat">−</button>
-          <button type="button" class="chat-widget__close" aria-label="Close chat">×</button>
+          <button type="button" class="chat-widget__minimize" aria-label="Minimize chat">&#8722;</button>
+          <button type="button" class="chat-widget__close" aria-label="Close chat">&times;</button>
         </div>
       </header>
       <div class="chat-widget__language-selector">
@@ -176,7 +198,7 @@ function createWidget() {
       <div class="chat-widget__messages"></div>
       <div class="chat-widget__typing" hidden></div>
       <form class="chat-widget__form">
-        <input type="text" class="chat-widget__input" maxlength="500" autocomplete="off" required>
+        <textarea class="chat-widget__input" rows="1" maxlength="500" required></textarea>
         <button type="submit" class="chat-widget__send"></button>
       </form>
     </section>
@@ -197,13 +219,22 @@ function renderQuickActions(container, copy, onAction) {
 
 function setLanguageLabels(root, language) {
   const copy = COPY[language];
-  root.querySelector(".chat-widget__launcher-text").textContent = copy.launcher;
-  root.querySelector(".chat-widget__title").textContent = copy.title;
-  root.querySelector(".chat-widget__status").textContent = copy.status;
-  root.querySelector(".chat-widget__language-title").textContent = copy.chooseLanguage;
-  root.querySelector(".chat-widget__input").placeholder = copy.placeholder;
-  root.querySelector(".chat-widget__send").textContent = copy.send;
-  root.querySelector(".chat-widget__typing").textContent = copy.typing;
+  const title = root.querySelector(".chat-widget__title");
+  const status = root.querySelector(".chat-widget__status");
+  const tooltip = root.querySelector(".chat-widget__tooltip");
+  const languageTitle = root.querySelector(".chat-widget__language-title");
+  const input = root.querySelector(".chat-widget__input");
+  const send = root.querySelector(".chat-widget__send");
+  const typing = root.querySelector(".chat-widget__typing");
+
+  title.textContent = copy.title;
+  status.textContent = copy.status;
+  tooltip.textContent = copy.tooltip;
+  languageTitle.textContent = copy.chooseLanguage;
+  input.placeholder = copy.placeholder;
+  send.textContent = copy.send;
+  typing.textContent = copy.typing;
+
   root.querySelectorAll("[data-language]").forEach((button) => {
     button.textContent = copy.languageButtons[button.dataset.language];
   });
@@ -212,17 +243,26 @@ function setLanguageLabels(root, language) {
 async function requestAssistantReply(messages, language) {
   const response = await fetch("/api/chat", {
     method: "POST",
+    cache: "no-store",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ messages, language })
+    body: JSON.stringify({
+      messages: normalizeHistory(messages),
+      language,
+      requestedAt: Date.now()
+    })
   });
 
   if (!response.ok) {
     throw new Error(`Chat request failed: ${response.status}`);
   }
 
-  return response.json();
+  const result = await response.json();
+  if (!result || typeof result.reply !== "string" || !result.reply.trim()) {
+    throw new Error("Invalid chat response");
+  }
+  return result;
 }
 
 function initChatWidget() {
@@ -242,6 +282,7 @@ function initChatWidget() {
   let history = getStoredHistory();
   let isOpen = false;
   let closeTimer = null;
+  let isSending = false;
 
   function setOpenState(nextOpen) {
     if (nextOpen === isOpen) {
@@ -291,38 +332,52 @@ function initChatWidget() {
     scrollMessages(messagesContainer);
   }
 
-  function pushMessage(message) {
-    history.push(message);
-    setStoredHistory(history);
+  function appendMessage(message) {
     messagesContainer.appendChild(createMessageElement(message));
     scrollMessages(messagesContainer);
   }
 
+  function pushMessage(message) {
+    history = normalizeHistory([...history, message]);
+    setStoredHistory(history);
+    appendMessage(message);
+  }
+
   async function sendMessage(content) {
     const trimmed = content.trim();
-    if (!trimmed) {
+    if (!trimmed || isSending) {
       return;
     }
 
+    const lastMessage = history[history.length - 1];
+    if (lastMessage?.role === "user" && lastMessage.content === trimmed) {
+      return;
+    }
+
+    isSending = true;
     pushMessage({ role: "user", content: trimmed });
     input.value = "";
+    input.style.height = "";
     typingIndicator.hidden = false;
     scrollMessages(messagesContainer);
 
     try {
       const result = await requestAssistantReply(history, currentLanguage);
-      pushMessage({ role: "assistant", content: result.reply });
+      const previousAssistant = history[history.length - 1];
+      if (previousAssistant?.role !== "assistant" || previousAssistant.content !== result.reply) {
+        pushMessage({ role: "assistant", content: result.reply });
+      }
     } catch (error) {
       console.error("Chat widget error:", error);
-      const fallback =
-        currentLanguage === "hi"
-          ? "Abhi thodi der me phir se try kijiye. Zarurat ho to WhatsApp ya phone se clinic se connect kariye."
-          : currentLanguage === "bn"
-            ? "অনুগ্রহ করে একটু পরে আবার চেষ্টা করুন। প্রয়োজনে WhatsApp বা ফোনে ক্লিনিকের সাথে যোগাযোগ করুন।"
-            : "Please try again shortly. If needed, continue on WhatsApp or call the clinic directly.";
-      pushMessage({ role: "assistant", content: fallback });
+      const fallback = COPY[currentLanguage].fallback;
+      const previousAssistant = history[history.length - 1];
+      if (previousAssistant?.role !== "assistant" || previousAssistant.content !== fallback) {
+        pushMessage({ role: "assistant", content: fallback });
+      }
     } finally {
       typingIndicator.hidden = true;
+      isSending = false;
+      input.focus();
     }
   }
 
@@ -349,8 +404,7 @@ function initChatWidget() {
     if (history.length > 0) {
       return;
     }
-    const copy = COPY[currentLanguage];
-    history = [{ role: "assistant", content: copy.greeting }];
+    history = [{ role: "assistant", content: COPY[currentLanguage].greeting }];
     setStoredHistory(history);
     renderHistory();
   }
@@ -358,6 +412,7 @@ function initChatWidget() {
   function setLanguage(language) {
     currentLanguage = language;
     localStorage.setItem(STORAGE_KEYS.language, currentLanguage);
+
     if (history.length <= 1) {
       history = [{ role: "assistant", content: COPY[currentLanguage].greeting }];
       setStoredHistory(history);
@@ -365,6 +420,7 @@ function initChatWidget() {
     } else {
       pushMessage({ role: "assistant", content: COPY[currentLanguage].languageChanged });
     }
+
     syncLanguageUI();
   }
 
@@ -389,6 +445,18 @@ function initChatWidget() {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     sendMessage(input.value);
+  });
+
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+  });
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage(input.value);
+    }
   });
 
   syncLanguageUI();

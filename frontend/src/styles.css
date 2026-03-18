@@ -1147,6 +1147,10 @@ button {
     gap: 0.45rem;
 }
 
+.chat-widget__header-copy {
+    min-width: 0;
+}
+
 .chat-widget__title {
     display: block;
     font-size: 1.05rem;
@@ -1226,6 +1230,12 @@ button {
 .chat-widget__quick-actions {
     padding: 0.85rem 1rem;
     border-bottom: 1px solid rgba(15, 122, 216, 0.08);
+    align-items: center;
+}
+
+.chat-widget__quick-button {
+    min-width: fit-content;
+    white-space: nowrap;
 }
 
 .chat-widget__messages {
@@ -1240,6 +1250,7 @@ button {
 
 .chat-widget__message {
     display: flex;
+    animation: chat-message-fade 0.22s ease;
 }
 
 .chat-widget__message--assistant {
@@ -1289,12 +1300,15 @@ button {
 .chat-widget__input {
     width: 100%;
     min-height: 48px;
+    max-height: 120px;
     padding: 0.9rem 1rem;
     border-radius: 16px;
     border: 1px solid rgba(15, 122, 216, 0.16);
     font: inherit;
     color: var(--text);
     background: #fff;
+    resize: none;
+    overflow-y: auto;
 }
 
 .chat-widget__input:focus {
@@ -1321,6 +1335,18 @@ button {
 
     50% {
         box-shadow: 0 22px 44px rgba(15, 122, 216, 0.34);
+    }
+}
+
+@keyframes chat-message-fade {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
