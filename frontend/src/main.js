@@ -305,13 +305,18 @@ function renderDoctors() {
                 <li><strong>OPD Days:</strong> ${escapeHtml(doctor.opdDays)}</li>
               </ul>
               <div class="card-actions">
-                <a href="/?doctor=${encodeURIComponent(doctor.name)}#appointment" class="doctor-card__action">Book Appointment</a>
+                <button type="button" class="doctor-card__action" data-doctor-poster="${escapeHtml(doctor.id)}">View Profile</button>
+                <a href="tel:+919732029834" class="button button--secondary">Call Hospital</a>
               </div>
             </article>
           `
         )
         .join("")
     : '<article class="state-card"><h3>No doctors found</h3><p>Try a different department to view more specialists.</p></article>';
+
+  container.querySelectorAll("[data-doctor-poster]").forEach((button) => {
+    button.addEventListener("click", () => openDoctorPosterPreview(button.dataset.doctorPoster));
+  });
 }
 
 function renderGalleryTabs() {
@@ -432,6 +437,25 @@ function openDoctorModal(doctorId) {
           <a href="/?doctor=${encodeURIComponent(doctor.name)}#appointment" class="doctor-card__action">Book Appointment</a>
         </div>
       </div>
+    </article>
+  `;
+
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+}
+
+function openDoctorPosterPreview(doctorId) {
+  const modal = document.getElementById("doctorModal");
+  const body = document.getElementById("doctorModalBody");
+  const doctor = state.doctors.find((entry) => entry.id === doctorId);
+
+  if (!modal || !body || !doctor) {
+    return;
+  }
+
+  body.innerHTML = `
+    <article class="poster-only-card">
+      <img src="${doctorGalleryImage(doctor)}" alt="${escapeHtml(doctor.name)}" class="poster-only-card__image">
     </article>
   `;
 

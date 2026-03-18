@@ -1094,6 +1094,21 @@ button {
     grid-template-columns: 1fr;
 }
 
+.poster-only-card {
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+}
+
+.poster-only-card__image {
+    width: min(100%, 760px);
+    max-height: calc(100vh - 4rem);
+    object-fit: contain;
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.22);
+}
+
 @keyframes skeleton-slide {
     to {
         transform: translateX(100%);
