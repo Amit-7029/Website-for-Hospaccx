@@ -55,7 +55,7 @@ export const trustIndicators = [
     label: "Years of healthcare service"
   },
   {
-    value: "1000+",
+    value: "10000+",
     label: "Patients supported across consultations and diagnostics"
   },
   {

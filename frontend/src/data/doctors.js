@@ -288,6 +288,37 @@ function slugify(value) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
+const posterImageMap = {
+  "dr-jayanta-pal": "/images/jayanta pal.jpeg",
+  "dr-soumitra-mondal": "/images/soumitra mondal.jpeg",
+  "dr-sohail-ahmed-hossain": "/images/sohail ahemed hossain.jpeg",
+  "dr-malay-haldar": "/images/malay haldar.jpeg",
+  "dr-prof-sohag-kundu": "/images/sohag kundu.jpeg",
+  "dr-rajat-chakraborty": "/images/rajat cakroborty.jpeg",
+  "dr-ardhendu-sahana": "/images/a sahana.jpeg",
+  "dr-arnab-kumar-gayen": "/images/arnab kumar gayen.jpeg",
+  "dr-subhadip-raptan": "/images/s raptan.jpeg",
+  "dr-sujoy-paul": "/images/sujay paul.jpeg",
+  "dr-sagnik-nandi": "/images/s nandi.jpeg",
+  "dr-sishir-das": "/images/sisir das.jpeg",
+  "dr-souradip-sadhu": "/images/s sadhu.jpeg",
+  "dr-nirmita-saha": "/images/nirmita saha.jpeg",
+  "dr-chinmoy-ghosh": "/images/chinmay ghosh.jpeg",
+  "dr-md-sahid-alam": "/images/sahid alam.jpeg",
+  "dr-saikat-saha": "/images/saikat saha.jpeg",
+  "dr-sankhadeb-acherjee": "/images/sankadeb acharjee.jpeg",
+  "dr-sumit-jain-sethia": "/images/sumit jain sethiya.jpeg",
+  "dr-arghadeep-biswas": "/images/arghadeep biswas.jpeg",
+  "dr-amitosh-kumar-pandey": "/images/amitosh kumar pandey.jpeg",
+  "dr-kustab-garai": "/images/kustab garai.jpeg",
+  "dr-shyamal-banerjee": "/images/shymal banerjee.jpeg",
+  "dr-binay-kumar-poddar": "/images/binay kumar poddar.jpeg",
+  "dr-nandita-bhattacharya": "/images/nandita bhattcharya.jpeg",
+  "prof-dr-sunny-chatterjee": "/images/sunny chatterjee.jpeg",
+  "dr-tapan-kumar-mondal-sr": "/images/tapan kumar mandal.jpeg",
+  "dr-susanta-kumar-das": "/images/susanta kumar das.jpeg"
+};
+
 function normalizeAvailability(doctor) {
   if (doctor.availability?.length) {
     return doctor.availability;
@@ -338,7 +369,7 @@ function normalizeDoctor(doctor) {
 export const doctors = rawDoctors.map((doctor, index) =>
   normalizeDoctor({
     ...doctor,
-    posterImage: index < 31 ? `/images/DR ${index + 1}.jpeg` : doctor.posterImage ?? null
+    posterImage: posterImageMap[doctor.id ?? slugify(doctor.name)] ?? doctor.posterImage ?? null
   })
 );
 export const departments = [...new Set(doctors.map((doctor) => doctor.department))].sort();

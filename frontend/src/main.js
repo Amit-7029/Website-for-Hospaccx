@@ -454,11 +454,18 @@ function openDoctorPosterPreview(doctorId) {
     return;
   }
 
-  body.innerHTML = `
-    <article class="poster-only-card">
-      <img src="${doctorGalleryImage(doctor)}" alt="${escapeHtml(doctor.name)}" class="poster-only-card__image">
-    </article>
-  `;
+  body.innerHTML = doctor.posterImage
+    ? `
+        <article class="poster-only-card">
+          <img src="${doctor.posterImage}" alt="${escapeHtml(doctor.name)}" class="poster-only-card__image">
+        </article>
+      `
+    : `
+        <article class="state-card">
+          <h3>Poster not available</h3>
+          <p>The clinic has not added a poster for ${escapeHtml(doctor.name)} yet.</p>
+        </article>
+      `;
 
   modal.hidden = false;
   document.body.classList.add("modal-open");
