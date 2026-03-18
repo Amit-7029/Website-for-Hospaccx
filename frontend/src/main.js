@@ -1,6 +1,5 @@
 import "./styles.css";
 import { galleryItems } from "./data/gallery";
-import { doctorPosters } from "./data/doctor-posters";
 import { blogPosts, facilities, testimonials, treatments, trustIndicators } from "./data/content";
 import { loadDoctors } from "./firebase/doctors-store";
 
@@ -40,6 +39,10 @@ function formatAvailability(availability = []) {
 
 function doctorAvatar(doctor) {
   return doctor.image || (doctor.gender === "female" ? "/images/doctor-female.jpeg" : "/images/doctor-male.jpeg");
+}
+
+function doctorGalleryImage(doctor) {
+  return doctor.posterImage || doctorAvatar(doctor);
 }
 
 function renderDepartments() {
@@ -368,13 +371,13 @@ function renderDoctorsGallery() {
           (doctor) => `
             <article class="doctor-poster" data-doctor-id="${escapeHtml(doctor.id)}">
               <div class="doctor-poster__image-wrap">
-                <img src="${doctorAvatar(doctor)}" alt="${escapeHtml(doctor.name)}" class="doctor-poster__image" loading="lazy">
+                <img src="${doctorGalleryImage(doctor)}" alt="${escapeHtml(doctor.name)}" class="doctor-poster__image" loading="lazy">
               </div>
               <div class="doctor-poster__body">
                 <p class="doctor-card__department">${escapeHtml(doctor.department)}</p>
                 <h3>${escapeHtml(doctor.name)}</h3>
                 <p>${escapeHtml(doctor.specialization)}</p>
-                <button type="button" class="doctor-poster__button" data-doctor-id="${escapeHtml(doctor.id)}">View Details</button>
+                <button type="button" class="doctor-poster__button" data-doctor-id="${escapeHtml(doctor.id)}">View Profile</button>
               </div>
             </article>
           `
@@ -384,28 +387,6 @@ function renderDoctorsGallery() {
 
   container.querySelectorAll("[data-doctor-id]").forEach((button) => {
     button.addEventListener("click", () => openDoctorModal(button.dataset.doctorId));
-  });
-}
-
-function renderDoctorPosterImages() {
-  const container = document.getElementById("doctorPosterImageGrid");
-  if (!container) {
-    return;
-  }
-
-  container.innerHTML = doctorPosters
-    .map(
-      (poster) => `
-        <button type="button" class="poster-card" data-poster-src="${escapeHtml(poster.src)}" data-poster-title="${escapeHtml(poster.title)}">
-          <img src="${escapeHtml(poster.src)}" alt="${escapeHtml(poster.title)}" loading="lazy">
-          <span>${escapeHtml(poster.title)}</span>
-        </button>
-      `
-    )
-    .join("");
-
-  container.querySelectorAll("[data-poster-src]").forEach((button) => {
-    button.addEventListener("click", () => openPosterModal(button.dataset.posterSrc, button.dataset.posterTitle));
   });
 }
 
@@ -421,7 +402,7 @@ function openDoctorModal(doctorId) {
   body.innerHTML = `
     <article class="profile-card profile-card--modal">
       <div class="profile-card__media">
-        <img src="${doctorAvatar(doctor)}" alt="${escapeHtml(doctor.name)}" class="profile-card__image">
+        <img src="${doctorGalleryImage(doctor)}" alt="${escapeHtml(doctor.name)}" class="profile-card__image">
       </div>
       <div class="profile-card__body">
         <p class="doctor-card__department">${escapeHtml(doctor.department)}</p>
@@ -468,39 +449,10 @@ function closeDoctorModal() {
   document.body.classList.remove("modal-open");
 }
 
-function openPosterModal(src, title) {
-  const modal = document.getElementById("posterModal");
-  const image = document.getElementById("posterModalImage");
-
-  if (!modal || !image || !src) {
-    return;
-  }
-
-  image.src = src;
-  image.alt = title || "Doctor poster";
-  modal.hidden = false;
-  document.body.classList.add("modal-open");
-}
-
-function closePosterModal() {
-  const modal = document.getElementById("posterModal");
-  const image = document.getElementById("posterModalImage");
-  if (!modal || !image) {
-    return;
-  }
-
-  image.src = "";
-  image.alt = "";
-  modal.hidden = true;
-  document.body.classList.remove("modal-open");
-}
-
 function bindDoctorGalleryControls() {
   const search = document.getElementById("doctorPosterSearch");
   const doctorModal = document.getElementById("doctorModal");
   const doctorCloseButton = document.getElementById("doctorModalClose");
-  const posterModal = document.getElementById("posterModal");
-  const posterCloseButton = document.getElementById("posterModalClose");
 
   search?.addEventListener("input", (event) => {
     state.searchQuery = event.target.value;
@@ -508,7 +460,6 @@ function bindDoctorGalleryControls() {
   });
 
   doctorCloseButton?.addEventListener("click", closeDoctorModal);
-  posterCloseButton?.addEventListener("click", closePosterModal);
 
   doctorModal?.addEventListener("click", (event) => {
     if (event.target === doctorModal) {
@@ -516,16 +467,9 @@ function bindDoctorGalleryControls() {
     }
   });
 
-  posterModal?.addEventListener("click", (event) => {
-    if (event.target === posterModal) {
-      closePosterModal();
-    }
-  });
-
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeDoctorModal();
-      closePosterModal();
     }
   });
 }
@@ -818,7 +762,6 @@ async function initializeDoctors() {
     renderDoctors();
     renderGalleryTabs();
     renderDoctorsGallery();
-    renderDoctorPosterImages();
     populateDepartmentSelect();
     setupInitialFormState();
     setupAppointmentForm();

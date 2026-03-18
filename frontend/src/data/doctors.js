@@ -329,11 +329,17 @@ function normalizeDoctor(doctor) {
     opdDays: doctor.opdDays,
     gender,
     image: doctor.image ?? (gender === "female" ? "/images/doctor-female.jpeg" : "/images/doctor-male.jpeg"),
+    posterImage: doctor.posterImage ?? null,
     availability: normalizeAvailability(doctor),
     services: normalizeServices(doctor)
   };
 }
 
-export const doctors = rawDoctors.map(normalizeDoctor);
+export const doctors = rawDoctors.map((doctor, index) =>
+  normalizeDoctor({
+    ...doctor,
+    posterImage: index < 31 ? `/images/DR ${index + 1}.jpeg` : doctor.posterImage ?? null
+  })
+);
 export const departments = [...new Set(doctors.map((doctor) => doctor.department))].sort();
 export { normalizeDoctor, slugify };

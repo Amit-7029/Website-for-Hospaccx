@@ -401,10 +401,6 @@ button {
     margin-bottom: 1.7rem;
 }
 
-.section__heading--nested {
-    margin-top: 2.2rem;
- }
-
 .section__actions {
     margin-top: 1.6rem;
 }
@@ -921,12 +917,6 @@ button {
     gap: 1.5rem;
 }
 
-.poster-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1.25rem;
-}
-
 .doctor-card__header {
     display: flex;
     align-items: center;
@@ -991,7 +981,7 @@ button {
 }
 
 .doctor-poster__image-wrap {
-    aspect-ratio: 4 / 4.8;
+    aspect-ratio: 4 / 5.4;
     overflow: hidden;
     background: linear-gradient(180deg, rgba(103, 61, 230, 0.08), rgba(0, 176, 144, 0.12));
 }
@@ -1000,7 +990,8 @@ button {
     width: 100%;
     height: 100%;
     display: block;
-    object-fit: cover;
+    object-fit: contain;
+    background: #fff;
 }
 
 .doctor-poster__body {
@@ -1020,32 +1011,6 @@ button {
     min-height: auto;
     padding: 0.72rem 1rem;
     border-radius: 12px;
-}
-
-.poster-card {
-    min-height: auto;
-    padding: 0;
-    display: grid;
-    gap: 0;
-    overflow: hidden;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    background: var(--surface);
-    box-shadow: var(--shadow);
-    text-align: left;
-}
-
-.poster-card img {
-    width: 100%;
-    aspect-ratio: 4 / 5.2;
-    object-fit: cover;
-    display: block;
-}
-
-.poster-card span {
-    padding: 0.85rem 1rem 1rem;
-    color: var(--text);
-    font-weight: 700;
 }
 
 .doctor-card--skeleton,
@@ -1114,11 +1079,6 @@ button {
     background: transparent;
 }
 
-.modal-panel--poster {
-    width: min(760px, 100%);
-    background: transparent;
-}
-
 .modal-close {
     position: absolute;
     top: 1rem;
@@ -1132,20 +1092,6 @@ button {
 
 .detail-card__grid--single {
     grid-template-columns: 1fr;
-}
-
-.poster-preview {
-    display: grid;
-    place-items: center;
-}
-
-.poster-preview img {
-    width: min(100%, 720px);
-    max-height: calc(100vh - 4rem);
-    object-fit: contain;
-    border-radius: 24px;
-    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.26);
-    background: #fff;
 }
 
 @keyframes skeleton-slide {
@@ -1392,10 +1338,6 @@ button {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .poster-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
     .modal-panel {
         max-height: calc(100vh - 1.5rem);
     }
@@ -1404,11 +1346,6 @@ button {
 
 @media (max-width: 520px) {
     .doctor-poster-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1rem;
-    }
-
-    .poster-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 1rem;
     }
