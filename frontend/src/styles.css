@@ -932,6 +932,7 @@ button {
 .review-form__stars label {
     position: relative;
     cursor: pointer;
+    display: inline-flex;
 }
 
 .review-form__stars input {
@@ -956,12 +957,18 @@ button {
 
 .review-form__stars label:hover span,
 .review-form__stars input:focus + span,
+.review-form__stars label.is-active span,
 .review-form__stars input:checked + span {
     color: #ffb11a;
     background: rgba(255, 177, 26, 0.1);
     border-color: rgba(255, 177, 26, 0.35);
     transform: translateY(-1px);
     box-shadow: 0 12px 20px rgba(255, 177, 26, 0.12);
+}
+
+.reviews-summary__rating strong {
+    font-size: 1rem;
+    line-height: 1;
 }
 
 .review-form__footer {

@@ -362,12 +362,45 @@ function setupReviewForm() {
   const form = document.getElementById("reviewForm");
   const message = document.getElementById("reviewFormMessage");
   const submitButton = document.getElementById("reviewSubmitButton");
+  const stars = Array.from(form?.querySelectorAll("#reviewStars label") || []);
 
   if (!form || form.dataset.ready === "true") {
     return;
   }
 
   form.dataset.ready = "true";
+
+  const syncReviewStars = (selectedRating = 0) => {
+    stars.forEach((label, index) => {
+      label.classList.toggle("is-active", index < selectedRating);
+    });
+  };
+
+  stars.forEach((label) => {
+    const input = label.querySelector("input");
+    const value = Number(label.dataset.value || input?.value || 0);
+
+    label.addEventListener("mouseenter", () => {
+      syncReviewStars(value);
+    });
+
+    label.addEventListener("click", () => {
+      syncReviewStars(value);
+    });
+
+    input?.addEventListener("focus", () => {
+      syncReviewStars(value);
+    });
+
+    input?.addEventListener("change", () => {
+      syncReviewStars(Number(input.value || 0));
+    });
+  });
+
+  form.addEventListener("mouseleave", () => {
+    const selectedInput = form.querySelector('input[name="rating"]:checked');
+    syncReviewStars(Number(selectedInput?.value || 0));
+  });
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -407,6 +440,7 @@ function setupReviewForm() {
       state.visibleReviewCount = Math.max(6, state.visibleReviewCount);
       renderTestimonials();
       form.reset();
+      syncReviewStars(0);
 
       if (message) {
         message.textContent = "Thank you. Your review has been submitted successfully.";
