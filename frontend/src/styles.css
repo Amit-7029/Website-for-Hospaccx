@@ -97,6 +97,7 @@ a {
 .topbar__links,
 .hero__actions,
 .hero__stats,
+.nav__actions,
 .footer__content,
 .footer__links {
     display: flex;
@@ -233,6 +234,16 @@ button {
     box-shadow: 0 14px 30px rgba(103, 61, 230, 0.22);
 }
 
+.button--emergency {
+    background: linear-gradient(135deg, #df4f54, #b93642);
+    color: #fff;
+    box-shadow: 0 16px 32px rgba(185, 54, 66, 0.28);
+}
+
+.button--emergency:hover {
+    box-shadow: 0 18px 34px rgba(185, 54, 66, 0.36);
+}
+
 .button--ghost {
     background: transparent;
     border-color: rgba(255, 255, 255, 0.2);
@@ -275,6 +286,12 @@ button {
 .hero__actions,
 .hero__stats {
     margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.nav__actions {
+    align-items: center;
+    justify-content: flex-end;
     flex-wrap: wrap;
 }
 
@@ -523,6 +540,48 @@ button {
     text-transform: uppercase;
     color: var(--muted);
     font-weight: 700;
+}
+
+.info-card__social-title {
+    display: block;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.info-card__socials {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.info-card__social-link {
+    width: 52px;
+    height: 52px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: rgba(103, 61, 230, 0.08);
+    border: 1px solid rgba(103, 61, 230, 0.14);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.info-card__social-link:hover {
+    transform: translateY(-3px);
+    background: rgba(103, 61, 230, 0.12);
+    box-shadow: 0 14px 28px rgba(31, 22, 74, 0.12);
+}
+
+.info-card__social-icon {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    display: block;
+    border-radius: 8px;
 }
 
 .section {
@@ -1646,6 +1705,11 @@ button {
         width: 100%;
     }
 
+    .nav__actions {
+        width: 100%;
+        justify-content: center;
+    }
+
     .hero__actions--top {
         margin-bottom: 1rem;
     }
@@ -1658,6 +1722,14 @@ button {
 
     .brand__tag {
         font-size: 0.76rem;
+    }
+
+    .nav__actions {
+        gap: 0.75rem;
+    }
+
+    .nav__actions .button {
+        width: 100%;
     }
 
     .appointment-form__row,
