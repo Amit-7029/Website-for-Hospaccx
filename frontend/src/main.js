@@ -530,6 +530,7 @@ function bindDoctorGalleryControls() {
 function setupHeroSectionMenus() {
   const menuButtons = document.querySelectorAll("[data-scroll-target]");
   const menus = document.querySelectorAll(".hero-menu");
+  const hoverEnabled = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 981px)");
 
   if (!menuButtons.length) {
     return;
@@ -556,6 +557,33 @@ function setupHeroSectionMenus() {
       }
     });
   });
+
+  const attachHoverHandlers = () => {
+    menus.forEach((menu) => {
+      menu.onmouseenter = null;
+      menu.onmouseleave = null;
+
+      if (!hoverEnabled.matches) {
+        return;
+      }
+
+      menu.onmouseenter = () => {
+        menus.forEach((otherMenu) => {
+          if (otherMenu !== menu) {
+            otherMenu.removeAttribute("open");
+          }
+        });
+        menu.setAttribute("open", "");
+      };
+
+      menu.onmouseleave = () => {
+        menu.removeAttribute("open");
+      };
+    });
+  };
+
+  attachHoverHandlers();
+  hoverEnabled.addEventListener("change", attachHoverHandlers);
 }
 
 function populateDepartmentSelect() {
