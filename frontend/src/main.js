@@ -527,22 +527,34 @@ function bindDoctorGalleryControls() {
   });
 }
 
-function setupHeroSectionJump() {
-  const select = document.getElementById("heroSectionJump");
-  if (!select) {
+function setupHeroSectionMenus() {
+  const menuButtons = document.querySelectorAll("[data-scroll-target]");
+  const menus = document.querySelectorAll(".hero-menu");
+
+  if (!menuButtons.length) {
     return;
   }
 
-  select.addEventListener("change", (event) => {
-    const sectionId = event.target.value;
-    if (!sectionId) {
-      return;
-    }
+  menuButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const sectionId = button.dataset.scrollTarget;
+      if (!sectionId) {
+        return;
+      }
 
-    scrollToSection(sectionId);
-    window.setTimeout(() => {
-      select.value = "";
-    }, 250);
+      scrollToSection(sectionId);
+      menus.forEach((menu) => {
+        menu.removeAttribute("open");
+      });
+    });
+  });
+
+  document.addEventListener("click", (event) => {
+    menus.forEach((menu) => {
+      if (!menu.contains(event.target)) {
+        menu.removeAttribute("open");
+      }
+    });
   });
 }
 
@@ -858,5 +870,5 @@ renderTreatmentPreviews();
 renderBlogPreview();
 renderTestimonials();
 bindDoctorGalleryControls();
-setupHeroSectionJump();
+setupHeroSectionMenus();
 initializeDoctors();
