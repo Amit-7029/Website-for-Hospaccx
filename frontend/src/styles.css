@@ -163,32 +163,6 @@ a {
     font-weight: 700;
 }
 
-.nav__links-row {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    padding: 1.2rem 1.6rem;
-    border-radius: 22px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(10px);
-}
-
-.nav__links {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 3rem;
-    flex-wrap: wrap;
-    width: 100%;
-    font-size: 1.08rem;
-    font-weight: 700;
-}
-
-.nav__links a {
-    color: rgba(255, 255, 255, 0.92);
-}
-
 .button,
 button,
 .doctor-card__action {
@@ -267,6 +241,63 @@ button {
 .hero__stats {
     margin-top: 2rem;
     flex-wrap: wrap;
+}
+
+.hero__actions--compact {
+    gap: 1rem;
+    align-items: center;
+}
+
+.hero-explore {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: min(100%, 320px);
+    padding: 0 1rem 0 1.1rem;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 18px 40px rgba(31, 19, 70, 0.14);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hero-explore:hover,
+.hero-explore:focus-within {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 22px 46px rgba(31, 19, 70, 0.18);
+}
+
+.hero-explore__icon {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.hero-explore__select {
+    width: 100%;
+    min-height: 58px;
+    padding: 0.95rem 2.4rem 0.95rem 0.8rem;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    appearance: none;
+    cursor: pointer;
+}
+
+.hero-explore__select option {
+    color: var(--text);
+}
+
+.hero-explore__select:focus {
+    outline: none;
+}
+
+.hero__primary-cta {
+    min-width: 220px;
 }
 
 .hero__stats article,
@@ -1362,14 +1393,19 @@ button {
         justify-content: flex-start;
         flex-wrap: wrap;
     }
+
+    .hero__actions--compact {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .hero-explore,
+    .hero__primary-cta {
+        width: 100%;
+    }
 }
 
 @media (max-width: 720px) {
-    .nav__links {
-        gap: 1.2rem 1.7rem;
-        font-size: 1rem;
-    }
-
     .brand__line {
         font-size: 1.9rem;
     }

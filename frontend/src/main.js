@@ -22,6 +22,27 @@ const state = {
   doctorsSource: "local"
 };
 
+function getScrollOffset() {
+  const topbar = document.querySelector(".topbar");
+  const nav = document.querySelector(".nav");
+  const topbarHeight = topbar ? topbar.getBoundingClientRect().height : 0;
+  const navHeight = nav ? nav.getBoundingClientRect().height : 0;
+  return topbarHeight + Math.min(navHeight, 110) + 16;
+}
+
+function scrollToSection(sectionId) {
+  const section = document.getElementById(sectionId);
+  if (!section) {
+    return;
+  }
+
+  const targetTop = window.scrollY + section.getBoundingClientRect().top - getScrollOffset();
+  window.scrollTo({
+    top: Math.max(targetTop, 0),
+    behavior: "smooth"
+  });
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -506,6 +527,25 @@ function bindDoctorGalleryControls() {
   });
 }
 
+function setupHeroSectionJump() {
+  const select = document.getElementById("heroSectionJump");
+  if (!select) {
+    return;
+  }
+
+  select.addEventListener("change", (event) => {
+    const sectionId = event.target.value;
+    if (!sectionId) {
+      return;
+    }
+
+    scrollToSection(sectionId);
+    window.setTimeout(() => {
+      select.value = "";
+    }, 250);
+  });
+}
+
 function populateDepartmentSelect() {
   const select = document.getElementById("department");
   if (!select) {
@@ -818,4 +858,5 @@ renderTreatmentPreviews();
 renderBlogPreview();
 renderTestimonials();
 bindDoctorGalleryControls();
+setupHeroSectionJump();
 initializeDoctors();
