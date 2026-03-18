@@ -25,6 +25,60 @@ export const testimonials = [
   }
 ];
 
+export const diagnosticServices = [
+  {
+    icon: "CB",
+    title: "Clinical Biochemistry",
+    description: "Laboratory analysis that helps doctors understand organ function, metabolism, and overall health patterns."
+  },
+  {
+    icon: "CP",
+    title: "Clinical Pathology",
+    description: "Routine pathology support for accurate sample evaluation and dependable clinical reporting."
+  },
+  {
+    icon: "CH",
+    title: "Clinical Haematology",
+    description: "Blood-related laboratory evaluation designed to support timely diagnosis and ongoing medical care."
+  },
+  {
+    icon: "MB",
+    title: "Microbiology",
+    description: "Focused testing support for identifying infections and guiding the next step in treatment planning."
+  },
+  {
+    icon: "SI",
+    title: "Serology & Immunology",
+    description: "Specialized laboratory assessment for immune response, infection-related markers, and diagnostic clarity."
+  },
+  {
+    icon: "HT",
+    title: "Hormone Testing",
+    description: "Carefully handled hormonal assessment to support women's health, endocrine balance, and treatment follow-up."
+  },
+  {
+    icon: "HF",
+    title: "Histopathology / FNAC",
+    description: "Tissue and cellular examination support for clearer diagnosis and confident clinical decision-making."
+  }
+];
+
+export const contactDetails = {
+  address: "R.K. Road / R.K. Tala Road, Netaji Pally, P.O. & P.S. Sainthia, Birbhum, West Bengal 731234",
+  phones: ["+91 97320 29834", "+91 81161 98498"],
+  emails: ["bdf.snt@gmail.com", "hospaccx.snt@gmail.com"],
+  mapLink: "https://maps.app.goo.gl/vfxaeTEMkdFBnAsW8",
+  mapEmbed:
+    "https://www.google.com/maps?q=Banerjee%20Diagnostic%20Foundation%20and%20Hospaccx%20Sainthia&output=embed",
+  timings:
+    "Daily support with OPD schedules based on doctor availability and emergency support access.",
+  socialLinks: {
+    instagram: "https://www.instagram.com/banerjeediagnostic_hospaccx?igsh=dnZ4Zmwya24xeXNm",
+    facebook: "https://www.facebook.com/share/18Q34JyaVn/",
+    whatsappGroup: "https://chat.whatsapp.com/DHrgnLPhNtfFJdE2CTqt3o"
+  }
+};
+
 export const facilities = [
   {
     icon: "ICU",
