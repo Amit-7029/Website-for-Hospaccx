@@ -47,6 +47,14 @@ function sequence(elements, variant = "fadeUp", baseDelay = 0, step = 80) {
   });
 }
 
+function sequenceAlternating(elements, baseDelay = 0, step = 90) {
+  Array.from(elements).forEach((element, index) => {
+    setMotion(element, index % 2 === 0 ? "slideLeft" : "slideRight", {
+      delay: baseDelay + index * step
+    });
+  });
+}
+
 function splitHeroHeading(root) {
   const heading = root.querySelector(".hero__copy h1");
   if (!heading || heading.dataset.motionSplit === "true") {
@@ -101,8 +109,6 @@ function decorateStaticSections(root) {
     [".department-grid", ".department-card", "fadeUp"],
     [".service-grid", ".service-card", "fadeUp"],
     [".gallery-grid", ".gallery-card", "fadeUp"],
-    [".doctor-grid", ".doctor-card", "fadeUp"],
-    [".doctor-poster-grid", ".doctor-poster", "fadeUp"],
     [".facility-grid", ".facility-card", "fadeUp"],
     [".resource-grid", ".resource-card", "fadeUp"],
     [".detail-stack", ".detail-card", "fadeUp"],
@@ -116,6 +122,14 @@ function decorateStaticSections(root) {
     root.querySelectorAll(containerSelector).forEach((container) => {
       sequence(container.querySelectorAll(childSelector), variant, 80, 80);
     });
+  });
+
+  root.querySelectorAll(".doctor-grid").forEach((container) => {
+    sequenceAlternating(container.querySelectorAll(".doctor-card"), 100, 95);
+  });
+
+  root.querySelectorAll(".doctor-poster-grid").forEach((container) => {
+    sequenceAlternating(container.querySelectorAll(".doctor-poster"), 120, 85);
   });
 
   const appointmentForm = root.querySelector(".appointment-form");
