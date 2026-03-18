@@ -104,6 +104,39 @@ function doctorGalleryImage(doctor) {
   return doctor.posterImage || doctorAvatar(doctor);
 }
 
+const departmentDescriptions = {
+  CARDIOLOGY: "Heart care consultations with specialist support for chest discomfort, blood pressure, and cardiac follow-up.",
+  "CHEST SPECIALIST": "Respiratory evaluation and chest care support for cough, breathing concerns, and lung-related conditions.",
+  "DENTAL SURGEON": "Comprehensive dental consultation for oral health, tooth care, extractions, and routine dental procedures.",
+  "DERMATOLOGIST, SEXOLOGIST": "Expert skin and wellness consultation for dermatological concerns, infections, and personal health guidance.",
+  "E.N.T": "Specialist care for ear, nose, and throat concerns with focused evaluation and treatment planning.",
+  "EYE SPECIALIST (SURGEON)": "Eye consultation and vision care support for routine ophthalmic evaluation and surgical guidance when needed.",
+  GASTROENTEROLOGY: "Digestive health consultation for stomach, liver, bowel, and gastrointestinal concerns with specialist evaluation.",
+  "GENERAL MEDICINE": "Primary physician consultation for fever, weakness, infection, chronic illness management, and general medical care.",
+  "GENERAL SURGEON": "Surgical consultation for abdominal, soft tissue, and general operative concerns with structured follow-up support.",
+  GYNECOLOGY: "Dedicated women’s health consultation for gynecological care, pregnancy guidance, fertility concerns, and hormonal support.",
+  MEDICINE: "Specialist internal medicine consultation for adult health conditions, diagnosis planning, and ongoing medical monitoring.",
+  NEUROLOGIST: "Neurology consultation for headache, nerve-related issues, stroke follow-up, seizures, and neurological assessment.",
+  ORTHOPEDIC: "Bone, joint, spine, and fracture care consultation for pain relief, mobility concerns, and orthopedic treatment planning.",
+  PEDIATRICS: "Child health consultation with caring support for growth, fever, infections, and routine pediatric follow-up.",
+  PATHOLOGY: "Reliable pathology and laboratory testing support for accurate reporting, screening, and diagnostic guidance.",
+  PSYCHIATRY: "Confidential mental health consultation for emotional well-being, stress support, and psychiatric evaluation.",
+  RADIOLOGY: "Diagnostic imaging support with accurate reporting for scans, X-ray, ultrasound, and radiology-based assessment.",
+  UROLOGIST: "Urology consultation for urinary, kidney, prostate, and male health concerns with specialist evaluation.",
+  ONCOLOGY: "Specialist oncology guidance for cancer screening, diagnostic review, and ongoing treatment coordination.",
+  NEPHROLOGY: "Kidney care consultation for renal health, swelling, blood pressure concerns, and long-term monitoring."
+};
+
+function getDepartmentDescription(department) {
+  const normalized = String(department || "").trim().toUpperCase();
+  if (departmentDescriptions[normalized]) {
+    return departmentDescriptions[normalized];
+  }
+
+  const readableDepartment = String(department || "this department").trim();
+  return `${readableDepartment} consultation services are available with professional OPD support, clinical guidance, and coordinated patient care.`;
+}
+
 function renderDepartments() {
   const container = document.getElementById("departmentGrid");
   if (!container) {
@@ -116,7 +149,7 @@ function renderDepartments() {
         <article class="department-card">
           <span class="department-card__index">${String(index + 1).padStart(2, "0")}</span>
           <h3>${escapeHtml(department)}</h3>
-          <p>Specialist consultation and OPD support available under this department.</p>
+          <p>${escapeHtml(getDepartmentDescription(department))}</p>
         </article>
       `
     )
