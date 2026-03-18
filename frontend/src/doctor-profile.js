@@ -1,5 +1,8 @@
 import "./styles.css";
 import { loadDoctors } from "./firebase/doctors-store";
+import { createMotionSystem } from "./motion";
+
+const motion = createMotionSystem(document);
 
 function escapeHtml(value) {
   return String(value)
@@ -65,12 +68,14 @@ async function renderDoctorProfile() {
         </div>
       </article>
     `;
+    motion.refresh();
   } catch (error) {
     console.error(error);
     document.getElementById("doctorProfileTitle").textContent = "Doctor profile unavailable";
     document.getElementById("doctorProfileSubtitle").textContent = "Please return to the homepage and try again.";
     document.getElementById("doctorProfileCard").innerHTML =
       '<article class="state-card state-card--error"><h3>Could not load the doctor profile</h3><p>Please try again later or contact the clinic directly.</p></article>';
+    motion.refresh();
   }
 }
 

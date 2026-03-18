@@ -36,6 +36,36 @@ body.modal-open {
     overflow: hidden;
 }
 
+[data-motion] {
+    opacity: 0;
+    transform: translate3d(var(--motion-x, 0), var(--motion-y, 24px), 0) scale(var(--motion-scale, 1));
+    transition:
+        opacity var(--motion-duration, 720ms) cubic-bezier(0.22, 1, 0.36, 1),
+        transform var(--motion-duration, 720ms) cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--motion-delay, 0ms);
+    will-change: opacity, transform;
+}
+
+[data-motion].is-inview {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+}
+
+.motion-heading .hero-title-word {
+    display: inline-block;
+    opacity: 0;
+    transform: translate3d(0, 26px, 0);
+}
+
+.motion-heading.is-inview .hero-title-word {
+    animation: hero-word-reveal 760ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: calc(var(--motion-delay, 0ms) + var(--word-delay, 0ms));
+}
+
+.motion-float {
+    animation: gentle-float 6.8s ease-in-out infinite;
+}
+
 h1,
 h2,
 h3 {
@@ -347,6 +377,17 @@ button {
     background: #fff;
     border: 1px solid rgba(103, 61, 230, 0.12);
     box-shadow: 0 26px 54px rgba(31, 19, 70, 0.18);
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+    transform-origin: top left;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.hero-menu[open] .hero-menu__panel {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
 }
 
 .hero-menu-scroll::-webkit-scrollbar {
@@ -585,6 +626,20 @@ button {
     background: var(--surface);
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.service-card:hover,
+.gallery-card:hover,
+.testimonial-card:hover,
+.doctor-card:hover,
+.facility-card:hover,
+.resource-card:hover,
+.feature-panel:hover,
+.trust-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 28px 62px rgba(47, 28, 106, 0.16);
+    border-color: rgba(103, 61, 230, 0.2);
 }
 
 .trust-card strong {
@@ -890,6 +945,8 @@ button {
     padding: 1.5rem;
     background: rgba(11, 8, 25, 0.78);
     z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.22s ease;
 }
 
 .lightbox[hidden] {
@@ -901,6 +958,18 @@ button {
     max-height: 86vh;
     border-radius: 22px;
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+    transform: translateY(20px) scale(0.97);
+    opacity: 0;
+    transition: transform 0.24s ease, opacity 0.24s ease;
+}
+
+.lightbox.is-open {
+    opacity: 1;
+}
+
+.lightbox.is-open img {
+    transform: translateY(0) scale(1);
+    opacity: 1;
 }
 
 .lightbox__close {
@@ -979,10 +1048,15 @@ button {
     width: 100%;
     height: 260px;
     object-fit: cover;
+    transition: transform 0.45s ease;
 }
 
 .gallery-card--large img {
     height: 360px;
+}
+
+.gallery-card:hover img {
+    transform: scale(1.045);
 }
 
 .gallery-card figcaption {
@@ -1060,6 +1134,11 @@ button {
     height: 100%;
     display: block;
     object-fit: cover;
+    transition: transform 0.35s ease;
+}
+
+.doctor-card:hover .doctor-card__avatar-image {
+    transform: scale(1.08);
 }
 
 .doctor-card__department {
@@ -1112,6 +1191,11 @@ button {
     display: block;
     object-fit: contain;
     background: #fff;
+    transition: transform 0.45s ease;
+}
+
+.doctor-poster:hover .doctor-poster__image {
+    transform: scale(1.04);
 }
 
 .doctor-poster__body {
@@ -1181,10 +1265,16 @@ button {
     place-items: center;
     padding: 1.25rem;
     background: rgba(16, 11, 35, 0.68);
+    opacity: 0;
+    transition: opacity 0.22s ease;
 }
 
 .modal-backdrop[hidden] {
     display: none !important;
+}
+
+.modal-backdrop.is-open {
+    opacity: 1;
 }
 
 .modal-panel {
@@ -1193,6 +1283,14 @@ button {
     overflow: auto;
     position: relative;
     border-radius: 28px;
+    transform: translateY(24px) scale(0.98);
+    opacity: 0;
+    transition: transform 0.24s ease, opacity 0.24s ease;
+}
+
+.modal-backdrop.is-open .modal-panel {
+    transform: translateY(0) scale(1);
+    opacity: 1;
 }
 
 .modal-panel--doctor {
@@ -1235,6 +1333,23 @@ button {
     }
 }
 
+@keyframes hero-word-reveal {
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes gentle-float {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        transform: translate3d(0, -8px, 0);
+    }
+}
+
 .appointment-form {
     padding: 2rem;
     background: var(--surface);
@@ -1270,6 +1385,7 @@ button {
     background: #fff;
     color: var(--text);
     font: inherit;
+    transition: transform 0.2s ease, border-color 0.2s ease, outline-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .appointment-form input:focus,
@@ -1277,6 +1393,8 @@ button {
 .appointment-form textarea:focus {
     outline: 3px solid rgba(103, 61, 230, 0.12);
     border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(103, 61, 230, 0.1);
 }
 
 .appointment-form__row {
@@ -1289,6 +1407,12 @@ button {
     min-height: 1rem;
     color: #d6336c;
     font-size: 0.9rem;
+}
+
+.appointment-form button:active,
+.button:active,
+.doctor-card__action:active {
+    transform: translateY(0) scale(0.985);
 }
 
 #doctorAdminList {
@@ -1585,5 +1709,39 @@ button {
 
     .doctor-poster__body {
         padding: 1rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    [data-motion],
+    .motion-heading .hero-title-word,
+    .motion-float,
+    .hero-menu__panel,
+    .service-card,
+    .gallery-card,
+    .testimonial-card,
+    .doctor-card,
+    .facility-card,
+    .resource-card,
+    .feature-panel,
+    .trust-card,
+    .gallery-card img,
+    .doctor-card__avatar-image,
+    .doctor-poster__image,
+    .lightbox,
+    .lightbox img,
+    .modal-backdrop,
+    .modal-panel,
+    .appointment-form input,
+    .appointment-form select,
+    .appointment-form textarea {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+        opacity: 1 !important;
     }
 }

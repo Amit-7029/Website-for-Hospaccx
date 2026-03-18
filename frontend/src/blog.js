@@ -1,5 +1,8 @@
 import "./styles.css";
 import { blogPosts } from "./data/content";
+import { createMotionSystem } from "./motion";
+
+const motion = createMotionSystem(document);
 
 document.getElementById("blogPageGrid").innerHTML = blogPosts
   .map(
@@ -13,3 +16,5 @@ document.getElementById("blogPageGrid").innerHTML = blogPosts
     `
   )
   .join("");
+
+motion.refresh();

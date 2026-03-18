@@ -1,5 +1,8 @@
 import "./styles.css";
 import { treatments } from "./data/content";
+import { createMotionSystem } from "./motion";
+
+const motion = createMotionSystem(document);
 
 document.getElementById("treatmentDetailStack").innerHTML = treatments
   .map(
@@ -30,3 +33,5 @@ document.getElementById("treatmentDetailStack").innerHTML = treatments
     `
   )
   .join("");
+
+motion.refresh();

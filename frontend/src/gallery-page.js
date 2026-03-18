@@ -1,5 +1,8 @@
 import "./styles.css";
 import { galleryItems } from "./data/gallery";
+import { closeAnimatedLayer, createMotionSystem, openAnimatedLayer } from "./motion";
+
+const motion = createMotionSystem(document);
 
 const gallery = document.getElementById("fullGalleryGrid");
 const lightbox = document.getElementById("lightbox");
@@ -19,6 +22,8 @@ gallery.innerHTML = galleryItems
   )
   .join("");
 
+motion.refresh();
+
 gallery.addEventListener("click", (event) => {
   const button = event.target.closest(".gallery-card__button");
   if (!button) {
@@ -27,15 +32,15 @@ gallery.addEventListener("click", (event) => {
 
   lightboxImage.src = button.dataset.src;
   lightboxImage.alt = button.dataset.alt;
-  lightbox.hidden = false;
+  openAnimatedLayer(lightbox);
 });
 
 lightboxClose.addEventListener("click", () => {
-  lightbox.hidden = true;
+  closeAnimatedLayer(lightbox);
 });
 
 lightbox.addEventListener("click", (event) => {
   if (event.target === lightbox) {
-    lightbox.hidden = true;
+    closeAnimatedLayer(lightbox);
   }
 });

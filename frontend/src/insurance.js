@@ -1,5 +1,8 @@
 import "./styles.css";
 import { insuranceSupport } from "./data/content";
+import { createMotionSystem } from "./motion";
+
+const motion = createMotionSystem(document);
 
 document.getElementById("insuranceDetailStack").innerHTML = insuranceSupport
   .map(
@@ -22,3 +25,5 @@ document.getElementById("insuranceDetailStack").innerHTML = insuranceSupport
     `
   )
   .join("");
+
+motion.refresh();

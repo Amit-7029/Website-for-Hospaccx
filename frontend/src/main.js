@@ -2,6 +2,7 @@ import "./styles.css";
 import { galleryItems } from "./data/gallery";
 import { blogPosts, facilities, testimonials, treatments, trustIndicators } from "./data/content";
 import { loadDoctors } from "./firebase/doctors-store";
+import { closeAnimatedLayer, createMotionSystem, openAnimatedLayer } from "./motion";
 
 const DAYS = [
   "SUNDAY",
@@ -21,6 +22,8 @@ const state = {
   searchQuery: "",
   doctorsSource: "local"
 };
+
+const motion = createMotionSystem(document);
 
 function getScrollOffset() {
   const topbar = document.querySelector(".topbar");
@@ -83,6 +86,8 @@ function renderDepartments() {
       `
     )
     .join("");
+
+  motion.refresh();
 }
 
 function renderGallery() {
@@ -104,6 +109,8 @@ function renderGallery() {
       `
     )
     .join("");
+
+  motion.refresh();
 }
 
 function renderTrustIndicators() {
@@ -122,6 +129,8 @@ function renderTrustIndicators() {
       `
     )
     .join("");
+
+  motion.refresh();
 }
 
 function renderFacilities() {
@@ -141,6 +150,8 @@ function renderFacilities() {
       `
     )
     .join("");
+
+  motion.refresh();
 }
 
 function renderTreatmentPreviews() {
@@ -162,6 +173,8 @@ function renderTreatmentPreviews() {
       `
     )
     .join("");
+
+  motion.refresh();
 }
 
 function renderBlogPreview() {
@@ -182,6 +195,8 @@ function renderBlogPreview() {
       `
     )
     .join("");
+
+  motion.refresh();
 }
 
 function renderTestimonials() {
@@ -212,6 +227,8 @@ function renderTestimonials() {
   nextButton?.addEventListener("click", () => {
     track.scrollBy({ left: 360, behavior: "smooth" });
   });
+
+  motion.refresh();
 }
 
 function updateDoctorCount(value) {
@@ -230,6 +247,8 @@ function renderDoctorListSkeleton() {
   if (posterGrid) {
     posterGrid.innerHTML = Array.from({ length: 6 }, () => '<article class="doctor-poster doctor-poster--skeleton"></article>').join("");
   }
+
+  motion.refresh();
 }
 
 function renderDoctorError(message) {
@@ -249,6 +268,8 @@ function renderDoctorError(message) {
   if (appointmentHelper) {
     appointmentHelper.textContent = "Doctor schedules could not be loaded right now. Please call the clinic for help.";
   }
+
+  motion.refresh();
 }
 
 function getFilteredDoctorsForCards() {
@@ -339,6 +360,8 @@ function renderDoctors() {
   container.querySelectorAll("[data-doctor-poster]").forEach((button) => {
     button.addEventListener("click", () => openDoctorPosterPreview(button.dataset.doctorPoster));
   });
+
+  motion.refresh();
 }
 
 function renderGalleryTabs() {
@@ -366,6 +389,8 @@ function renderGalleryTabs() {
       renderDoctorsGallery();
     });
   });
+
+  motion.refresh();
 }
 
 function syncGalleryControls() {
@@ -415,6 +440,8 @@ function renderDoctorsGallery() {
   container.querySelectorAll("[data-doctor-id]").forEach((button) => {
     button.addEventListener("click", () => openDoctorModal(button.dataset.doctorId));
   });
+
+  motion.refresh();
 }
 
 function openDoctorModal(doctorId) {
@@ -462,8 +489,9 @@ function openDoctorModal(doctorId) {
     </article>
   `;
 
-  modal.hidden = false;
+  openAnimatedLayer(modal);
   document.body.classList.add("modal-open");
+  motion.refresh();
 }
 
 function openDoctorPosterPreview(doctorId) {
@@ -488,8 +516,9 @@ function openDoctorPosterPreview(doctorId) {
         </article>
       `;
 
-  modal.hidden = false;
+  openAnimatedLayer(modal);
   document.body.classList.add("modal-open");
+  motion.refresh();
 }
 
 function closeDoctorModal() {
@@ -498,8 +527,9 @@ function closeDoctorModal() {
     return;
   }
 
-  modal.hidden = true;
-  document.body.classList.remove("modal-open");
+  closeAnimatedLayer(modal, () => {
+    document.body.classList.remove("modal-open");
+  });
 }
 
 function bindDoctorGalleryControls() {
