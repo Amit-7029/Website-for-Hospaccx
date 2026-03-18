@@ -259,6 +259,20 @@ button {
     margin-bottom: 1.4rem;
 }
 
+.hero__mega-nav {
+    position: relative;
+    z-index: 3;
+    margin-top: 1.1rem;
+    margin-bottom: 0.8rem;
+}
+
+.hero-menu-scroll {
+    overflow-x: auto;
+    overflow-y: visible;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
 .hero-menu-bar {
     display: flex;
     flex-wrap: nowrap;
@@ -269,9 +283,8 @@ button {
     border: 0;
     backdrop-filter: none;
     align-items: center;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+    overflow: visible;
+    min-width: max-content;
 }
 
 .hero-menu {
@@ -332,16 +345,16 @@ button {
     box-shadow: 0 26px 54px rgba(31, 19, 70, 0.18);
 }
 
-.hero-menu-bar::-webkit-scrollbar {
+.hero-menu-scroll::-webkit-scrollbar {
     height: 8px;
 }
 
-.hero-menu-bar::-webkit-scrollbar-thumb {
+.hero-menu-scroll::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 999px;
 }
 
-.hero-menu-bar::-webkit-scrollbar-track {
+.hero-menu-scroll::-webkit-scrollbar-track {
     background: transparent;
 }
 
