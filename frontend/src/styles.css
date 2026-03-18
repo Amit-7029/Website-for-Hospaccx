@@ -1220,14 +1220,16 @@ button {
     flex-wrap: wrap;
 }
 
-.footer__brand-row {
+.footer__highlight-card {
     margin-top: 0.9rem;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 0.85rem;
-    padding: 0.55rem 0.75rem;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.08);
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(183, 179, 255, 0.1));
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .footer__brand-text {
@@ -1238,10 +1240,45 @@ button {
     font-weight: 700;
 }
 
-.footer__logo-image {
-    height: 42px;
-    width: auto;
+.footer__highlight-card strong {
     display: block;
+    margin-top: 0.35rem;
+    font-size: 0.96rem;
+    line-height: 1.6;
+    color: #fff;
+}
+
+.footer__socials {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.footer__social-link {
+    width: 54px;
+    height: 54px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.footer__social-link:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 16px 28px rgba(0, 0, 0, 0.16);
+}
+
+.footer__social-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    display: block;
+    border-radius: 8px;
 }
 
 .confirmation-page {
@@ -1370,6 +1407,11 @@ button {
 
     .modal-panel {
         max-height: calc(100vh - 1.5rem);
+    }
+
+    .footer__highlight-card {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
 }
