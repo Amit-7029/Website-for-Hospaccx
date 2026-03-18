@@ -83,15 +83,11 @@ function decorateHero(root) {
 }
 
 function decorateStaticSections(root) {
-  root.querySelectorAll(".section > .container").forEach((container, index) => {
-    setMotion(container, "fadeUp", { delay: Math.min(index * 35, 180), duration: 820 });
-  });
-
   root.querySelectorAll(".section__heading, .page-hero .container").forEach((element, index) => {
     setMotion(element, "fadeUp", { delay: Math.min(index * 25, 140) });
   });
 
-  root.querySelectorAll(".about-grid, .appointment-layout, .contact-layout").forEach((grid) => {
+  root.querySelectorAll(".about-grid, .appointment-layout, .contact-layout, .emergency-strip__content").forEach((grid) => {
     const children = Array.from(grid.children);
     if (children[0]) {
       setMotion(children[0], "slideLeft", { delay: 80 });
@@ -163,15 +159,20 @@ export function createMotionSystem(root = document) {
   let observer = null;
 
   const refresh = () => {
-    splitHeroHeading(root);
-    decorateHero(root);
-    decorateStaticSections(root);
+    try {
+      splitHeroHeading(root);
+      decorateHero(root);
+      decorateStaticSections(root);
 
-    if (observer?.disconnect) {
-      observer.disconnect();
+      if (observer?.disconnect) {
+        observer.disconnect();
+      }
+
+      observer = observeAnimations(root);
+    } catch (error) {
+      console.error("Motion system fallback", error);
+      root.querySelectorAll("[data-motion]").forEach((element) => element.classList.add("is-inview"));
     }
-
-    observer = observeAnimations(root);
   };
 
   refresh();

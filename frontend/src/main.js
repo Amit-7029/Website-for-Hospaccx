@@ -23,7 +23,10 @@ const state = {
   doctorsSource: "local"
 };
 
-const motion = createMotionSystem(document);
+let motion = {
+  refresh() {},
+  disconnect() {}
+};
 
 function createMediaQueryList(query, matchesFallback = false) {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
@@ -985,4 +988,6 @@ renderBlogPreview();
 renderTestimonials();
 bindDoctorGalleryControls();
 setupHeroSectionMenus();
+motion = createMotionSystem(document);
+motion.refresh();
 initializeDoctors();
