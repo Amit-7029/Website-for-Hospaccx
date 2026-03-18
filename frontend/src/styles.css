@@ -673,6 +673,21 @@ button {
     flex-wrap: wrap;
 }
 
+.card-actions--triple {
+    margin-top: 1rem;
+}
+
+.doctor-card__cta {
+    flex: 1 1 180px;
+    min-width: 0;
+    text-align: center;
+    box-shadow: 0 14px 28px rgba(103, 61, 230, 0.18);
+}
+
+.doctor-card__cta:hover {
+    box-shadow: 0 18px 34px rgba(103, 61, 230, 0.24);
+}
+
 .subpage {
     min-height: 100vh;
     background:

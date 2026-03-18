@@ -304,9 +304,10 @@ function renderDoctors() {
                 <li><strong>Timing:</strong> ${escapeHtml(doctor.timing)}</li>
                 <li><strong>OPD Days:</strong> ${escapeHtml(doctor.opdDays)}</li>
               </ul>
-              <div class="card-actions">
-                <button type="button" class="doctor-card__action" data-doctor-poster="${escapeHtml(doctor.id)}">View Profile</button>
-                <a href="tel:+919732029834" class="button button--secondary">Call Hospital</a>
+              <div class="card-actions card-actions--triple">
+                <button type="button" class="button button--secondary doctor-card__cta" data-doctor-poster="${escapeHtml(doctor.id)}">View Profile</button>
+                <a href="tel:+919732029834" class="button button--secondary doctor-card__cta">Call Hospital</a>
+                <a href="/?doctor=${encodeURIComponent(doctor.name)}#appointment" class="button button--secondary doctor-card__cta">Book Appointment</a>
               </div>
             </article>
           `
