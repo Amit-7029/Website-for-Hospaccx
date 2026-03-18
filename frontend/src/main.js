@@ -531,6 +531,7 @@ function setupHeroSectionMenus() {
   const menuButtons = document.querySelectorAll("[data-scroll-target]");
   const menus = document.querySelectorAll(".hero-menu");
   const hoverEnabled = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 981px)");
+  const closeTimers = new WeakMap();
 
   if (!menuButtons.length) {
     return;
@@ -562,12 +563,32 @@ function setupHeroSectionMenus() {
     menus.forEach((menu) => {
       menu.onmouseenter = null;
       menu.onmouseleave = null;
+      menu.onfocusin = null;
+      menu.onfocusout = null;
 
       if (!hoverEnabled.matches) {
         return;
       }
 
+      const clearCloseTimer = () => {
+        const timer = closeTimers.get(menu);
+        if (timer) {
+          clearTimeout(timer);
+          closeTimers.delete(menu);
+        }
+      };
+
+      const scheduleClose = () => {
+        clearCloseTimer();
+        const timer = setTimeout(() => {
+          menu.removeAttribute("open");
+          closeTimers.delete(menu);
+        }, 180);
+        closeTimers.set(menu, timer);
+      };
+
       menu.onmouseenter = () => {
+        clearCloseTimer();
         menus.forEach((otherMenu) => {
           if (otherMenu !== menu) {
             otherMenu.removeAttribute("open");
@@ -576,9 +597,12 @@ function setupHeroSectionMenus() {
         menu.setAttribute("open", "");
       };
 
-      menu.onmouseleave = () => {
-        menu.removeAttribute("open");
+      menu.onmouseleave = scheduleClose;
+      menu.onfocusin = () => {
+        clearCloseTimer();
+        menu.setAttribute("open", "");
       };
+      menu.onfocusout = scheduleClose;
     });
   };
 

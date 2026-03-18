@@ -336,7 +336,7 @@ button {
 
 .hero-menu__panel {
     position: absolute;
-    top: calc(100% + 0.75rem);
+    top: calc(100% + 0.2rem);
     left: 0;
     z-index: 20;
     min-width: 230px;
