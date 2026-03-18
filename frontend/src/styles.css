@@ -1232,6 +1232,14 @@ button {
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.footer__highlight-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
 .footer__brand-text {
     font-size: 0.78rem;
     letter-spacing: 0.12em;
@@ -1279,6 +1287,11 @@ button {
     object-fit: contain;
     display: block;
     border-radius: 8px;
+}
+
+.footer__emergency-button {
+    min-width: 180px;
+    box-shadow: 0 16px 30px rgba(103, 61, 230, 0.22);
 }
 
 .confirmation-page {
@@ -1412,6 +1425,11 @@ button {
     .footer__highlight-card {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .footer__highlight-actions {
+        width: 100%;
+        justify-content: space-between;
     }
 
 }
