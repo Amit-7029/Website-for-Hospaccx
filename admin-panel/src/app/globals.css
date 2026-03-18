@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 27% 98%;
+    --foreground: 225 39% 16%;
+    --card: 0 0% 100%;
+    --card-foreground: 225 39% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 225 39% 16%;
+    --primary: 214 90% 43%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 214 32% 94%;
+    --secondary-foreground: 225 39% 16%;
+    --muted: 214 24% 92%;
+    --muted-foreground: 222 15% 43%;
+    --accent: 156 61% 40%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 26% 88%;
+    --input: 214 26% 88%;
+    --ring: 214 90% 43%;
+    --radius: 1rem;
+    --sidebar: 222 47% 12%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-border: 223 42% 20%;
+    --sidebar-accent: 223 38% 18%;
+    --sidebar-accent-foreground: 210 40% 98%;
+  }
+
+  .dark {
+    --background: 222 47% 9%;
+    --foreground: 214 32% 91%;
+    --card: 224 39% 12%;
+    --card-foreground: 214 32% 91%;
+    --popover: 224 39% 12%;
+    --popover-foreground: 214 32% 91%;
+    --primary: 206 100% 62%;
+    --primary-foreground: 222 47% 12%;
+    --secondary: 223 26% 17%;
+    --secondary-foreground: 214 32% 91%;
+    --muted: 223 26% 17%;
+    --muted-foreground: 215 18% 67%;
+    --accent: 156 69% 38%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 223 26% 21%;
+    --input: 223 26% 21%;
+    --ring: 212 100% 65%;
+    --sidebar: 224 45% 8%;
+    --sidebar-foreground: 214 32% 91%;
+    --sidebar-border: 223 26% 18%;
+    --sidebar-accent: 223 26% 15%;
+    --sidebar-accent-foreground: 210 40% 98%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/75 backdrop-blur-xl dark:bg-slate-950/60;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-slate-300 dark:bg-slate-700;
+  }
+}
