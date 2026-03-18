@@ -269,8 +269,8 @@ button {
 .hero-menu-scroll {
     overflow-x: auto;
     overflow-y: visible;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .hero-menu-bar {
@@ -346,16 +346,17 @@ button {
 }
 
 .hero-menu-scroll::-webkit-scrollbar {
-    height: 8px;
+    width: 0;
+    height: 0;
+    display: none;
 }
 
 .hero-menu-scroll::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 999px;
+    display: none;
 }
 
 .hero-menu-scroll::-webkit-scrollbar-track {
-    background: transparent;
+    display: none;
 }
 
 .hero-menu__panel button {
