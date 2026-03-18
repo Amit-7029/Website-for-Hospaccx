@@ -151,16 +151,15 @@ function observeAnimations(root) {
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        if (!entry.isIntersecting) {
-          return;
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-inview");
+        } else {
+          entry.target.classList.remove("is-inview");
         }
-
-        entry.target.classList.add("is-inview");
-        observer.unobserve(entry.target);
       });
     },
     {
-      threshold: 0.14,
+      threshold: 0.18,
       rootMargin: "0px 0px -8% 0px"
     }
   );
