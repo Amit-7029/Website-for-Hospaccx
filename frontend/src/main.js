@@ -971,8 +971,8 @@ async function initializeDoctors() {
     if (sourceBadge) {
       sourceBadge.textContent =
         source === "firestore"
-          ? "Doctors data is loading from the live clinic database."
-          : "Doctors data is currently using the local website dataset.";
+          ? "Doctor information is updated from the clinic records."
+          : "Doctor information is curated and regularly updated by our clinic team.";
     }
   } catch (error) {
     console.error(error);
