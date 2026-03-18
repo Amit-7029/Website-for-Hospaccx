@@ -437,6 +437,11 @@ button {
     width: fit-content;
 }
 
+.hero__feedback-cta {
+    min-width: 190px;
+    width: fit-content;
+}
+
 .hero__stats article,
 .hero__panel,
 .hero__panel-callout,
@@ -1976,6 +1981,10 @@ button {
     }
 
     .hero__primary-cta {
+        width: 100%;
+    }
+
+    .hero__feedback-cta {
         width: 100%;
     }
 
