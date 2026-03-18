@@ -1,4 +1,4 @@
-export const doctors = [
+const rawDoctors = [
   {
     name: "DR. BISWAJIT MAJUMDAR",
     department: "CARDIOLOGY",
@@ -121,11 +121,38 @@ export const doctors = [
   },
   {
     name: "DR SOURADIP SADHU",
-    department: "GYNECOLOGIST SURGEON",
+    department: "GYNECOLOGY",
+    specialization: "Gynecology Surgeon",
     qualification: "M.B.B.S, D.N.B(OBGYN)",
     timing: "1PM TO 3PM",
     opdDays: "FRIDAY",
-    gender: "male"
+    gender: "male",
+    services: [
+      "Gynecology consultation",
+      "Women's health guidance",
+      "Routine gynecological support"
+    ]
+  },
+  {
+    id: "dr-nirmita-saha",
+    name: "Dr. Nirmita Saha",
+    department: "GYNECOLOGY",
+    specialization: "Gynecology Specialist",
+    qualification: "M.B.B.S., M.S. (Obs & Gynae)",
+    timing: "SUNDAY (FROM 4:00 PM), THURSDAY (FROM 10:00 AM)",
+    opdDays: "SUNDAY, THURSDAY",
+    gender: "female",
+    availability: [
+      { day: "SUNDAY", from: "4:00 PM" },
+      { day: "THURSDAY", from: "10:00 AM" }
+    ],
+    services: [
+      "Pregnancy and maternity care",
+      "Infertility treatment",
+      "Hormonal issues in women",
+      "All gynecological problems"
+    ],
+    image: "/images/doctor-female.jpeg"
   },
   {
     name: "DR. CHINMOY GHOSH",
@@ -257,4 +284,56 @@ export const doctors = [
   }
 ];
 
-export const departments = [...new Set(doctors.map((doctor) => doctor.department))];
+function slugify(value) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function normalizeAvailability(doctor) {
+  if (doctor.availability?.length) {
+    return doctor.availability;
+  }
+
+  if (doctor.opdDays === "-" || doctor.timing.toUpperCase().includes("BY APPOINTMENT")) {
+    return [{ day: "BY APPOINTMENT", from: "Please contact reception" }];
+  }
+
+  return doctor.opdDays
+    .split(",")
+    .map((day) => day.trim())
+    .filter(Boolean)
+    .map((day) => ({ day, from: doctor.timing }));
+}
+
+function normalizeServices(doctor) {
+  if (doctor.services?.length) {
+    return doctor.services;
+  }
+
+  return [
+    `${doctor.department} consultation`,
+    "Specialist diagnosis and follow-up support",
+    "Appointment-based OPD care"
+  ];
+}
+
+function normalizeDoctor(doctor) {
+  const gender = doctor.gender === "female" ? "female" : "male";
+
+  return {
+    id: doctor.id ?? slugify(doctor.name),
+    name: doctor.name,
+    department: doctor.department,
+    specialization: doctor.specialization ?? doctor.department,
+    qualification: doctor.qualification,
+    timing: doctor.timing,
+    opdDays: doctor.opdDays,
+    gender,
+    image: doctor.image ?? (gender === "female" ? "/images/doctor-female.jpeg" : "/images/doctor-male.jpeg"),
+    availability: normalizeAvailability(doctor),
+    services: normalizeServices(doctor)
+  };
+}
+
+export const doctors = rawDoctors.map(normalizeDoctor);
+export const departments = [...new Set(doctors.map((doctor) => doctor.department))].sort();
+export { normalizeDoctor, slugify };

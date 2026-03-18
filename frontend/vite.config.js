@@ -10,7 +10,8 @@ export default defineConfig({
         blog: resolve(__dirname, "blog.html"),
         treatments: resolve(__dirname, "treatments.html"),
         doctorProfile: resolve(__dirname, "doctor-profile.html"),
-        insurance: resolve(__dirname, "insurance.html")
+        insurance: resolve(__dirname, "insurance.html"),
+        adminDoctors: resolve(__dirname, "admin-doctors.html")
       }
     }
   },

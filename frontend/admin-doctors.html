@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctors Admin | Banerjee Diagnostic Foundation and Hospaccx</title>
+    <meta name="description" content="Admin management page for doctor records on Banerjee Diagnostic Foundation and Hospaccx.">
+    <link rel="icon" type="image/png" href="/images/logo-hospaccx.png">
+    <link rel="apple-touch-icon" href="/images/logo-hospaccx.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<main class="subpage">
+    <section class="page-hero">
+        <div class="container">
+            <a href="/" class="page-hero__back">← Back to Homepage</a>
+            <p class="eyebrow">Doctors Admin</p>
+            <h1>Manage doctor records, schedules, services, and poster details</h1>
+            <p class="subtitle">Use this page to update doctors in the Firestore collection when Firebase is configured for the project.</p>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container admin-layout">
+            <article class="feature-panel">
+                <div class="section__heading">
+                    <p class="eyebrow">Doctor Form</p>
+                    <h2>Add or edit doctor information</h2>
+                    <p class="section__note" id="adminModeLabel">Ready to create a doctor entry.</p>
+                </div>
+
+                <form id="doctorAdminForm" class="appointment-form" novalidate>
+                    <input type="hidden" id="doctorId" name="doctorId">
+
+                    <label for="doctorName">
+                        <span>Doctor Name</span>
+                        <input id="doctorName" name="doctorName" type="text" required>
+                    </label>
+
+                    <label for="doctorDepartment">
+                        <span>Department</span>
+                        <input id="doctorDepartment" name="doctorDepartment" type="text" required>
+                    </label>
+
+                    <label for="doctorSpecialization">
+                        <span>Specialization</span>
+                        <input id="doctorSpecialization" name="doctorSpecialization" type="text" required>
+                    </label>
+
+                    <label for="doctorQualification">
+                        <span>Qualification</span>
+                        <input id="doctorQualification" name="doctorQualification" type="text" required>
+                    </label>
+
+                    <label for="doctorTiming">
+                        <span>Timing</span>
+                        <input id="doctorTiming" name="doctorTiming" type="text" required>
+                    </label>
+
+                    <label for="doctorOpdDays">
+                        <span>OPD Days</span>
+                        <input id="doctorOpdDays" name="doctorOpdDays" type="text" required>
+                    </label>
+
+                    <label for="doctorAvailability">
+                        <span>Availability</span>
+                        <textarea id="doctorAvailability" name="doctorAvailability" rows="3" placeholder="Example: SUNDAY|4:00 PM&#10;THURSDAY|10:00 AM"></textarea>
+                    </label>
+
+                    <label for="doctorServices">
+                        <span>Services</span>
+                        <textarea id="doctorServices" name="doctorServices" rows="4" placeholder="One service per line"></textarea>
+                    </label>
+
+                    <label for="doctorGender">
+                        <span>Gender</span>
+                        <select id="doctorGender" name="doctorGender">
+                            <option value="female">Female</option>
+                            <option value="male">Male</option>
+                        </select>
+                    </label>
+
+                    <label for="doctorImageFile">
+                        <span>Doctor Image</span>
+                        <input id="doctorImageFile" name="doctorImageFile" type="file" accept="image/*">
+                    </label>
+
+                    <label for="doctorImageUrl">
+                        <span>Image URL</span>
+                        <input id="doctorImageUrl" name="doctorImageUrl" type="url" placeholder="Optional fallback image URL">
+                    </label>
+
+                    <div class="card-actions">
+                        <button type="submit" class="button button--secondary">Save Doctor</button>
+                        <button type="button" id="doctorFormReset" class="button button--ghost">Reset Form</button>
+                    </div>
+                    <p class="section__note" id="adminStatusNote">Loading doctors configuration...</p>
+                </form>
+            </article>
+
+            <article class="feature-panel">
+                <div class="section__heading">
+                    <p class="eyebrow">Doctor Records</p>
+                    <h2>Current doctor entries</h2>
+                </div>
+                <div id="doctorAdminList"></div>
+            </article>
+        </div>
+    </section>
+</main>
+
+<script type="module" src="/src/admin-doctors.js"></script>
+</body>
+</html>

@@ -386,6 +386,7 @@
             <div class="section__heading">
                 <p class="eyebrow">Doctors</p>
                 <h2>Doctors information</h2>
+                <p id="doctorDataSource" class="section__note">Loading doctor information...</p>
             </div>
             <div class="filter-bar">
                 <label for="doctorDepartmentFilter" class="filter-bar__label">Filter by department</label>
@@ -394,6 +395,24 @@
                 </select>
             </div>
             <div class="doctor-grid" id="doctorGrid"></div>
+        </div>
+    </section>
+
+    <section id="doctor-gallery" class="section">
+        <div class="container">
+            <div class="section__heading">
+                <p class="eyebrow">Doctors Gallery</p>
+                <h2>Poster-style doctor gallery for quick browsing</h2>
+                <p class="section__note" id="doctorPosterSummary">Loading doctors gallery...</p>
+            </div>
+            <div class="doctor-gallery-toolbar">
+                <div class="filter-chips" id="doctorGalleryTabs"></div>
+                <label class="search-field" for="doctorPosterSearch">
+                    <span class="sr-only">Search doctors by name or specialization</span>
+                    <input id="doctorPosterSearch" type="search" placeholder="Search doctor by name or specialization">
+                </label>
+            </div>
+            <div class="doctor-poster-grid" id="doctorPosterGrid"></div>
         </div>
     </section>
 
@@ -578,7 +597,13 @@
     </div>
 </footer>
 
+<div class="modal-backdrop" id="doctorModal" hidden>
+    <div class="modal-panel modal-panel--doctor" role="dialog" aria-modal="true" aria-labelledby="doctorModalTitle">
+        <button type="button" class="modal-close" id="doctorModalClose" aria-label="Close doctor details">×</button>
+        <div id="doctorModalBody"></div>
+    </div>
+</div>
+
 <script type="module" src="/src/main.js"></script>
-<script type="module" src="/src/chat-widget.js"></script>
 </body>
 </html>
