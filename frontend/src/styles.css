@@ -254,6 +254,11 @@ button {
     align-items: start;
 }
 
+.hero__actions--top {
+    margin-top: 0;
+    margin-bottom: 1.4rem;
+}
+
 .hero-menu-bar {
     display: flex;
     flex-wrap: wrap;
@@ -1442,6 +1447,10 @@ button {
 
     .hero__primary-cta {
         width: 100%;
+    }
+
+    .hero__actions--top {
+        margin-bottom: 1rem;
     }
 }
 
