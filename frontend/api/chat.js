@@ -129,11 +129,9 @@ function normalizeMessages(messages) {
     .slice(-15);
 }
 
-function recentConversation(messages) {
-  return normalizeMessages(messages)
-    .filter((message) => message.role === "user")
-    .map((message) => message.content)
-    .join(" ");
+function previousUserMessages(messages) {
+  const normalized = normalizeMessages(messages).filter((message) => message.role === "user");
+  return normalized.slice(0, -1).map((message) => message.content);
 }
 
 function findMatchingDepartment(text) {
@@ -144,6 +142,110 @@ function findMatchingDepartment(text) {
 function findDoctor(text) {
   const normalized = normalize(text);
   return doctors.find((doctor) => normalized.includes(doctor.name.toLowerCase())) || null;
+}
+
+function inferIntent(text) {
+  const value = normalize(text);
+
+  if (
+    value.includes("appointment") ||
+    value.includes("book") ||
+    value.includes("booking") ||
+    value.includes("consult") ||
+    value.includes("\u0985\u09cd\u09af\u09be\u09aa\u09af\u09bc\u09c7\u09a8\u09cd\u099f\u09ae\u09c7\u09a8\u09cd\u099f") ||
+    value.includes("\u092c\u0941\u0915")
+  ) {
+    return "appointment";
+  }
+
+  if (
+    value.includes("diagnostic") ||
+    value.includes("service") ||
+    value.includes("test") ||
+    value.includes("scan") ||
+    value.includes("pathology") ||
+    value.includes("ecg") ||
+    value.includes("echo") ||
+    value.includes("x-ray") ||
+    value.includes("usg") ||
+    value.includes("ct") ||
+    value.includes("\u09a1\u09be\u09af\u09bc\u09be\u0997\u09a8\u09b8\u09cd\u099f\u09bf\u0995") ||
+    value.includes("\u09aa\u09b0\u09bf\u09b7\u09c7\u09ac\u09be") ||
+    value.includes("\u09aa\u09b0\u09c0\u0995\u09cd\u09b7\u09be") ||
+    value.includes("\u091f\u0947\u0938\u094d\u091f") ||
+    value.includes("\u0921\u093e\u092f\u0917\u094d\u0928\u094b\u0938\u094d\u091f\u093f\u0915")
+  ) {
+    return "diagnostics";
+  }
+
+  if (
+    value.includes("symptom") ||
+    value.includes("pain") ||
+    value.includes("fever") ||
+    value.includes("sugar") ||
+    value.includes("cough") ||
+    value.includes("weakness") ||
+    value.includes("bp") ||
+    value.includes("breathing") ||
+    value.includes("back pain") ||
+    value.includes("joint") ||
+    value.includes("\u09ac\u09cd\u09af\u09a5\u09be") ||
+    value.includes("\u099c\u09cd\u09ac\u09b0") ||
+    value.includes("\u0926\u0930\u094d\u0926") ||
+    value.includes("\u092c\u0941\u0916\u093e\u0930")
+  ) {
+    return "symptoms";
+  }
+
+  if (
+    value.includes("doctor") ||
+    value.includes("specialist") ||
+    value.includes("cardiology") ||
+    value.includes("orthopedic") ||
+    value.includes("medicine") ||
+    value.includes("pediatric")
+  ) {
+    return "doctor";
+  }
+
+  return "general";
+}
+
+function isFollowUpQuestion(text) {
+  const value = normalize(text).trim();
+  return (
+    value.length < 50 &&
+    (
+      value.includes("which") ||
+      value.includes("what") ||
+      value.includes("who") ||
+      value.includes("can i") ||
+      value.includes("should i") ||
+      value.includes("department") ||
+      value.includes("doctor") ||
+      value.includes("timing") ||
+      value.includes("book") ||
+      value.includes("\u0995\u09cb\u09a8") ||
+      value.includes("\u0995\u09bf") ||
+      value.includes("\u0915\u094c\u0928") ||
+      value.includes("\u0915\u094d\u092f\u093e")
+    )
+  );
+}
+
+function deriveContext(messages) {
+  const latestUserMessage =
+    [...normalizeMessages(messages)].reverse().find((message) => message.role === "user")?.content || "";
+  const previousMessages = previousUserMessages(messages);
+  const previousCombined = previousMessages.join(" ");
+  const contextText = isFollowUpQuestion(latestUserMessage) ? `${previousCombined} ${latestUserMessage}`.trim() : latestUserMessage;
+
+  return {
+    latestUserMessage,
+    contextText,
+    latestIntent: inferIntent(latestUserMessage),
+    contextIntent: inferIntent(contextText)
+  };
 }
 
 function pickDepartmentFromSymptoms(text) {
@@ -167,11 +269,14 @@ function pickDepartmentFromSymptoms(text) {
 }
 
 function fallbackResponse(messages, language) {
-  const combinedText = recentConversation(messages);
-  const latestUserMessage = [...normalizeMessages(messages)].reverse().find((message) => message.role === "user")?.content || "";
-  const text = normalize(combinedText || latestUserMessage);
-  const matchedDoctor = findDoctor(combinedText || latestUserMessage);
-  const matchedDepartment = findMatchingDepartment(combinedText || latestUserMessage) || pickDepartmentFromSymptoms(combinedText || latestUserMessage);
+  const { latestUserMessage, contextText, latestIntent, contextIntent } = deriveContext(messages);
+  const latestText = normalize(latestUserMessage);
+  const matchedDoctor = findDoctor(latestUserMessage) || findDoctor(contextText);
+  const matchedDepartment =
+    findMatchingDepartment(latestUserMessage) ||
+    findMatchingDepartment(contextText) ||
+    pickDepartmentFromSymptoms(latestUserMessage) ||
+    pickDepartmentFromSymptoms(contextText);
 
   if (matchedDoctor) {
     const base = `${matchedDoctor.name} (${matchedDoctor.department}) - ${matchedDoctor.qualification}. Timing: ${matchedDoctor.timing}. OPD Days: ${matchedDoctor.opdDays}.`;
@@ -184,7 +289,7 @@ function fallbackResponse(messages, language) {
     return `${base} You can select this doctor in the website appointment form and continue on WhatsApp to send your request. If the symptoms are troubling, it is best to book a consultation soon.`;
   }
 
-  if (text.includes("appointment") || text.includes("book") || text.includes("\u0985\u09cd\u09af\u09be\u09aa\u09af\u09bc\u09c7\u09a8\u09cd\u099f\u09ae\u09c7\u09a8\u09cd\u099f") || text.includes("\u092c\u0941\u0915")) {
+  if (latestIntent === "appointment" || (isFollowUpQuestion(latestUserMessage) && contextIntent === "appointment")) {
     if (language === "hi") {
       return "Appointment ke liye form me naam, phone, department aur doctor select kijiye. Phir WhatsApp par continue karke request bhej dijiye. Zarurat ho to main relevant department bhi suggest kar sakta hoon.";
     }
@@ -194,18 +299,7 @@ function fallbackResponse(messages, language) {
     return "To book an appointment, fill in your name, phone number, department, and doctor in the website form, then continue on WhatsApp to send the request. I can also help suggest the right department.";
   }
 
-  if (
-    text.includes("diagnostic") ||
-    text.includes("service") ||
-    text.includes("test") ||
-    text.includes("scan") ||
-    text.includes("pathology") ||
-    text.includes("\u09a1\u09be\u09af\u09bc\u09be\u0997\u09a8\u09b8\u09cd\u099f\u09bf\u0995") ||
-    text.includes("\u09aa\u09b0\u09bf\u09b7\u09c7\u09ac\u09be") ||
-    text.includes("\u09aa\u09b0\u09c0\u0995\u09cd\u09b7\u09be") ||
-    text.includes("\u091f\u0947\u0938\u094d\u091f") ||
-    text.includes("\u0921\u093e\u092f\u0917\u094d\u0928\u094b\u0938\u094d\u091f\u093f\u0915")
-  ) {
+  if (latestIntent === "diagnostics" || (isFollowUpQuestion(latestUserMessage) && contextIntent === "diagnostics")) {
     if (language === "hi") {
       return "Yahan CT Scan, Digital X-Ray, ECG, ECHO, USG, pathology tests, uroflowmetry aur preventive check-ups available hain. Agar aap symptoms batayenge to main relevant doctor ya department suggest kar sakta hoon.";
     }
@@ -225,17 +319,7 @@ function fallbackResponse(messages, language) {
     return `${matchedDepartment} looks like the relevant department. You can check the doctor list and select the specialist from the appointment form. If you want, I can guide you with the next step as well.`;
   }
 
-  if (
-    text.includes("symptom") ||
-    text.includes("pain") ||
-    text.includes("fever") ||
-    text.includes("sugar") ||
-    text.includes("cough") ||
-    text.includes("\u09ac\u09cd\u09af\u09a5\u09be") ||
-    text.includes("\u099c\u09cd\u09ac\u09b0") ||
-    text.includes("\u0926\u0930\u094d\u0926") ||
-    text.includes("\u092c\u0941\u0916\u093e\u0930")
-  ) {
+  if (latestIntent === "symptoms" || (isFollowUpQuestion(latestUserMessage) && contextIntent === "symptoms")) {
     if (language === "hi") {
       return "Main basic guidance de sakta hoon, lekin diagnosis ya dawa suggest nahi kar sakta. Aapke symptoms ke hisab se doctor consultation best rahega. Agar aap symptoms thoda aur clearly batayen, to main relevant department suggest kar dunga.";
     }
@@ -324,6 +408,7 @@ ${KNOWLEDGE_BASE}
 
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
 
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
@@ -335,7 +420,7 @@ export default async function handler(req, res) {
       typeof req.body === "string"
         ? JSON.parse(req.body || "{}")
         : req.body || {};
-    const { messages = [], language = "en" } = parsedBody;
+    const { messages = [], language = "en", requestedAt } = parsedBody;
     const safeLanguage = detectLanguage(language);
     const normalizedMessages = normalizeMessages(messages);
     const latestUserMessage =
@@ -365,7 +450,8 @@ export default async function handler(req, res) {
     res.status(200).json({
       reply,
       language: safeLanguage,
-      emergency: false
+      emergency: false,
+      requestedAt: requestedAt || null
     });
   } catch (error) {
     console.error("Chat API error:", error);
