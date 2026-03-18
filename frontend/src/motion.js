@@ -8,14 +8,22 @@ export const motionVariants = {
 
 const layerTimers = new WeakMap();
 
+function matchesMedia(query, fallback = false) {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return fallback;
+  }
+
+  return window.matchMedia(query).matches;
+}
+
 function setMotion(el, variant = "fadeUp", options = {}) {
   if (!el) {
     return;
   }
 
   const definition = motionVariants[variant] ?? motionVariants.fadeUp;
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const compactMotion = window.matchMedia("(max-width: 720px)").matches;
+  const reduceMotion = matchesMedia("(prefers-reduced-motion: reduce)");
+  const compactMotion = matchesMedia("(max-width: 720px)");
   const factor = compactMotion ? 0.72 : 1;
   const x = (options.x ?? definition.x) * factor;
   const y = (options.y ?? definition.y) * factor;
@@ -122,10 +130,10 @@ function decorateStaticSections(root) {
 }
 
 function observeAnimations(root) {
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduceMotion = matchesMedia("(prefers-reduced-motion: reduce)");
   const animatedElements = root.querySelectorAll("[data-motion]");
 
-  if (reduceMotion) {
+  if (reduceMotion || typeof IntersectionObserver !== "function") {
     animatedElements.forEach((element) => element.classList.add("is-inview"));
     return { disconnect() {} };
   }

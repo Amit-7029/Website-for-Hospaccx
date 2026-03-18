@@ -25,6 +25,38 @@ const state = {
 
 const motion = createMotionSystem(document);
 
+function createMediaQueryList(query, matchesFallback = false) {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return {
+      matches: matchesFallback,
+      addEventListener: null,
+      removeEventListener: null,
+      addListener: null,
+      removeListener: null
+    };
+  }
+
+  return window.matchMedia(query);
+}
+
+function bindMediaQueryChange(mediaQuery, handler) {
+  if (!mediaQuery || !handler) {
+    return () => {};
+  }
+
+  if (typeof mediaQuery.addEventListener === "function") {
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener?.("change", handler);
+  }
+
+  if (typeof mediaQuery.addListener === "function") {
+    mediaQuery.addListener(handler);
+    return () => mediaQuery.removeListener?.(handler);
+  }
+
+  return () => {};
+}
+
 function getScrollOffset() {
   const topbar = document.querySelector(".topbar");
   const nav = document.querySelector(".nav");
@@ -560,7 +592,7 @@ function bindDoctorGalleryControls() {
 function setupHeroSectionMenus() {
   const menuButtons = document.querySelectorAll("[data-scroll-target]");
   const menus = document.querySelectorAll(".hero-menu");
-  const hoverEnabled = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 981px)");
+  const hoverEnabled = createMediaQueryList("(hover: hover) and (pointer: fine) and (min-width: 981px)");
   const closeTimers = new WeakMap();
 
   if (!menuButtons.length) {
@@ -637,7 +669,7 @@ function setupHeroSectionMenus() {
   };
 
   attachHoverHandlers();
-  hoverEnabled.addEventListener("change", attachHoverHandlers);
+  bindMediaQueryChange(hoverEnabled, attachHoverHandlers);
 }
 
 function populateDepartmentSelect() {
