@@ -501,16 +501,63 @@
         </div>
     </section>
 
-    <section class="section section--soft">
+    <section class="section section--soft" id="patient-reviews">
         <div class="container">
             <div class="section__heading">
                 <p class="eyebrow">Patient Reviews</p>
-                <h2>Patient feedback that strengthens trust in care</h2>
+                <h2>What our patients say</h2>
+                <p class="section__note">Real experiences from our patients</p>
             </div>
-            <div class="testimonial-slider">
-                <button class="slider-button" id="testimonialPrev" type="button" aria-label="Previous testimonials">‹</button>
-                <div class="testimonial-slider__track" id="testimonialTrack"></div>
-                <button class="slider-button" id="testimonialNext" type="button" aria-label="Next testimonials">›</button>
+            <div class="reviews-shell">
+                <div class="reviews-summary" data-motion="slideLeft">
+                    <div class="reviews-summary__rating">
+                        <span class="reviews-summary__score" id="reviewAverage">4.8</span>
+                        <div>
+                            <strong id="reviewAverageStars">?????</strong>
+                            <p id="reviewCountText">Loading patient feedback...</p>
+                        </div>
+                    </div>
+                    <p class="reviews-summary__copy">Patient reviews help new visitors understand the care experience, service quality, and trust patients feel during diagnosis and support.</p>
+                    <p class="section__note" id="reviewSourceNote">Loading reviews...</p>
+                </div>
+                <div class="reviews-panel" data-motion="slideRight">
+                    <div class="testimonial-grid testimonial-grid--reviews" id="testimonialGrid"></div>
+                    <div class="section__actions reviews-panel__actions">
+                        <button type="button" class="button button--secondary" id="reviewsLoadMore">Load More Reviews</button>
+                    </div>
+                </div>
+            </div>
+            <div class="review-form-card" data-motion="fadeUp">
+                <div class="section__heading section__heading--compact">
+                    <p class="eyebrow">Share Feedback</p>
+                    <h3>Submit your review</h3>
+                </div>
+                <form id="reviewForm" class="review-form" novalidate>
+                    <div class="review-form__row">
+                        <label class="review-form__field">
+                            <span>Name (optional)</span>
+                            <input type="text" id="reviewName" name="name" maxlength="50" placeholder="Your name or leave blank for anonymous">
+                        </label>
+                    </div>
+                    <fieldset class="review-form__rating">
+                        <legend>Rating</legend>
+                        <div class="review-form__stars" id="reviewStars">
+                            <label><input type="radio" name="rating" value="1"><span>?</span></label>
+                            <label><input type="radio" name="rating" value="2"><span>?</span></label>
+                            <label><input type="radio" name="rating" value="3"><span>?</span></label>
+                            <label><input type="radio" name="rating" value="4"><span>?</span></label>
+                            <label><input type="radio" name="rating" value="5"><span>?</span></label>
+                        </div>
+                    </fieldset>
+                    <label class="review-form__field">
+                        <span>Review message</span>
+                        <textarea id="reviewMessage" name="message" rows="4" maxlength="320" placeholder="Share your experience in a few clear words." required></textarea>
+                    </label>
+                    <div class="review-form__footer">
+                        <p class="review-form__helper" id="reviewFormMessage">Your feedback helps other patients feel more confident.</p>
+                        <button type="submit" class="button button--secondary" id="reviewSubmitButton">Submit Review</button>
+                    </div>
+                </form>
             </div>
         </div>
     </section>

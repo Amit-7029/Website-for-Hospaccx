@@ -2,22 +2,26 @@ export const testimonials = [
   {
     name: "S. Chatterjee",
     rating: 5,
-    feedback: "The diagnostic process was smooth, the staff were supportive, and the reports were delivered with clarity."
+    feedback: "The diagnostic process was smooth, the staff were supportive, and the reports were delivered with clarity.",
+    date: "2026-02-14"
   },
   {
     name: "R. Das",
     rating: 5,
-    feedback: "Specialist consultation was well coordinated and the appointment team guided us properly from start to finish."
+    feedback: "Specialist consultation was well coordinated and the appointment team guided us properly from start to finish.",
+    date: "2026-02-02"
   },
   {
     name: "M. Banerjee",
     rating: 4,
-    feedback: "Clean environment, fast registration, and reliable diagnostic support for our family."
+    feedback: "Clean environment, fast registration, and reliable diagnostic support for our family.",
+    date: "2026-01-21"
   },
   {
     name: "A. Mondal",
     rating: 5,
-    feedback: "The doctors explained the treatment path clearly and the team handled everything professionally."
+    feedback: "The doctors explained the treatment path clearly and the team handled everything professionally.",
+    date: "2026-01-09"
   }
 ];
 

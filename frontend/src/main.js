@@ -1,7 +1,8 @@
 import "./styles.css";
 import { galleryItems } from "./data/gallery";
-import { blogPosts, facilities, testimonials, treatments, trustIndicators } from "./data/content";
+import { blogPosts, facilities, treatments, trustIndicators } from "./data/content";
 import { loadDoctors } from "./firebase/doctors-store";
+import { createReview, loadReviews } from "./firebase/reviews-store";
 import { closeAnimatedLayer, createMotionSystem, openAnimatedLayer } from "./motion";
 
 const DAYS = [
@@ -20,7 +21,10 @@ const state = {
   selectedDepartment: "",
   galleryDepartment: "",
   searchQuery: "",
-  doctorsSource: "local"
+  doctorsSource: "local",
+  reviews: [],
+  reviewsSource: "local",
+  visibleReviewCount: 6
 };
 
 let motion = {
@@ -94,6 +98,11 @@ function formatAvailability(availability = []) {
   return availability
     .map((slot) => `${slot.day}: ${slot.from}`)
     .join(" | ");
+}
+
+function renderStarString(rating) {
+  const normalized = Math.max(1, Math.min(5, Number(rating) || 0));
+  return `${"&#9733;".repeat(normalized)}${"&#9734;".repeat(5 - normalized)}`;
 }
 
 function doctorAvatar(doctor) {
@@ -267,36 +276,173 @@ function renderBlogPreview() {
   motion.refresh();
 }
 
+function truncateReviewText(text, maxLength = 180) {
+  const value = String(text || "").trim();
+  if (value.length <= maxLength) {
+    return value;
+  }
+
+  return `${value.slice(0, maxLength - 1).trimEnd()}...`;
+}
+
+function updateReviewSummary() {
+  const reviewAverage = document.getElementById("reviewAverage");
+  const reviewAverageStars = document.getElementById("reviewAverageStars");
+  const reviewCountText = document.getElementById("reviewCountText");
+  const reviewSourceNote = document.getElementById("reviewSourceNote");
+  const count = state.reviews.length;
+  const average = count
+    ? state.reviews.reduce((total, review) => total + Number(review.rating || 0), 0) / count
+    : 0;
+
+  if (reviewAverage) {
+    reviewAverage.textContent = count ? average.toFixed(1) : "0.0";
+  }
+
+  if (reviewAverageStars) {
+    reviewAverageStars.innerHTML = count ? renderStarString(Math.round(average)) : "&#9734;&#9734;&#9734;&#9734;&#9734;";
+  }
+
+  if (reviewCountText) {
+    reviewCountText.textContent = count
+      ? `${count} patient review${count === 1 ? "" : "s"} shared with our clinic`
+      : "Be the first patient to share a review";
+  }
+
+  if (reviewSourceNote) {
+    reviewSourceNote.textContent =
+      state.reviewsSource === "firestore"
+        ? "Patient reviews are updated from our live feedback records."
+        : "Patient reviews are currently shown from our website feedback list.";
+  }
+}
+
 function renderTestimonials() {
-  const track = document.getElementById("testimonialTrack");
-  if (!track) {
+  const grid = document.getElementById("testimonialGrid");
+  const loadMoreButton = document.getElementById("reviewsLoadMore");
+  if (!grid) {
     return;
   }
 
-  track.innerHTML = testimonials
-    .map(
-      (item) => `
-        <article class="testimonial-slide">
-          <div class="testimonial-slide__stars">${"★".repeat(item.rating)}${"☆".repeat(5 - item.rating)}</div>
-          <p>${escapeHtml(item.feedback)}</p>
-          <strong>${escapeHtml(item.name)}</strong>
-        </article>
-      `
-    )
-    .join("");
+  const visibleReviews = state.reviews.slice(0, state.visibleReviewCount);
 
-  const previousButton = document.getElementById("testimonialPrev");
-  const nextButton = document.getElementById("testimonialNext");
+  grid.innerHTML = visibleReviews.length
+    ? visibleReviews
+        .map(
+          (item) => `
+            <article class="testimonial-card review-card">
+              <div class="review-card__stars" aria-label="${escapeHtml(String(item.rating))} star rating">${renderStarString(item.rating)}</div>
+              <p class="review-card__text">${escapeHtml(truncateReviewText(item.feedback))}</p>
+              <div class="review-card__footer">
+                <strong>${escapeHtml(item.name || "Anonymous Patient")}</strong>
+                ${item.date ? `<span>${escapeHtml(item.date)}</span>` : ""}
+              </div>
+            </article>
+          `
+        )
+        .join("")
+    : `<article class="state-card"><h3>No reviews yet</h3><p>Be the first to share your experience with our clinic.</p></article>`;
 
-  previousButton?.addEventListener("click", () => {
-    track.scrollBy({ left: -360, behavior: "smooth" });
-  });
+  if (loadMoreButton) {
+    loadMoreButton.hidden = state.reviews.length <= state.visibleReviewCount;
+    if (!loadMoreButton.dataset.ready) {
+      loadMoreButton.dataset.ready = "true";
+      loadMoreButton.addEventListener("click", () => {
+        state.visibleReviewCount += 3;
+        renderTestimonials();
+      });
+    }
+  }
 
-  nextButton?.addEventListener("click", () => {
-    track.scrollBy({ left: 360, behavior: "smooth" });
-  });
-
+  updateReviewSummary();
   motion.refresh();
+}
+
+function setupReviewForm() {
+  const form = document.getElementById("reviewForm");
+  const message = document.getElementById("reviewFormMessage");
+  const submitButton = document.getElementById("reviewSubmitButton");
+
+  if (!form || form.dataset.ready === "true") {
+    return;
+  }
+
+  form.dataset.ready = "true";
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+    const rating = Number(formData.get("rating"));
+    const feedback = String(formData.get("message") || "").trim();
+    const name = String(formData.get("name") || "").trim();
+
+    if (!rating || rating < 1 || rating > 5) {
+      if (message) {
+        message.textContent = "Please select a star rating before submitting your review.";
+      }
+      return;
+    }
+
+    if (feedback.length < 20) {
+      if (message) {
+        message.textContent = "Please share a slightly more detailed review so it remains helpful for other patients.";
+      }
+      return;
+    }
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Submitting...";
+    }
+
+    try {
+      const createdReview = await createReview({
+        name: name || "Anonymous Patient",
+        rating,
+        feedback
+      });
+
+      state.reviews = [createdReview, ...state.reviews];
+      state.visibleReviewCount = Math.max(6, state.visibleReviewCount);
+      renderTestimonials();
+      form.reset();
+
+      if (message) {
+        message.textContent = "Thank you. Your review has been submitted successfully.";
+      }
+    } catch (error) {
+      console.error(error);
+      if (message) {
+        message.textContent = "Something went wrong while submitting your review. Please try again.";
+      }
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = "Submit Review";
+      }
+    }
+  });
+}
+
+async function initializeReviews() {
+  try {
+    const { reviews, source } = await loadReviews();
+    state.reviews = reviews;
+    state.reviewsSource = source;
+    renderTestimonials();
+    setupReviewForm();
+  } catch (error) {
+    console.error(error);
+    state.reviews = [];
+    state.reviewsSource = "local";
+    renderTestimonials();
+
+    const reviewSourceNote = document.getElementById("reviewSourceNote");
+    if (reviewSourceNote) {
+      reviewSourceNote.textContent = "Reviews could not be loaded right now. Please try again shortly.";
+    }
+  }
 }
 
 function updateDoctorCount(value) {
@@ -1018,9 +1164,10 @@ renderTrustIndicators();
 renderFacilities();
 renderTreatmentPreviews();
 renderBlogPreview();
-renderTestimonials();
 bindDoctorGalleryControls();
 setupHeroSectionMenus();
 motion = createMotionSystem(document);
 motion.refresh();
+setupReviewForm();
+initializeReviews();
 initializeDoctors();

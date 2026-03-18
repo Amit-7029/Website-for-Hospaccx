@@ -1,0 +1,94 @@
+import { addDoc, collection, getDocs, orderBy, query, serverTimestamp } from "firebase/firestore";
+import { testimonials as fallbackTestimonials } from "../data/content";
+import { getFirebaseServices, isFirebaseConfigured } from "./client";
+
+const COLLECTION_NAME = "reviews";
+
+function reviewsCollection() {
+  const { firestore } = getFirebaseServices();
+  return firestore ? collection(firestore, COLLECTION_NAME) : null;
+}
+
+function formatReviewDate(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  }).format(date);
+}
+
+function normalizeReview(id, data, fallbackIndex = 0) {
+  const createdAt = data.createdAt?.toDate?.() ?? data.createdAt ?? data.date ?? null;
+
+  return {
+    id: id ?? `review-${fallbackIndex + 1}`,
+    name: data.name?.trim?.() || "Anonymous Patient",
+    rating: Math.max(1, Math.min(5, Number(data.rating) || 5)),
+    feedback: String(data.feedback ?? data.message ?? "").trim(),
+    date: formatReviewDate(createdAt)
+  };
+}
+
+export async function loadReviews() {
+  if (!isFirebaseConfigured()) {
+    return {
+      reviews: fallbackTestimonials.map((item, index) => normalizeReview(`local-${index + 1}`, item, index)),
+      source: "local"
+    };
+  }
+
+  const collectionRef = reviewsCollection();
+  if (!collectionRef) {
+    return {
+      reviews: fallbackTestimonials.map((item, index) => normalizeReview(`local-${index + 1}`, item, index)),
+      source: "local"
+    };
+  }
+
+  const snapshot = await getDocs(query(collectionRef, orderBy("createdAt", "desc")));
+  const remoteReviews = snapshot.docs
+    .map((entry, index) => normalizeReview(entry.id, entry.data(), index))
+    .filter((review) => review.feedback);
+
+  return {
+    reviews: remoteReviews.length
+      ? remoteReviews
+      : fallbackTestimonials.map((item, index) => normalizeReview(`local-${index + 1}`, item, index)),
+    source: remoteReviews.length ? "firestore" : "local"
+  };
+}
+
+export async function createReview(payload) {
+  if (!isFirebaseConfigured()) {
+    return {
+      id: `local-${Date.now()}`,
+      ...normalizeReview(null, { ...payload, createdAt: new Date() })
+    };
+  }
+
+  const collectionRef = reviewsCollection();
+  if (!collectionRef) {
+    throw new Error("Firebase Firestore is not configured.");
+  }
+
+  const created = await addDoc(collectionRef, {
+    name: payload.name?.trim() || "Anonymous Patient",
+    rating: payload.rating,
+    feedback: payload.feedback.trim(),
+    createdAt: serverTimestamp()
+  });
+
+  return normalizeReview(created.id, {
+    ...payload,
+    createdAt: new Date()
+  });
+}

@@ -784,6 +784,194 @@ button {
     align-items: center;
 }
 
+.reviews-shell {
+    display: grid;
+    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.reviews-summary,
+.review-form-card {
+    padding: 1.7rem;
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.reviews-summary__rating {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.reviews-summary__score {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--primary-dark);
+}
+
+.reviews-summary__rating strong {
+    display: block;
+    color: #ffb11a;
+    letter-spacing: 0.16em;
+    margin-bottom: 0.3rem;
+}
+
+.reviews-summary__rating p,
+.reviews-summary__copy,
+.review-card__footer span,
+.review-form__helper {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.72;
+}
+
+.reviews-panel__actions {
+    display: flex;
+    justify-content: center;
+}
+
+.testimonial-grid--reviews {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.review-card {
+    min-height: 100%;
+}
+
+.review-card__stars {
+    margin-bottom: 1rem;
+    color: #ffb11a;
+    letter-spacing: 0.16em;
+}
+
+.review-card__text {
+    margin: 0 0 1.1rem;
+}
+
+.review-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.review-form-card {
+    margin-top: 1.5rem;
+}
+
+.section__heading--compact {
+    margin-bottom: 1.2rem;
+}
+
+.section__heading--compact h3 {
+    font-size: 1.65rem;
+    line-height: 1.12;
+}
+
+.review-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.review-form__row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.review-form__field {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.review-form__field span,
+.review-form__rating legend {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.review-form__field input,
+.review-form__field textarea {
+    width: 100%;
+    padding: 0.95rem 1rem;
+    border-radius: 14px;
+    border: 1px solid rgba(103, 61, 230, 0.14);
+    background: #fff;
+    color: var(--text);
+    font: inherit;
+    transition: transform 0.2s ease, border-color 0.2s ease, outline-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-form__field input:focus,
+.review-form__field textarea:focus {
+    outline: 3px solid rgba(103, 61, 230, 0.12);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(103, 61, 230, 0.1);
+}
+
+.review-form__rating {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.review-form__stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+}
+
+.review-form__stars label {
+    position: relative;
+    cursor: pointer;
+}
+
+.review-form__stars input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+}
+
+.review-form__stars span {
+    width: 46px;
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    border: 1px solid rgba(103, 61, 230, 0.14);
+    background: rgba(103, 61, 230, 0.04);
+    color: #c5bcdf;
+    font-size: 1.3rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.review-form__stars label:hover span,
+.review-form__stars input:focus + span,
+.review-form__stars input:checked + span {
+    color: #ffb11a;
+    background: rgba(255, 177, 26, 0.1);
+    border-color: rgba(255, 177, 26, 0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 20px rgba(255, 177, 26, 0.12);
+}
+
+.review-form__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
 .testimonial-slider__track {
     display: grid;
     grid-auto-flow: column;
@@ -1706,6 +1894,14 @@ button {
         grid-template-columns: 1fr;
     }
 
+    .reviews-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .testimonial-grid--reviews {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .service-grid--diagnostic {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -1826,6 +2022,8 @@ button {
     .doctor-card,
     .testimonial-card,
     .appointment-form,
+    .reviews-summary,
+    .review-form-card,
     .info-card,
     .confirmation-card {
         padding: 1.4rem;
@@ -1865,6 +2063,16 @@ button {
     .footer__highlight-actions {
         width: 100%;
         justify-content: space-between;
+    }
+
+    .testimonial-grid--reviews {
+        grid-template-columns: 1fr;
+    }
+
+    .review-card__footer,
+    .review-form__footer {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
 }
@@ -1916,7 +2124,10 @@ button {
     .modal-panel,
     .appointment-form input,
     .appointment-form select,
-    .appointment-form textarea {
+    .appointment-form textarea,
+    .review-form__field input,
+    .review-form__field textarea,
+    .review-form__stars span {
         animation: none !important;
         transition: none !important;
         transform: none !important;

@@ -137,6 +137,12 @@ function decorateStaticSections(root) {
     const fields = appointmentForm.querySelectorAll("label, .appointment-form__helper, .appointment-form__row, button");
     sequence(fields, "fadeUp", 120, 90);
   }
+
+  const reviewForm = root.querySelector(".review-form");
+  if (reviewForm) {
+    const fields = reviewForm.querySelectorAll(".review-form__field, .review-form__rating, .review-form__helper, .review-form__footer");
+    sequence(fields, "fadeUp", 140, 90);
+  }
 }
 
 function observeAnimations(root) {
