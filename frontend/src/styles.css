@@ -427,9 +427,25 @@ button {
     box-shadow: none;
 }
 
-.hero-menu__panel button:hover {
+.hero-menu__panel button:hover,
+.hero-menu__link:hover {
     background: rgba(103, 61, 230, 0.08);
     color: var(--primary-dark);
+}
+
+.hero-menu__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 44px;
+    padding: 0.8rem 0.95rem;
+    border-radius: 14px;
+    background: #fff;
+    color: var(--text);
+    border: 1px solid rgba(103, 61, 230, 0.08);
+    box-shadow: none;
+    font-weight: 700;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .hero__primary-cta {
