@@ -677,6 +677,10 @@ button {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.service-grid--diagnostic {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .department-card,
 .service-card,
 .gallery-card,
@@ -1173,6 +1177,38 @@ button {
     line-height: 1.72;
 }
 
+.service-card__icon {
+    width: 54px;
+    height: 54px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(103, 61, 230, 0.12), rgba(140, 133, 255, 0.2));
+    color: var(--primary);
+    font-size: 0.88rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    border: 1px solid rgba(103, 61, 230, 0.12);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.service-card h3 {
+    margin-bottom: 0.65rem;
+    font-size: 1.12rem;
+    line-height: 1.25;
+}
+
+.service-grid--diagnostic .service-card {
+    min-height: 100%;
+}
+
+.service-grid--diagnostic .service-card:hover .service-card__icon {
+    transform: scale(1.06);
+    box-shadow: 0 16px 28px rgba(103, 61, 230, 0.12);
+}
+
 .doctor-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -1639,6 +1675,10 @@ button {
         grid-template-columns: 1fr;
     }
 
+    .service-grid--diagnostic {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .gallery-card--large {
         grid-column: span 1;
     }
@@ -1732,6 +1772,11 @@ button {
         width: 100%;
     }
 
+    .service-grid--diagnostic {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
     .appointment-form__row,
     .about-card__stats {
         grid-template-columns: 1fr;
@@ -1789,6 +1834,10 @@ button {
 }
 
 @media (max-width: 520px) {
+    .service-grid--diagnostic {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .doctor-poster-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 1rem;
