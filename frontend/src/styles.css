@@ -10,6 +10,8 @@
     --muted: #685f8f;
     --border: rgba(103, 61, 230, 0.12);
     --shadow: 0 24px 70px rgba(47, 28, 106, 0.12);
+    --shadow-soft: 0 18px 42px rgba(47, 28, 106, 0.1);
+    --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
     --radius-xl: 32px;
     --radius-lg: 24px;
     --radius-md: 16px;
@@ -40,15 +42,18 @@ body.modal-open {
     opacity: 0;
     transform: translate3d(var(--motion-x, 0), var(--motion-y, 24px), 0) scale(var(--motion-scale, 1));
     transition:
-        opacity var(--motion-duration, 720ms) cubic-bezier(0.22, 1, 0.36, 1),
-        transform var(--motion-duration, 720ms) cubic-bezier(0.22, 1, 0.36, 1);
+        opacity var(--motion-duration, 720ms) var(--motion-ease),
+        transform var(--motion-duration, 720ms) var(--motion-ease),
+        filter var(--motion-duration, 720ms) var(--motion-ease);
     transition-delay: var(--motion-delay, 0ms);
     will-change: opacity, transform;
+    filter: blur(6px);
 }
 
 [data-motion].is-inview {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
 }
 
 .motion-heading .hero-title-word {
@@ -205,7 +210,7 @@ button,
     border-radius: 14px;
     font-family: "DM Sans", sans-serif;
     font-weight: 700;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    transition: transform 0.26s var(--motion-ease), box-shadow 0.26s var(--motion-ease), background 0.26s var(--motion-ease), border-color 0.26s var(--motion-ease);
 }
 
 .button:hover,
@@ -218,14 +223,14 @@ button:hover,
 .doctor-card__action {
     background: var(--surface);
     color: var(--primary-dark);
-    box-shadow: 0 18px 38px rgba(255, 255, 255, 0.16);
+    box-shadow: 0 16px 32px rgba(255, 255, 255, 0.14);
 }
 
 .button--secondary,
 button {
     background: var(--primary);
     color: #fff;
-    box-shadow: 0 18px 34px rgba(103, 61, 230, 0.26);
+    box-shadow: 0 14px 30px rgba(103, 61, 230, 0.22);
 }
 
 .button--ghost {
@@ -626,7 +631,7 @@ button {
     background: var(--surface);
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
-    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    transition: transform 0.34s var(--motion-ease), box-shadow 0.34s var(--motion-ease), border-color 0.34s var(--motion-ease), background 0.34s var(--motion-ease);
 }
 
 .service-card:hover,
@@ -637,8 +642,8 @@ button {
 .resource-card:hover,
 .feature-panel:hover,
 .trust-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 28px 62px rgba(47, 28, 106, 0.16);
+    transform: translateY(-8px) scale(1.01);
+    box-shadow: 0 32px 72px rgba(47, 28, 106, 0.15);
     border-color: rgba(103, 61, 230, 0.2);
 }
 
@@ -736,6 +741,12 @@ button {
     background: var(--surface);
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
+    transition: transform 0.32s var(--motion-ease), box-shadow 0.32s var(--motion-ease);
+}
+
+.testimonial-slide:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 66px rgba(47, 28, 106, 0.14);
 }
 
 .testimonial-slide__stars {
@@ -946,7 +957,8 @@ button {
     background: rgba(11, 8, 25, 0.78);
     z-index: 1000;
     opacity: 0;
-    transition: opacity 0.22s ease;
+    transition: opacity 0.24s var(--motion-ease), backdrop-filter 0.24s var(--motion-ease);
+    backdrop-filter: blur(0);
 }
 
 .lightbox[hidden] {
@@ -960,11 +972,12 @@ button {
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
     transform: translateY(20px) scale(0.97);
     opacity: 0;
-    transition: transform 0.24s ease, opacity 0.24s ease;
+    transition: transform 0.28s var(--motion-ease), opacity 0.28s var(--motion-ease);
 }
 
 .lightbox.is-open {
     opacity: 1;
+    backdrop-filter: blur(10px);
 }
 
 .lightbox.is-open img {
@@ -1171,12 +1184,12 @@ button {
     border: 1px solid rgba(255, 255, 255, 0.48);
     box-shadow: var(--shadow);
     backdrop-filter: blur(12px);
-    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    transition: transform 0.34s var(--motion-ease), box-shadow 0.34s var(--motion-ease), border-color 0.34s var(--motion-ease);
 }
 
 .doctor-poster:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 28px 60px rgba(47, 28, 106, 0.16);
+    transform: translateY(-8px) scale(1.012);
+    box-shadow: 0 34px 70px rgba(47, 28, 106, 0.16);
 }
 
 .doctor-poster__image-wrap {
@@ -1266,7 +1279,8 @@ button {
     padding: 1.25rem;
     background: rgba(16, 11, 35, 0.68);
     opacity: 0;
-    transition: opacity 0.22s ease;
+    transition: opacity 0.26s var(--motion-ease), backdrop-filter 0.26s var(--motion-ease);
+    backdrop-filter: blur(0);
 }
 
 .modal-backdrop[hidden] {
@@ -1275,6 +1289,7 @@ button {
 
 .modal-backdrop.is-open {
     opacity: 1;
+    backdrop-filter: blur(10px);
 }
 
 .modal-panel {
@@ -1285,7 +1300,7 @@ button {
     border-radius: 28px;
     transform: translateY(24px) scale(0.98);
     opacity: 0;
-    transition: transform 0.24s ease, opacity 0.24s ease;
+    transition: transform 0.28s var(--motion-ease), opacity 0.28s var(--motion-ease);
 }
 
 .modal-backdrop.is-open .modal-panel {

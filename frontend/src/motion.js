@@ -1,9 +1,9 @@
 export const motionVariants = {
-  fadeUp: { x: 0, y: 34, scale: 1, duration: 760 },
-  fadeIn: { x: 0, y: 0, scale: 1, duration: 620 },
-  slideLeft: { x: -42, y: 0, scale: 1, duration: 760 },
-  slideRight: { x: 42, y: 0, scale: 1, duration: 760 },
-  staggerContainer: { x: 0, y: 0, scale: 1, duration: 680 }
+  fadeUp: { x: 0, y: 26, scale: 0.988, duration: 880 },
+  fadeIn: { x: 0, y: 0, scale: 0.992, duration: 720 },
+  slideLeft: { x: -34, y: 0, scale: 0.99, duration: 900 },
+  slideRight: { x: 34, y: 0, scale: 0.99, duration: 900 },
+  staggerContainer: { x: 0, y: 0, scale: 1, duration: 760 }
 };
 
 const layerTimers = new WeakMap();
@@ -41,13 +41,13 @@ function setMotion(el, variant = "fadeUp", options = {}) {
   }
 }
 
-function sequence(elements, variant = "fadeUp", baseDelay = 0, step = 80) {
+function sequence(elements, variant = "fadeUp", baseDelay = 0, step = 95) {
   Array.from(elements).forEach((element, index) => {
     setMotion(element, variant, { delay: baseDelay + index * step });
   });
 }
 
-function sequenceAlternating(elements, baseDelay = 0, step = 90) {
+function sequenceAlternating(elements, baseDelay = 0, step = 110) {
   Array.from(elements).forEach((element, index) => {
     setMotion(element, index % 2 === 0 ? "slideLeft" : "slideRight", {
       delay: baseDelay + index * step
@@ -77,12 +77,12 @@ function splitHeroHeading(root) {
 function decorateHero(root) {
   splitHeroHeading(root);
 
-  setMotion(root.querySelector(".hero__copy .eyebrow"), "fadeIn", { delay: 40 });
-  setMotion(root.querySelector(".hero__copy h1"), "fadeIn", { delay: 80 });
-  setMotion(root.querySelector(".hero__copy .subtitle"), "fadeUp", { delay: 180 });
-  setMotion(root.querySelector(".hero__actions--compact"), "slideLeft", { delay: 260 });
-  sequence(root.querySelectorAll(".hero__stats article"), "fadeUp", 320, 90);
-  setMotion(root.querySelector(".hero__panel"), "slideRight", { delay: 180 });
+  setMotion(root.querySelector(".hero__copy .eyebrow"), "fadeIn", { delay: 50 });
+  setMotion(root.querySelector(".hero__copy h1"), "fadeIn", { delay: 110, duration: 940 });
+  setMotion(root.querySelector(".hero__copy .subtitle"), "fadeUp", { delay: 240, duration: 920 });
+  setMotion(root.querySelector(".hero__actions--compact"), "slideLeft", { delay: 320, duration: 900 });
+  sequence(root.querySelectorAll(".hero__stats article"), "fadeUp", 420, 120);
+  setMotion(root.querySelector(".hero__panel"), "slideRight", { delay: 220, duration: 960 });
 
   const floatingPanel = root.querySelector(".hero__panel");
   if (floatingPanel) {
@@ -92,7 +92,7 @@ function decorateHero(root) {
 
 function decorateStaticSections(root) {
   root.querySelectorAll(".section__heading, .page-hero .container").forEach((element, index) => {
-    setMotion(element, "fadeUp", { delay: Math.min(index * 25, 140) });
+    setMotion(element, "fadeUp", { delay: Math.min(index * 35, 180), duration: 860 });
   });
 
   root.querySelectorAll(".about-grid, .appointment-layout, .contact-layout, .emergency-strip__content").forEach((grid) => {
@@ -120,22 +120,22 @@ function decorateStaticSections(root) {
     [".card-actions", "a, button", "fadeIn"]
   ].forEach(([containerSelector, childSelector, variant]) => {
     root.querySelectorAll(containerSelector).forEach((container) => {
-      sequence(container.querySelectorAll(childSelector), variant, 80, 80);
+      sequence(container.querySelectorAll(childSelector), variant, 120, 95);
     });
   });
 
   root.querySelectorAll(".doctor-grid").forEach((container) => {
-    sequenceAlternating(container.querySelectorAll(".doctor-card"), 100, 95);
+    sequenceAlternating(container.querySelectorAll(".doctor-card"), 140, 115);
   });
 
   root.querySelectorAll(".doctor-poster-grid").forEach((container) => {
-    sequenceAlternating(container.querySelectorAll(".doctor-poster"), 120, 85);
+    sequenceAlternating(container.querySelectorAll(".doctor-poster"), 160, 105);
   });
 
   const appointmentForm = root.querySelector(".appointment-form");
   if (appointmentForm) {
     const fields = appointmentForm.querySelectorAll("label, .appointment-form__helper, .appointment-form__row, button");
-    sequence(fields, "fadeUp", 90, 70);
+    sequence(fields, "fadeUp", 120, 90);
   }
 }
 
@@ -151,16 +151,16 @@ function observeAnimations(root) {
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.16) {
           entry.target.classList.add("is-inview");
-        } else {
+        } else if (entry.intersectionRatio <= 0.04) {
           entry.target.classList.remove("is-inview");
         }
       });
     },
     {
-      threshold: 0.18,
-      rootMargin: "0px 0px -8% 0px"
+      threshold: [0, 0.04, 0.16, 0.32],
+      rootMargin: "0px 0px -6% 0px"
     }
   );
 
