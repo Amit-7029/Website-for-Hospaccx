@@ -1,6 +1,7 @@
 import "./styles.css";
 import { galleryItems } from "./data/gallery";
 import { blogPosts, diagnosticServices, facilities, treatments, trustIndicators } from "./data/content";
+import { doctors as fallbackDoctors } from "./data/doctors";
 import { createAppointment } from "./firebase/appointments-store";
 import { loadDoctors } from "./firebase/doctors-store";
 import { loadCmsContent, loadDiagnosticServices } from "./firebase/content-store";
@@ -158,6 +159,10 @@ function formatAvailability(availability = []) {
   return availability
     .map((slot) => `${slot.day}: ${slot.from}`)
     .join(" | ");
+}
+
+function deriveDepartments(doctors) {
+  return [...new Set(doctors.map((doctor) => String(doctor.department || "").trim()).filter(Boolean))];
 }
 
 function renderStarString(rating) {
@@ -994,9 +999,10 @@ function populateDepartmentSelect() {
     return;
   }
 
+  const departments = state.departments.length ? state.departments : deriveDepartments(state.doctors);
   select.innerHTML =
     '<option value="">Select a department</option>' +
-    state.departments.map((department) => `<option value="${escapeHtml(department)}">${escapeHtml(department)}</option>`).join("");
+    departments.map((department) => `<option value="${escapeHtml(department)}">${escapeHtml(department)}</option>`).join("");
 }
 
 function populateDoctorSelect(department) {
@@ -1318,11 +1324,12 @@ async function initializeDoctors() {
 
   try {
     const { doctors, source } = await loadDoctors();
-    state.doctors = doctors;
-    state.departments = [...new Set(doctors.map((doctor) => doctor.department))].sort();
+    const resolvedDoctors = doctors?.length ? doctors : fallbackDoctors;
+    state.doctors = resolvedDoctors;
+    state.departments = deriveDepartments(resolvedDoctors);
     state.doctorsSource = source;
 
-    updateDoctorCount(doctors.length);
+    updateDoctorCount(resolvedDoctors.length);
     renderDepartments();
     renderDoctors();
     renderGalleryTabs();
@@ -1340,7 +1347,22 @@ async function initializeDoctors() {
     }
   } catch (error) {
     console.error(error);
-    renderDoctorError(error.message || "Please try again later.");
+    state.doctors = fallbackDoctors;
+    state.departments = deriveDepartments(fallbackDoctors);
+    state.doctorsSource = "local";
+    updateDoctorCount(fallbackDoctors.length);
+    renderDepartments();
+    renderDoctors();
+    renderGalleryTabs();
+    renderDoctorsGallery();
+    populateDepartmentSelect();
+    setupInitialFormState();
+    setupAppointmentForm();
+    prefillDoctorFromQuery();
+
+    if (sourceBadge) {
+      sourceBadge.textContent = "Doctor information is curated and regularly updated by our clinic team.";
+    }
   }
 }
 

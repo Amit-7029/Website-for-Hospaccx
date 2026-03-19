@@ -43,18 +43,26 @@ export async function loadDoctors() {
     };
   }
 
-  const snapshot = await getDocs(query(collectionRef, orderBy("name")));
-  const remoteDoctors = snapshot.docs.map((entry) => normalizeRemoteDoctor(entry.id, entry.data()));
-  const mergedDoctorsMap = new Map(fallbackDoctors.map((doctor) => [doctor.id, doctor]));
-  remoteDoctors.forEach((doctor) => {
-    mergedDoctorsMap.set(doctor.id, doctor);
-  });
-  const mergedDoctors = [...mergedDoctorsMap.values()].sort((left, right) => left.name.localeCompare(right.name));
+  try {
+    const snapshot = await getDocs(query(collectionRef, orderBy("name")));
+    const remoteDoctors = snapshot.docs.map((entry) => normalizeRemoteDoctor(entry.id, entry.data()));
+    const remoteDoctorsById = new Map(remoteDoctors.map((doctor) => [doctor.id, doctor]));
+    const fallbackDoctorIds = new Set(fallbackDoctors.map((doctor) => doctor.id));
+    const orderedDoctors = fallbackDoctors.map((doctor) => remoteDoctorsById.get(doctor.id) ?? doctor);
+    const additionalRemoteDoctors = remoteDoctors.filter((doctor) => !fallbackDoctorIds.has(doctor.id));
+    const mergedDoctors = [...orderedDoctors, ...additionalRemoteDoctors];
 
-  return {
-    doctors: mergedDoctors,
-    source: remoteDoctors.length ? "firestore" : "local"
-  };
+    return {
+      doctors: mergedDoctors.length ? mergedDoctors : fallbackDoctors,
+      source: remoteDoctors.length ? "firestore" : "local"
+    };
+  } catch (error) {
+    console.error("Unable to load doctors from Firestore, falling back to local data.", error);
+    return {
+      doctors: fallbackDoctors,
+      source: "local"
+    };
+  }
 }
 
 export async function uploadDoctorImage(file, doctorId) {
