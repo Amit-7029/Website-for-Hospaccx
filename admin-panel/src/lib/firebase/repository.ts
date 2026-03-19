@@ -167,7 +167,10 @@ export async function deleteDocument(name: CollectionName, id: string) {
 
 export async function loadCmsContent() {
   if (!isFirebaseConfigured()) {
-    return readLocalCollection("cms", DEFAULT_CMS_CONTENT);
+    return {
+      ...DEFAULT_CMS_CONTENT,
+      ...readLocalCollection("cms", DEFAULT_CMS_CONTENT),
+    };
   }
 
   const { db } = getFirebaseServices();
@@ -177,7 +180,10 @@ export async function loadCmsContent() {
     return DEFAULT_CMS_CONTENT;
   }
 
-  return snapshot.data() as CmsContent;
+  return {
+    ...DEFAULT_CMS_CONTENT,
+    ...(snapshot.data() as Partial<CmsContent>),
+  } as CmsContent;
 }
 
 export async function saveCmsContent(content: CmsContent) {

@@ -102,7 +102,7 @@ function escapeHtml(value) {
 }
 
 function updateTextContent(selector, value) {
-  if (!value) {
+  if (value === undefined || value === null) {
     return;
   }
 
@@ -123,11 +123,54 @@ function updateLink(selector, { href, text }) {
   });
 }
 
+function cmsValue(key, fallback = "") {
+  if (!key) {
+    return fallback;
+  }
+
+  return state.cmsContent?.[key] ?? DEFAULT_CMS_CONTENT[key] ?? fallback;
+}
+
 function applyCmsContent() {
-  const content = state.cmsContent;
+  const content = {
+    ...DEFAULT_CMS_CONTENT,
+    ...(state.cmsContent || {})
+  };
   if (!content) {
     return;
   }
+
+  document.querySelectorAll("[data-cms]").forEach((element) => {
+    const key = element.getAttribute("data-cms");
+    if (!key || content[key] === undefined) {
+      return;
+    }
+    element.textContent = content[key];
+  });
+
+  document.querySelectorAll("[data-cms-placeholder]").forEach((element) => {
+    const key = element.getAttribute("data-cms-placeholder");
+    if (!key || content[key] === undefined) {
+      return;
+    }
+    element.setAttribute("placeholder", content[key]);
+  });
+
+  document.querySelectorAll("[data-cms-src]").forEach((element) => {
+    const key = element.getAttribute("data-cms-src");
+    if (!key || !content[key]) {
+      return;
+    }
+
+    if (element.tagName === "IFRAME") {
+      element.setAttribute("src", content[key]);
+      return;
+    }
+
+    if ("src" in element) {
+      element.setAttribute("src", content[key]);
+    }
+  });
 
   updateTextContent("#heroHeading", content.heroHeading);
   updateTextContent("#heroDescription", content.heroDescription);
@@ -151,6 +194,14 @@ function applyCmsContent() {
   updateTextContent("[data-main-contact-phone]", content.contactPhone);
   updateTextContent("[data-main-contact-email]", content.contactEmail);
   updateTextContent("[data-main-contact-address]", content.contactAddress);
+  updateLink("[data-map-link]", { href: content.topbarMapUrl });
+  updateLink("[data-instagram-link]", { href: content.instagramUrl });
+  updateLink("[data-facebook-link]", { href: content.facebookUrl });
+  updateLink("[data-whatsapp-link]", { href: content.whatsappGroupUrl });
+  updateLink("[data-secondary-email-link]", {
+    href: `mailto:${content.secondaryEmail}`,
+    text: content.secondaryEmail
+  });
   updateLink("[data-main-phone-link]", { href: `tel:${content.contactPhone.replace(/[^\d+]/g, "")}` });
   updateLink("[data-main-email-link]", { href: `mailto:${content.contactEmail}`, text: content.contactEmail });
 }
@@ -555,7 +606,7 @@ function setupReviewForm() {
     } finally {
       if (submitButton) {
         submitButton.disabled = false;
-        submitButton.textContent = "Submit Review";
+        submitButton.textContent = cmsValue("reviewSubmitLabel", "Submit Review");
       }
     }
   });
@@ -1040,7 +1091,7 @@ function populateDepartmentSelect() {
 
   const departments = state.departments.length ? state.departments : deriveDepartments(state.doctors.length ? state.doctors : fallbackDoctors);
   select.innerHTML =
-    '<option value="">Select a department</option>' +
+    `<option value="">${escapeHtml(cmsValue("appointmentDepartmentPlaceholder", "Select a department"))}</option>` +
     departments.map((department) => `<option value="${escapeHtml(department)}">${escapeHtml(department)}</option>`).join("");
   select.value = "";
 }
@@ -1058,19 +1109,20 @@ function populateDoctorSelect(department, selectedDoctor = "") {
   const matchingDoctors = state.doctors.filter((doctor) => doctor.department === department);
 
   doctorSelect.innerHTML = matchingDoctors.length
-    ? '<option value="">Select a doctor</option>' +
+    ? `<option value="">${escapeHtml(cmsValue("appointmentDoctorLabel", "Select Doctor"))}</option>` +
       matchingDoctors.map((doctor) => `<option value="${escapeHtml(doctor.name)}">${escapeHtml(doctor.name)}</option>`).join("")
-    : '<option value="">Select a department first</option>';
+    : `<option value="">${escapeHtml(cmsValue("appointmentDoctorPlaceholder", "Select a department first"))}</option>`;
 
   doctorSelect.value = matchingDoctors.some((doctor) => doctor.name === selectedDoctor) ? selectedDoctor : "";
   doctorSelect.disabled = matchingDoctors.length === 0;
   dateSelect.innerHTML = '<option value="">Select a doctor first</option>';
   dateSelect.disabled = true;
-  timeSelect.innerHTML = '<option value="">Select a doctor first</option>';
+  timeSelect.innerHTML = `<option value="">${escapeHtml(cmsValue("appointmentTimePlaceholder", "Select a doctor first"))}</option>`;
+  dateSelect.innerHTML = `<option value="">${escapeHtml(cmsValue("appointmentDatePlaceholder", "Select a doctor first"))}</option>`;
   timeSelect.disabled = true;
   helper.textContent = matchingDoctors.length
-    ? "Select a doctor to see the available appointment slots."
-    : "Select a department to choose from the available doctors.";
+    ? cmsValue("appointmentDoctorHelper", "Select a doctor to view available timing and OPD days.")
+    : cmsValue("appointmentDoctorPlaceholder", "Select a department first");
 }
 
 function resetAppointmentSelections() {
@@ -1083,13 +1135,13 @@ function resetAppointmentSelections() {
   }
 
   if (doctorSelect) {
-    doctorSelect.innerHTML = '<option value="">Select a department first</option>';
+    doctorSelect.innerHTML = `<option value="">${escapeHtml(cmsValue("appointmentDoctorPlaceholder", "Select a department first"))}</option>`;
     doctorSelect.value = "";
     doctorSelect.disabled = true;
   }
 
   if (helper) {
-    helper.textContent = "Select a doctor to view available timing and OPD days.";
+    helper.textContent = cmsValue("appointmentDoctorHelper", "Select a doctor to view available timing and OPD days.");
   }
 
   setupInitialFormState();
@@ -1167,7 +1219,7 @@ function populateDateSelect(doctor) {
 
   const dates = allowedDatesForDoctor(doctor);
   dateSelect.innerHTML = dates.length
-    ? '<option value="">Select an appointment date</option>' +
+    ? `<option value="">${escapeHtml(cmsValue("appointmentDatePlaceholder", "Select an appointment date"))}</option>` +
       dates.map((date) => `<option value="${formatDateValue(date)}">${formatDateLabel(date)}</option>`).join("")
     : '<option value="">No valid dates available</option>';
   dateSelect.disabled = dates.length === 0;
@@ -1260,7 +1312,7 @@ function populateTimeSelect(doctor) {
     });
 
     timeSelect.innerHTML = slots.length
-      ? '<option value="">Select a time slot</option>' +
+      ? `<option value="">${escapeHtml(cmsValue("appointmentTimePlaceholder", "Select a time slot"))}</option>` +
         slots.map((slot) => `<option value="${escapeHtml(slot)}">${escapeHtml(slot)}</option>`).join("")
       : '<option value="">Time slots unavailable</option>';
     timeSelect.disabled = slots.length === 0;
@@ -1366,11 +1418,11 @@ function setupInitialFormState() {
   const dateSelect = document.getElementById("date");
   const timeSelect = document.getElementById("time");
   if (dateSelect) {
-    dateSelect.innerHTML = '<option value="">Select a doctor first</option>';
+    dateSelect.innerHTML = `<option value="">${escapeHtml(cmsValue("appointmentDatePlaceholder", "Select a doctor first"))}</option>`;
     dateSelect.disabled = true;
   }
   if (timeSelect) {
-    timeSelect.innerHTML = '<option value="">Select a doctor first</option>';
+    timeSelect.innerHTML = `<option value="">${escapeHtml(cmsValue("appointmentTimePlaceholder", "Select a doctor first"))}</option>`;
     timeSelect.disabled = true;
   }
 }
@@ -1384,7 +1436,7 @@ function setAppointmentSubmitState(isSubmitting) {
   }
 
   submitButton.disabled = isSubmitting;
-  submitButton.textContent = isSubmitting ? "Submitting..." : "Submit Appointment";
+  submitButton.textContent = isSubmitting ? "Submitting..." : cmsValue("appointmentButtonLabel", "Submit Appointment");
 }
 
 async function saveAppointmentWithTimeout(payload, timeoutMs = 1800) {
