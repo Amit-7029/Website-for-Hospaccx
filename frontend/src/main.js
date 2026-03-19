@@ -1,6 +1,7 @@
 import "./styles.css";
 import { galleryItems } from "./data/gallery";
 import { blogPosts, diagnosticServices, facilities, treatments, trustIndicators } from "./data/content";
+import { createAppointment } from "./firebase/appointments-store";
 import { loadDoctors } from "./firebase/doctors-store";
 import { loadCmsContent, loadDiagnosticServices } from "./firebase/content-store";
 import { createReview, loadReviews } from "./firebase/reviews-store";
@@ -1146,6 +1147,25 @@ function extractTimeRanges(timing) {
   return ranges;
 }
 
+function buildAppointmentDateTime(dateValue, timeLabel) {
+  const [year, month, day] = String(dateValue)
+    .split("-")
+    .map((part) => Number(part));
+
+  if (!year || !month || !day) {
+    return String(dateValue);
+  }
+
+  const appointmentDate = new Date(year, month - 1, day, 9, 0, 0, 0);
+  const minutes = toMinutes(String(timeLabel || "").replace(/\s+/g, " ").trim());
+
+  if (minutes !== null) {
+    appointmentDate.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+  }
+
+  return appointmentDate.toISOString();
+}
+
 function populateTimeSelect(doctor) {
   const timeSelect = document.getElementById("time");
   const helper = document.getElementById("doctorScheduleHelper");
@@ -1224,22 +1244,54 @@ function setupAppointmentForm() {
     populateTimeSelect(doctor);
   });
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!form.reportValidity()) {
       return;
     }
 
     const formData = new FormData(form);
+    const selectedDate = String(formData.get("date") || "");
+    const selectedTime = String(formData.get("time") || "");
+    const selectedDepartment = String(formData.get("department") || "");
+    const selectedDoctor = String(formData.get("doctor") || "");
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton?.textContent || "Submit Appointment";
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Submitting...";
+    }
+
+    try {
+      await createAppointment({
+        name: String(formData.get("name") || "").trim(),
+        phone: String(formData.get("phone") || "").trim(),
+        date: buildAppointmentDateTime(selectedDate, selectedTime),
+        doctor: selectedDoctor,
+        message: `Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Unable to save appointment to Firestore:", error);
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+      }
+    }
+
     const message = [
       "Hello, I want to book an appointment.",
       "",
       `Name: ${formData.get("name")}`,
       `Phone: ${formData.get("phone")}`,
-      `Department: ${formData.get("department")}`,
-      `Doctor: ${formData.get("doctor")}`,
-      `Preferred Date: ${formData.get("date")}`,
-      `Preferred Time: ${formData.get("time")}`
+      `Department: ${selectedDepartment}`,
+      `Doctor: ${selectedDoctor}`,
+      `Preferred Date: ${selectedDate}`,
+      `Preferred Time: ${selectedTime}`
     ].join("\n");
 
     window.location.href = "https://wa.me/917384251751?text=" + encodeURIComponent(message);
