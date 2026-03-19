@@ -321,7 +321,19 @@ const posterImageMap = {
 
 function normalizeAvailability(doctor) {
   if (doctor.availability?.length) {
-    return doctor.availability;
+    return doctor.availability.map((slot) => {
+      if (typeof slot === "string") {
+        const [dayPart, ...timeParts] = slot.split(":");
+        const day = dayPart?.trim() || "BY APPOINTMENT";
+        const from = timeParts.join(":").trim() || "Please contact reception";
+        return { day: day.toUpperCase(), from };
+      }
+
+      return {
+        day: String(slot.day || "BY APPOINTMENT").trim().toUpperCase(),
+        from: String(slot.from || "Please contact reception").trim()
+      };
+    });
   }
 
   if (doctor.opdDays === "-" || doctor.timing.toUpperCase().includes("BY APPOINTMENT")) {
@@ -349,6 +361,15 @@ function normalizeServices(doctor) {
 
 function normalizeDoctor(doctor) {
   const gender = doctor.gender === "female" ? "female" : "male";
+  const availability = normalizeAvailability(doctor);
+  const derivedOpdDays = availability
+    .map((slot) => slot.day)
+    .filter((day) => day && day !== "BY APPOINTMENT")
+    .join(", ");
+  const derivedTiming = availability
+    .map((slot) => slot.from)
+    .filter(Boolean)
+    .join(", ");
 
   return {
     id: doctor.id ?? slugify(doctor.name),
@@ -356,12 +377,12 @@ function normalizeDoctor(doctor) {
     department: doctor.department,
     specialization: doctor.specialization ?? doctor.department,
     qualification: doctor.qualification,
-    timing: doctor.timing,
-    opdDays: doctor.opdDays,
+    timing: (doctor.timing ?? derivedTiming) || "By appointment",
+    opdDays: (doctor.opdDays ?? derivedOpdDays) || "By appointment",
     gender,
-    image: doctor.image ?? (gender === "female" ? "/images/doctor-female.jpeg" : "/images/doctor-male.jpeg"),
-    posterImage: doctor.posterImage ?? null,
-    availability: normalizeAvailability(doctor),
+    image: doctor.image ?? doctor.imageUrl ?? (gender === "female" ? "/images/doctor-female.jpeg" : "/images/doctor-male.jpeg"),
+    posterImage: doctor.posterImage ?? doctor.imageUrl ?? null,
+    availability,
     services: normalizeServices(doctor)
   };
 }

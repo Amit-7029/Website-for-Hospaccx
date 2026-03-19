@@ -1,7 +1,8 @@
 import "./styles.css";
 import { galleryItems } from "./data/gallery";
-import { blogPosts, facilities, treatments, trustIndicators } from "./data/content";
+import { blogPosts, diagnosticServices, facilities, treatments, trustIndicators } from "./data/content";
 import { loadDoctors } from "./firebase/doctors-store";
+import { loadCmsContent, loadDiagnosticServices } from "./firebase/content-store";
 import { createReview, loadReviews } from "./firebase/reviews-store";
 import { closeAnimatedLayer, createMotionSystem, openAnimatedLayer } from "./motion";
 
@@ -22,6 +23,10 @@ const state = {
   galleryDepartment: "",
   searchQuery: "",
   doctorsSource: "local",
+  cmsSource: "local",
+  servicesSource: "local",
+  cmsContent: null,
+  services: diagnosticServices,
   reviews: [],
   reviewsSource: "local",
   visibleReviewCount: 6
@@ -92,6 +97,46 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function updateTextContent(selector, value) {
+  if (!value) {
+    return;
+  }
+
+  document.querySelectorAll(selector).forEach((element) => {
+    element.textContent = value;
+  });
+}
+
+function updateLink(selector, { href, text }) {
+  document.querySelectorAll(selector).forEach((element) => {
+    if (href) {
+      element.setAttribute("href", href);
+    }
+
+    if (text && element.childElementCount === 0) {
+      element.textContent = text;
+    }
+  });
+}
+
+function applyCmsContent() {
+  const content = state.cmsContent;
+  if (!content) {
+    return;
+  }
+
+  updateTextContent("#heroHeading", content.heroHeading);
+  updateTextContent("#heroDescription", content.heroDescription);
+  updateTextContent("#aboutHeading", content.aboutHeading);
+  updateTextContent("#aboutDescription", content.aboutDescription);
+  updateTextContent("#emergencyText", content.emergencyText);
+  updateTextContent("[data-main-contact-phone]", content.contactPhone);
+  updateTextContent("[data-main-contact-email]", content.contactEmail);
+  updateTextContent("[data-main-contact-address]", content.contactAddress);
+  updateLink("[data-main-phone-link]", { href: `tel:${content.contactPhone.replace(/[^\d+]/g, "")}` });
+  updateLink("[data-main-email-link]", { href: `mailto:${content.contactEmail}`, text: content.contactEmail });
 }
 
 function formatAvailability(availability = []) {
@@ -223,6 +268,27 @@ function renderFacilities() {
           <span class="facility-card__icon">${escapeHtml(facility.icon)}</span>
           <h3>${escapeHtml(facility.title)}</h3>
           <p>${escapeHtml(facility.description)}</p>
+        </article>
+      `
+    )
+    .join("");
+
+  motion.refresh();
+}
+
+function renderServices() {
+  const container = document.getElementById("serviceGrid");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = state.services
+    .map(
+      (service) => `
+        <article class="service-card">
+          <span class="service-card__icon" aria-hidden="true">${escapeHtml(service.icon)}</span>
+          <h3>${escapeHtml(service.title)}</h3>
+          <p>${escapeHtml(service.description)}</p>
         </article>
       `
     )
@@ -476,6 +542,25 @@ async function initializeReviews() {
     if (reviewSourceNote) {
       reviewSourceNote.textContent = "Reviews could not be loaded right now. Please try again shortly.";
     }
+  }
+}
+
+async function initializeContent() {
+  try {
+    const [{ content, source: cmsSource }, { services, source: servicesSource }] = await Promise.all([
+      loadCmsContent(),
+      loadDiagnosticServices()
+    ]);
+
+    state.cmsContent = content;
+    state.cmsSource = cmsSource;
+    state.services = services;
+    state.servicesSource = servicesSource;
+
+    applyCmsContent();
+    renderServices();
+  } catch (error) {
+    console.error(error);
   }
 }
 
@@ -1196,6 +1281,7 @@ async function initializeDoctors() {
 renderGallery();
 renderTrustIndicators();
 renderFacilities();
+renderServices();
 renderTreatmentPreviews();
 renderBlogPreview();
 bindDoctorGalleryControls();
@@ -1203,5 +1289,6 @@ setupHeroSectionMenus();
 motion = createMotionSystem(document);
 motion.refresh();
 setupReviewForm();
+initializeContent();
 initializeReviews();
 initializeDoctors();

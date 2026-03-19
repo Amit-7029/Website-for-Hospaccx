@@ -34,7 +34,8 @@ function normalizeReview(id, data, fallbackIndex = 0) {
     name: data.name?.trim?.() || "Anonymous Patient",
     rating: Math.max(1, Math.min(5, Number(data.rating) || 5)),
     feedback: String(data.feedback ?? data.message ?? "").trim(),
-    date: formatReviewDate(createdAt)
+    date: formatReviewDate(createdAt),
+    status: String(data.status || "").trim().toLowerCase()
   };
 }
 
@@ -57,7 +58,8 @@ export async function loadReviews() {
   const snapshot = await getDocs(query(collectionRef, orderBy("createdAt", "desc")));
   const remoteReviews = snapshot.docs
     .map((entry, index) => normalizeReview(entry.id, entry.data(), index))
-    .filter((review) => review.feedback);
+    .filter((review) => review.feedback)
+    .filter((review) => !review.status || review.status === "approved");
 
   return {
     reviews: remoteReviews.length
@@ -84,6 +86,7 @@ export async function createReview(payload) {
     name: payload.name?.trim() || "Anonymous Patient",
     rating: payload.rating,
     feedback: payload.feedback.trim(),
+    status: "pending",
     createdAt: serverTimestamp()
   });
 
