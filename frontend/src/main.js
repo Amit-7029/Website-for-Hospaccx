@@ -999,13 +999,14 @@ function populateDepartmentSelect() {
     return;
   }
 
-  const departments = state.departments.length ? state.departments : deriveDepartments(state.doctors);
+  const departments = state.departments.length ? state.departments : deriveDepartments(state.doctors.length ? state.doctors : fallbackDoctors);
   select.innerHTML =
     '<option value="">Select a department</option>' +
     departments.map((department) => `<option value="${escapeHtml(department)}">${escapeHtml(department)}</option>`).join("");
+  select.value = "";
 }
 
-function populateDoctorSelect(department) {
+function populateDoctorSelect(department, selectedDoctor = "") {
   const doctorSelect = document.getElementById("doctor");
   const timeSelect = document.getElementById("time");
   const dateSelect = document.getElementById("date");
@@ -1022,6 +1023,7 @@ function populateDoctorSelect(department) {
       matchingDoctors.map((doctor) => `<option value="${escapeHtml(doctor.name)}">${escapeHtml(doctor.name)}</option>`).join("")
     : '<option value="">Select a department first</option>';
 
+  doctorSelect.value = matchingDoctors.some((doctor) => doctor.name === selectedDoctor) ? selectedDoctor : "";
   doctorSelect.disabled = matchingDoctors.length === 0;
   dateSelect.innerHTML = '<option value="">Select a doctor first</option>';
   dateSelect.disabled = true;
@@ -1030,6 +1032,28 @@ function populateDoctorSelect(department) {
   helper.textContent = matchingDoctors.length
     ? "Select a doctor to see the available appointment slots."
     : "Select a department to choose from the available doctors.";
+}
+
+function resetAppointmentSelections() {
+  const departmentSelect = document.getElementById("department");
+  const doctorSelect = document.getElementById("doctor");
+  const helper = document.getElementById("doctorScheduleHelper");
+
+  if (departmentSelect) {
+    departmentSelect.value = "";
+  }
+
+  if (doctorSelect) {
+    doctorSelect.innerHTML = '<option value="">Select a department first</option>';
+    doctorSelect.value = "";
+    doctorSelect.disabled = true;
+  }
+
+  if (helper) {
+    helper.textContent = "Select a doctor to view available timing and OPD days.";
+  }
+
+  setupInitialFormState();
 }
 
 function formatDateValue(date) {
@@ -1210,6 +1234,7 @@ function prefillDoctorFromQuery() {
   const params = new URLSearchParams(window.location.search);
   const doctorName = params.get("doctor");
   if (!doctorName) {
+    resetAppointmentSelections();
     return;
   }
 
@@ -1222,17 +1247,20 @@ function prefillDoctorFromQuery() {
   }
 
   departmentSelect.value = doctor.department;
-  populateDoctorSelect(doctor.department);
-  doctorSelect.value = doctor.name;
+  populateDoctorSelect(doctor.department, doctor.name);
   populateDateSelect(doctor);
   populateTimeSelect(doctor);
+
+  const cleanedUrl = `${window.location.pathname}${window.location.hash || ""}`;
+  window.history.replaceState({}, document.title, cleanedUrl);
 }
 
 function setupAppointmentForm() {
   const form = document.getElementById("whatsappAppointmentForm");
-  if (!form) {
+  if (!form || form.dataset.ready === "true") {
     return;
   }
+  form.dataset.ready = "true";
 
   const departmentSelect = document.getElementById("department");
   const doctorSelect = document.getElementById("doctor");
@@ -1335,7 +1363,6 @@ async function initializeDoctors() {
     renderGalleryTabs();
     renderDoctorsGallery();
     populateDepartmentSelect();
-    setupInitialFormState();
     setupAppointmentForm();
     prefillDoctorFromQuery();
 
@@ -1356,7 +1383,6 @@ async function initializeDoctors() {
     renderGalleryTabs();
     renderDoctorsGallery();
     populateDepartmentSelect();
-    setupInitialFormState();
     setupAppointmentForm();
     prefillDoctorFromQuery();
 
@@ -1380,3 +1406,11 @@ setupReviewForm();
 initializeContent();
 initializeReviews();
 initializeDoctors();
+
+window.addEventListener("pageshow", () => {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.get("doctor")) {
+    populateDepartmentSelect();
+    resetAppointmentSelections();
+  }
+});
