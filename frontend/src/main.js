@@ -1301,16 +1301,10 @@ function setupAppointmentForm() {
     const selectedTime = String(formData.get("time") || "");
     const selectedDepartment = String(formData.get("department") || "");
     const selectedDoctor = String(formData.get("doctor") || "");
-    const submitButton = form.querySelector('button[type="submit"]');
-    const originalButtonText = submitButton?.textContent || "Submit Appointment";
-
-    if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = "Submitting...";
-    }
+    setAppointmentSubmitState(true);
 
     try {
-      await createAppointment({
+      await saveAppointmentWithTimeout({
         name: String(formData.get("name") || "").trim(),
         phone: String(formData.get("phone") || "").trim(),
         date: buildAppointmentDateTime(selectedDate, selectedTime),
@@ -1323,10 +1317,7 @@ function setupAppointmentForm() {
     } catch (error) {
       console.error("Unable to save appointment to Firestore:", error);
     } finally {
-      if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.textContent = originalButtonText;
-      }
+      setAppointmentSubmitState(false);
     }
 
     const message = [
@@ -1355,6 +1346,26 @@ function setupInitialFormState() {
     timeSelect.innerHTML = '<option value="">Select a doctor first</option>';
     timeSelect.disabled = true;
   }
+}
+
+function setAppointmentSubmitState(isSubmitting) {
+  const form = document.getElementById("whatsappAppointmentForm");
+  const submitButton = form?.querySelector('button[type="submit"]');
+
+  if (!submitButton) {
+    return;
+  }
+
+  submitButton.disabled = isSubmitting;
+  submitButton.textContent = isSubmitting ? "Submitting..." : "Submit Appointment";
+}
+
+async function saveAppointmentWithTimeout(payload, timeoutMs = 1800) {
+  const timeoutPromise = new Promise((_, reject) => {
+    window.setTimeout(() => reject(new Error("Appointment save timed out.")), timeoutMs);
+  });
+
+  return Promise.race([createAppointment(payload), timeoutPromise]);
 }
 
 async function initializeDoctors() {
@@ -1447,6 +1458,7 @@ initializeDoctors();
 
 window.addEventListener("pageshow", () => {
   const params = new URLSearchParams(window.location.search);
+  setAppointmentSubmitState(false);
   if (!params.get("doctor")) {
     populateDepartmentSelect();
     resetAppointmentSelections();
