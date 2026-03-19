@@ -1,4 +1,4 @@
-import cmsDefaults from "../../../shared/cms-defaults.json";
+import cmsDefaults from "@/lib/cms-defaults.json";
 import type { CmsContent, DiagnosticService } from "@/types";
 
 export const DEFAULT_CMS_CONTENT: CmsContent = cmsDefaults as CmsContent;

@@ -1,6 +1,6 @@
 import { collection, doc, getDoc, getDocs, orderBy, query } from "firebase/firestore";
-import cmsDefaults from "../../../shared/cms-defaults.json";
 import { diagnosticServices } from "../data/content";
+import cmsDefaults from "../data/cms-defaults.json";
 import { getFirebaseServices, isFirebaseConfigured } from "./client";
 
 const DEFAULT_CMS_CONTENT = cmsDefaults;
