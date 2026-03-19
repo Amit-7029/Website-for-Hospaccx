@@ -170,6 +170,22 @@ function renderStarString(rating) {
   return `${"&#9733;".repeat(normalized)}${"&#9734;".repeat(5 - normalized)}`;
 }
 
+function selectAppointmentDoctorById(doctorId) {
+  const doctor = state.doctors.find((entry) => entry.id === doctorId);
+  const departmentSelect = document.getElementById("department");
+  const doctorSelect = document.getElementById("doctor");
+
+  if (!doctor || !departmentSelect || !doctorSelect) {
+    return;
+  }
+
+  departmentSelect.value = doctor.department;
+  populateDoctorSelect(doctor.department, doctor.name);
+  populateDateSelect(doctor);
+  populateTimeSelect(doctor);
+  scrollToSection("appointment");
+}
+
 function doctorAvatar(doctor) {
   return doctor.image || (doctor.gender === "female" ? "/images/doctor-female.jpeg" : "/images/doctor-male.jpeg");
 }
@@ -714,7 +730,7 @@ function renderDoctors() {
               <div class="card-actions card-actions--triple">
                 <button type="button" class="button button--secondary doctor-card__cta" data-doctor-poster="${escapeHtml(doctor.id)}">View Profile</button>
                 <a href="tel:+919732029834" class="button button--secondary doctor-card__cta">Call Hospital</a>
-                <a href="/?doctor=${encodeURIComponent(doctor.name)}#appointment" class="button button--secondary doctor-card__cta">Book Appointment</a>
+                <button type="button" class="button button--secondary doctor-card__cta" data-appointment-doctor="${escapeHtml(doctor.id)}">Book Appointment</button>
               </div>
             </article>
           `
@@ -724,6 +740,10 @@ function renderDoctors() {
 
   container.querySelectorAll("[data-doctor-poster]").forEach((button) => {
     button.addEventListener("click", () => openDoctorPosterPreview(button.dataset.doctorPoster));
+  });
+
+  container.querySelectorAll("[data-appointment-doctor]").forEach((button) => {
+    button.addEventListener("click", () => selectAppointmentDoctorById(button.dataset.appointmentDoctor));
   });
 
   motion.refresh();
@@ -848,11 +868,18 @@ function openDoctorModal(doctorId) {
         </div>
         <div class="card-actions">
           <a href="tel:+919732029834" class="button button--secondary">Call Hospital</a>
-          <a href="/?doctor=${encodeURIComponent(doctor.name)}#appointment" class="doctor-card__action">Book Appointment</a>
+          <button type="button" class="doctor-card__action" data-appointment-doctor="${escapeHtml(doctor.id)}">Book Appointment</button>
         </div>
       </div>
     </article>
   `;
+
+  body.querySelector("[data-appointment-doctor]")?.addEventListener("click", () => {
+    closeDoctorModal();
+    window.setTimeout(() => {
+      selectAppointmentDoctorById(doctor.id);
+    }, 180);
+  });
 
   openAnimatedLayer(modal);
   document.body.classList.add("modal-open");

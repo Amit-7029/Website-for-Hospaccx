@@ -70,6 +70,32 @@ export async function loadReviews() {
 }
 
 export async function createReview(payload) {
+  try {
+    const response = await fetch("/api/reviews", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name: payload.name,
+        rating: payload.rating,
+        feedback: payload.feedback
+      }),
+      cache: "no-store"
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      return normalizeReview(result.id, {
+        ...payload,
+        createdAt: new Date(),
+        status: "pending"
+      });
+    }
+  } catch (error) {
+    console.error("Review API fallback triggered:", error);
+  }
+
   if (!isFirebaseConfigured()) {
     return {
       id: `local-${Date.now()}`,

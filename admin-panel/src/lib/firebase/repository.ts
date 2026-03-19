@@ -7,8 +7,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  orderBy,
-  query,
   setDoc,
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
@@ -68,6 +66,44 @@ function sortByUpdatedAt<T extends { updatedAt?: string; createdAt?: string }>(i
   });
 }
 
+function normalizeDateValue(value: unknown) {
+  if (value && typeof value === "object" && "toDate" in (value as Record<string, unknown>)) {
+    return ((value as { toDate: () => Date }).toDate()).toISOString();
+  }
+
+  return typeof value === "string" ? value : undefined;
+}
+
+function normalizeCollectionItem<T extends { id: string }>(name: CollectionName, item: T): T {
+  if (name === "reviews") {
+    const record = item as T & { feedback?: string; message?: string; createdAt?: unknown; updatedAt?: unknown };
+    return {
+      ...record,
+      message: String(record.message ?? record.feedback ?? "").trim(),
+      feedback: String(record.feedback ?? record.message ?? "").trim(),
+      createdAt: normalizeDateValue(record.createdAt),
+      updatedAt: normalizeDateValue(record.updatedAt),
+    } as T;
+  }
+
+  if (name === "appointments") {
+    const record = item as T & { createdAt?: unknown; updatedAt?: unknown; date?: unknown };
+    return {
+      ...record,
+      createdAt: normalizeDateValue(record.createdAt),
+      updatedAt: normalizeDateValue(record.updatedAt),
+      date: normalizeDateValue(record.date) ?? String(record.date ?? ""),
+    } as T;
+  }
+
+  const record = item as T & { createdAt?: unknown; updatedAt?: unknown };
+  return {
+    ...record,
+    createdAt: normalizeDateValue(record.createdAt),
+    updatedAt: normalizeDateValue(record.updatedAt),
+  } as T;
+}
+
 export async function listCollection<T extends { id: string; updatedAt?: string; createdAt?: string }>(
   name: CollectionName,
 ) {
@@ -77,10 +113,11 @@ export async function listCollection<T extends { id: string; updatedAt?: string;
   }
 
   const { db } = getFirebaseServices();
-  const snapshot = await getDocs(query(collection(db, name), orderBy("updatedAt", "desc")));
-  return snapshot.docs
-    .map((item) => ({ id: item.id, ...item.data() }) as T)
+  const snapshot = await getDocs(collection(db, name));
+  const items = snapshot.docs
+    .map((item) => normalizeCollectionItem(name, { id: item.id, ...item.data() } as T))
     .filter((item) => !(item as T & { system?: boolean }).system);
+  return sortByUpdatedAt(items);
 }
 
 export async function saveDocument<
