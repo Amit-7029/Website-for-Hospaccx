@@ -5,16 +5,36 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function userDocPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function hasUserDoc() {
+      return signedIn() && exists(userDocPath());
+    }
+
     function userDoc() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return get(userDocPath());
     }
 
     function isAdmin() {
-      return signedIn() && userDoc().data.role == "admin";
+      return hasUserDoc() && userDoc().data.role == "admin";
     }
 
     function isStaff() {
-      return signedIn() && (userDoc().data.role == "staff" || userDoc().data.role == "admin");
+      return hasUserDoc() && (userDoc().data.role == "staff" || userDoc().data.role == "admin");
+    }
+
+    function validReviewCreate() {
+      return request.resource.data.keys().hasOnly(["name", "rating", "feedback", "status", "createdAt"]) &&
+        request.resource.data.feedback is string &&
+        request.resource.data.feedback.size() >= 20 &&
+        request.resource.data.feedback.size() <= 320 &&
+        request.resource.data.rating is int &&
+        request.resource.data.rating >= 1 &&
+        request.resource.data.rating <= 5 &&
+        request.resource.data.status == "pending" &&
+        (!("name" in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() <= 50));
     }
 
     match /users/{userId} {
@@ -23,18 +43,19 @@ service cloud.firestore {
     }
 
     match /doctors/{document=**} {
-      allow read: if isStaff();
+      allow read: if true;
       allow write: if isAdmin();
     }
 
     match /services/{document=**} {
-      allow read: if isStaff();
+      allow read: if true;
       allow write: if isAdmin();
     }
 
     match /reviews/{document=**} {
-      allow read: if isStaff();
-      allow write: if isAdmin();
+      allow read: if isStaff() || (resource.data.status == "approved");
+      allow create: if validReviewCreate();
+      allow update, delete: if isAdmin();
     }
 
     match /appointments/{document=**} {
@@ -43,7 +64,7 @@ service cloud.firestore {
     }
 
     match /cms/{document=**} {
-      allow read: if isStaff();
+      allow read: if true;
       allow write: if isAdmin();
     }
 

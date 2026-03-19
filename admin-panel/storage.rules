@@ -14,7 +14,7 @@ service firebase.storage {
     }
 
     match /doctors/{allPaths=**} {
-      allow read: if signedIn();
+      allow read: if true;
       allow write: if isAdmin();
     }
   }

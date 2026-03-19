@@ -18,6 +18,20 @@ const schema = z.object({
   heroDescription: z.string().min(10),
   aboutHeading: z.string().min(5),
   aboutDescription: z.string().min(10),
+  whyChooseHeading: z.string().min(5),
+  missionHeading: z.string().min(5),
+  missionDescription: z.string().min(10),
+  visionHeading: z.string().min(5),
+  visionDescription: z.string().min(10),
+  healthcareHeading: z.string().min(5),
+  servicesHeading: z.string().min(5),
+  servicesNote: z.string().min(10),
+  reviewsHeading: z.string().min(5),
+  reviewsSubtitle: z.string().min(5),
+  appointmentHeading: z.string().min(5),
+  appointmentDescription: z.string().min(10),
+  contactHeading: z.string().min(5),
+  contactDescription: z.string().min(10),
   contactPhone: z.string().min(5),
   contactEmail: z.string().email(),
   contactAddress: z.string().min(10),
@@ -42,7 +56,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Settings & CMS"
-        description="Manage homepage messaging, emergency text, and contact information without editing source code."
+        description="Manage homepage section copy, emergency text, and contact information without editing source code."
       />
       <Card>
         <CardHeader>
@@ -51,7 +65,7 @@ export default function SettingsPage() {
         <CardContent>
           {isLoading ? (
             <div className="grid gap-4 md:grid-cols-2">
-              {Array.from({ length: 6 }).map((_, index) => (
+              {Array.from({ length: 14 }).map((_, index) => (
                 <Skeleton key={index} className="h-24 rounded-3xl" />
               ))}
             </div>
@@ -68,6 +82,48 @@ export default function SettingsPage() {
               </FormField>
               <FormField className="md:col-span-2" label="About description" error={form.formState.errors.aboutDescription?.message}>
                 <Textarea {...form.register("aboutDescription")} />
+              </FormField>
+              <FormField label="Why Choose Us heading" error={form.formState.errors.whyChooseHeading?.message}>
+                <Input {...form.register("whyChooseHeading")} />
+              </FormField>
+              <FormField label="Healthcare heading" error={form.formState.errors.healthcareHeading?.message}>
+                <Input {...form.register("healthcareHeading")} />
+              </FormField>
+              <FormField label="Mission heading" error={form.formState.errors.missionHeading?.message}>
+                <Input {...form.register("missionHeading")} />
+              </FormField>
+              <FormField label="Vision heading" error={form.formState.errors.visionHeading?.message}>
+                <Input {...form.register("visionHeading")} />
+              </FormField>
+              <FormField className="md:col-span-2" label="Mission description" error={form.formState.errors.missionDescription?.message}>
+                <Textarea {...form.register("missionDescription")} />
+              </FormField>
+              <FormField className="md:col-span-2" label="Vision description" error={form.formState.errors.visionDescription?.message}>
+                <Textarea {...form.register("visionDescription")} />
+              </FormField>
+              <FormField label="Services heading" error={form.formState.errors.servicesHeading?.message}>
+                <Input {...form.register("servicesHeading")} />
+              </FormField>
+              <FormField label="Reviews heading" error={form.formState.errors.reviewsHeading?.message}>
+                <Input {...form.register("reviewsHeading")} />
+              </FormField>
+              <FormField className="md:col-span-2" label="Services note" error={form.formState.errors.servicesNote?.message}>
+                <Textarea {...form.register("servicesNote")} />
+              </FormField>
+              <FormField className="md:col-span-2" label="Reviews subtitle" error={form.formState.errors.reviewsSubtitle?.message}>
+                <Textarea {...form.register("reviewsSubtitle")} />
+              </FormField>
+              <FormField label="Appointment heading" error={form.formState.errors.appointmentHeading?.message}>
+                <Input {...form.register("appointmentHeading")} />
+              </FormField>
+              <FormField label="Contact heading" error={form.formState.errors.contactHeading?.message}>
+                <Input {...form.register("contactHeading")} />
+              </FormField>
+              <FormField className="md:col-span-2" label="Appointment description" error={form.formState.errors.appointmentDescription?.message}>
+                <Textarea {...form.register("appointmentDescription")} />
+              </FormField>
+              <FormField className="md:col-span-2" label="Contact description" error={form.formState.errors.contactDescription?.message}>
+                <Textarea {...form.register("contactDescription")} />
               </FormField>
               <FormField label="Contact phone" error={form.formState.errors.contactPhone?.message}>
                 <Input {...form.register("contactPhone")} />

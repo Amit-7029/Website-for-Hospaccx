@@ -73,12 +73,14 @@ export async function listCollection<T extends { id: string; updatedAt?: string;
 ) {
   if (!isFirebaseConfigured()) {
     const local = readLocalCollection(name, fallbackSeed[name] as unknown as T[]);
-    return sortByUpdatedAt(local);
+    return sortByUpdatedAt(local).filter((item) => !(item as T & { system?: boolean }).system);
   }
 
   const { db } = getFirebaseServices();
   const snapshot = await getDocs(query(collection(db, name), orderBy("updatedAt", "desc")));
-  return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }) as T);
+  return snapshot.docs
+    .map((item) => ({ id: item.id, ...item.data() }) as T)
+    .filter((item) => !(item as T & { system?: boolean }).system);
 }
 
 export async function saveDocument<
