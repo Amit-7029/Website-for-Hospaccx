@@ -1,10 +1,10 @@
 import "./styles.css";
 import { galleryItems } from "./data/gallery";
-import { blogPosts, diagnosticServices, facilities, treatments, trustIndicators } from "./data/content";
+import { blogPosts, diagnosticServices, facilities, testimonials, treatments, trustIndicators } from "./data/content";
 import { doctors as fallbackDoctors } from "./data/doctors";
 import { createAppointment } from "./firebase/appointments-store";
 import { loadDoctors } from "./firebase/doctors-store";
-import { loadCmsContent, loadDiagnosticServices } from "./firebase/content-store";
+import { DEFAULT_CMS_CONTENT, loadCmsContent, loadDiagnosticServices } from "./firebase/content-store";
 import { createReview, loadReviews } from "./firebase/reviews-store";
 import { closeAnimatedLayer, createMotionSystem, openAnimatedLayer } from "./motion";
 
@@ -546,6 +546,11 @@ function setupReviewForm() {
 }
 
 async function initializeReviews() {
+  state.reviews = testimonials;
+  state.reviewsSource = "local";
+  renderTestimonials();
+  setupReviewForm();
+
   try {
     const { reviews, source } = await loadReviews();
     state.reviews = reviews;
@@ -566,6 +571,13 @@ async function initializeReviews() {
 }
 
 async function initializeContent() {
+  state.cmsContent = DEFAULT_CMS_CONTENT;
+  state.cmsSource = "local";
+  state.services = diagnosticServices;
+  state.servicesSource = "local";
+  applyCmsContent();
+  renderServices();
+
   try {
     const [{ content, source: cmsSource }, { services, source: servicesSource }] = await Promise.all([
       loadCmsContent(),
@@ -1346,9 +1358,29 @@ function setupInitialFormState() {
 }
 
 async function initializeDoctors() {
-  renderDoctorListSkeleton();
-
   const sourceBadge = document.getElementById("doctorDataSource");
+  const hasDoctorQuery = new URLSearchParams(window.location.search).has("doctor");
+
+  state.doctors = fallbackDoctors;
+  state.departments = deriveDepartments(fallbackDoctors);
+  state.doctorsSource = "local";
+
+  updateDoctorCount(fallbackDoctors.length);
+  renderDepartments();
+  renderDoctors();
+  renderGalleryTabs();
+  renderDoctorsGallery();
+  populateDepartmentSelect();
+  setupAppointmentForm();
+  if (hasDoctorQuery) {
+    prefillDoctorFromQuery();
+  } else {
+    resetAppointmentSelections();
+  }
+
+  if (sourceBadge) {
+    sourceBadge.textContent = "Doctor information is curated and regularly updated by our clinic team.";
+  }
 
   try {
     const { doctors, source } = await loadDoctors();
@@ -1363,8 +1395,11 @@ async function initializeDoctors() {
     renderGalleryTabs();
     renderDoctorsGallery();
     populateDepartmentSelect();
-    setupAppointmentForm();
-    prefillDoctorFromQuery();
+    if (hasDoctorQuery) {
+      prefillDoctorFromQuery();
+    } else {
+      resetAppointmentSelections();
+    }
 
     if (sourceBadge) {
       sourceBadge.textContent =
@@ -1383,8 +1418,11 @@ async function initializeDoctors() {
     renderGalleryTabs();
     renderDoctorsGallery();
     populateDepartmentSelect();
-    setupAppointmentForm();
-    prefillDoctorFromQuery();
+    if (hasDoctorQuery) {
+      prefillDoctorFromQuery();
+    } else {
+      resetAppointmentSelections();
+    }
 
     if (sourceBadge) {
       sourceBadge.textContent = "Doctor information is curated and regularly updated by our clinic team.";
