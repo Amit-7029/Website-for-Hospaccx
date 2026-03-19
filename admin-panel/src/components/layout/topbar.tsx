@@ -9,7 +9,7 @@ import { useUiStore } from "@/store/ui-store";
 import { useSession } from "@/components/providers/app-providers";
 
 export function Topbar() {
-  const { toggleSidebar, theme, setTheme } = useUiStore();
+  const { toggleSidebar, toggleMobileSidebar, theme, setTheme } = useUiStore();
   const { sessionUser, logout } = useSession();
 
   return (
@@ -19,6 +19,9 @@ export function Topbar() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
+      <Button size="icon" variant="outline" onClick={toggleMobileSidebar} className="inline-flex lg:hidden">
+        <Menu className="h-4 w-4" />
+      </Button>
       <Button size="icon" variant="outline" onClick={toggleSidebar} className="hidden lg:inline-flex">
         <Menu className="h-4 w-4" />
       </Button>
@@ -27,14 +30,16 @@ export function Topbar() {
         <Input placeholder="Search doctors, appointments, reviews..." className="pl-10" />
       </div>
       <div className="ml-auto flex items-center gap-3">
-        <Badge variant={sessionUser?.role === "admin" ? "success" : "secondary"}>{sessionUser?.role ?? "staff"}</Badge>
+        <Badge variant={sessionUser?.role === "admin" ? "success" : "secondary"} className="hidden sm:inline-flex">
+          {sessionUser?.role ?? "staff"}
+        </Badge>
         <Button size="icon" variant="outline" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
           {theme === "dark" ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
         </Button>
-        <Button size="icon" variant="outline">
+        <Button size="icon" variant="outline" className="hidden sm:inline-flex">
           <Bell className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" className="gap-3 px-3" onClick={() => void logout()}>
+        <Button variant="ghost" className="gap-3 px-2 sm:px-3" onClick={() => void logout()}>
           <div className="hidden text-right sm:block">
             <p className="text-sm font-semibold">{sessionUser?.name ?? "Admin User"}</p>
             <p className="text-xs text-muted-foreground">{sessionUser?.email ?? "Not signed in"}</p>
