@@ -582,126 +582,24 @@ a {
     display: grid;
 }
 
-.brand__identity {
-    justify-items: center;
-    gap: 0.7rem;
+.brand__text--full {
+    gap: 0.16rem;
 }
 
-.brand__logo-strip {
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.9fr);
-    align-items: center;
-    gap: 0.9rem;
-    width: min(100%, 760px);
+.brand__line {
+    font-size: clamp(2.35rem, 3.7vw, 3.45rem);
+    font-weight: 800;
+    line-height: 0.94;
+    letter-spacing: -0.03em;
+    color: #ffffff;
 }
 
-.brand__logo-card {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 88px;
-    padding: 0.8rem 1rem;
-    border-radius: 22px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
-    box-shadow: 0 22px 48px rgba(12, 8, 31, 0.18);
-    backdrop-filter: blur(14px);
-    overflow: hidden;
-}
-
-.brand__logo-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.08) 42%, transparent 78%);
-    opacity: 0;
-    transform: translateX(-130%);
-    pointer-events: none;
-}
-
-.brand__logo-card--banerjee {
-    animation: logoFloatBanerjee 4.4s var(--motion-ease) infinite;
-}
-
-.brand__logo-card--banerjee::before {
-    animation: logoSweep 4.4s linear infinite;
-}
-
-.brand__logo-card--hospaccx {
-    animation: logoFloatHospaccx 4.4s var(--motion-ease) infinite;
-}
-
-.brand__logo-card--hospaccx::before {
-    animation: logoSweep 4.4s linear infinite 0.35s;
-}
-
-.brand__logo-image {
-    display: block;
-    width: 100%;
-    height: auto;
-    max-height: 92px;
-    object-fit: contain;
-    filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.18));
-    mix-blend-mode: screen;
-}
-
-.brand__logo-image--banerjee {
-    max-width: 430px;
-}
-
-.brand__logo-image--hospaccx {
-    max-width: 320px;
-}
-
-@keyframes logoFloatBanerjee {
-    0%, 68%, 100% {
-        transform: translate3d(0, 0, 0);
-        box-shadow: 0 22px 48px rgba(12, 8, 31, 0.18);
-    }
-    18% {
-        transform: translate3d(0, -6px, 0);
-        box-shadow: 0 28px 56px rgba(12, 8, 31, 0.24);
-    }
-    30% {
-        transform: translate3d(0, 0, 0);
-    }
-}
-
-@keyframes logoFloatHospaccx {
-    0%, 68%, 100% {
-        transform: translate3d(0, 0, 0);
-        box-shadow: 0 22px 48px rgba(12, 8, 31, 0.18);
-    }
-    18% {
-        transform: translate3d(0, -6px, 0);
-        box-shadow: 0 28px 56px rgba(12, 8, 31, 0.24);
-    }
-    30% {
-        transform: translate3d(0, 0, 0);
-    }
-}
-
-@keyframes logoSweep {
-    0%, 68%, 100% {
-        opacity: 0;
-        transform: translateX(-130%);
-    }
-    12% {
-        opacity: 1;
-    }
-    28% {
-        opacity: 0.75;
-        transform: translateX(140%);
-    }
-    36% {
-        opacity: 0;
-        transform: translateX(140%);
-    }
+.brand__line--accent {
+    color: #b7b3ff;
 }
 
 .brand__tag {
-    margin-top: 0;
+    margin-top: 0.55rem;
     color: rgba(255, 255, 255, 0.68);
     font-size: 0.88rem;
     letter-spacing: 0.22em;
@@ -2563,33 +2461,12 @@ button {
 }
 
 @media (max-width: 720px) {
-    .brand__logo-strip {
-        grid-template-columns: 1fr;
-        gap: 0.7rem;
-        width: min(100%, 340px);
-    }
-
-    .brand__logo-card {
-        min-height: 72px;
-        padding: 0.65rem 0.8rem;
-        border-radius: 18px;
-    }
-
-    .brand__logo-image {
-        max-height: 68px;
-    }
-
-    .brand__logo-image--banerjee {
-        max-width: 280px;
-    }
-
-    .brand__logo-image--hospaccx {
-        max-width: 220px;
+    .brand__line {
+        font-size: 1.9rem;
     }
 
     .brand__tag {
         font-size: 0.76rem;
-        letter-spacing: 0.16em;
     }
 
     .nav__actions {
