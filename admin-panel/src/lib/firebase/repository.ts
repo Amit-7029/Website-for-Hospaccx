@@ -81,6 +81,10 @@ function normalizeDateValue(value: unknown) {
   return typeof value === "string" ? value : undefined;
 }
 
+function stripUndefinedValues<T extends Record<string, unknown>>(value: T) {
+  return Object.fromEntries(Object.entries(value).filter(([, entryValue]) => entryValue !== undefined)) as T;
+}
+
 function normalizeCollectionItem<T extends { id: string }>(name: CollectionName, item: T): T {
   if (name === "reviews") {
     const record = item as T & { feedback?: string; message?: string; createdAt?: unknown; updatedAt?: unknown };
@@ -134,16 +138,16 @@ export async function saveDocument<
   value: T,
 ) {
   const timestamp = new Date().toISOString();
-  const payload = {
+  const payload = stripUndefinedValues({
     ...value,
     updatedAt: timestamp,
     createdAt: value.createdAt ?? timestamp,
-  };
+  });
 
   if (!isFirebaseConfigured()) {
     const localItems = readLocalCollection(name, fallbackSeed[name] as unknown as T[]);
     const id = value.id ?? crypto.randomUUID();
-    const nextItems = [...localItems.filter((item) => item.id !== id), { ...payload, id }] as T[];
+    const nextItems = [...localItems.filter((item) => item.id !== id), stripUndefinedValues({ ...payload, id })] as T[];
     writeLocalCollection(name, sortByUpdatedAt(nextItems));
     return { ...payload, id } as T & { id: string };
   }
