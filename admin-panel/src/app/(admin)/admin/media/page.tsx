@@ -12,8 +12,10 @@ import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MediaForm } from "@/features/media/components/media-form";
 import { useMediaManager } from "@/features/media/hooks/use-media-manager";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function MediaPage() {
+  const { canDelete } = usePermissions();
   const {
     items,
     totalItems,
@@ -80,9 +82,11 @@ export default function MediaPage() {
                           <Pencil className="mr-2 h-4 w-4" />
                           Edit
                         </Button>
-                        <Button variant="destructive" size="icon" onClick={() => setItemToDelete(item)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {canDelete ? (
+                          <Button variant="destructive" size="icon" onClick={() => setItemToDelete(item)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        ) : null}
                       </div>
                     </CardContent>
                   </Card>
@@ -101,15 +105,17 @@ export default function MediaPage() {
         <MediaForm item={editingItem} onCancel={() => setEditingItem(null)} isSaving={isSaving} onSave={saveMedia} />
       </div>
 
-      <ConfirmDialog
-        open={Boolean(itemToDelete)}
-        title="Delete media asset?"
-        description="This removes the image from the website media library and any section using it."
-        destructive
-        confirmLabel="Delete media"
-        onClose={() => setItemToDelete(null)}
-        onConfirm={() => void removeMedia()}
-      />
+      {canDelete ? (
+        <ConfirmDialog
+          open={Boolean(itemToDelete)}
+          title="Delete media asset?"
+          description="This removes the image from the website media library and any section using it."
+          destructive
+          confirmLabel="Delete media"
+          onClose={() => setItemToDelete(null)}
+          onConfirm={() => void removeMedia()}
+        />
+      ) : null}
     </div>
   );
 }

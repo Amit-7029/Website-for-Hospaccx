@@ -128,6 +128,43 @@ function updateLink(selector, { href, text }) {
   });
 }
 
+function ensureMetaTag(selector, attributes) {
+  let tag = document.head.querySelector(selector);
+  if (!tag) {
+    tag = document.createElement("meta");
+    Object.entries(attributes).forEach(([key, value]) => tag.setAttribute(key, value));
+    document.head.appendChild(tag);
+  }
+  return tag;
+}
+
+function applySeoMeta(content) {
+  if (!content) {
+    return;
+  }
+
+  if (content.seoTitle) {
+    document.title = content.seoTitle;
+  }
+
+  if (content.seoDescription) {
+    ensureMetaTag('meta[name="description"]', { name: "description" }).setAttribute("content", content.seoDescription);
+    ensureMetaTag('meta[property="og:description"]', { property: "og:description" }).setAttribute("content", content.seoDescription);
+  }
+
+  if (content.seoKeywords) {
+    ensureMetaTag('meta[name="keywords"]', { name: "keywords" }).setAttribute("content", content.seoKeywords);
+  }
+
+  if (content.seoTitle) {
+    ensureMetaTag('meta[property="og:title"]', { property: "og:title" }).setAttribute("content", content.seoTitle);
+  }
+
+  if (content.seoOgImageUrl) {
+    ensureMetaTag('meta[property="og:image"]', { property: "og:image" }).setAttribute("content", content.seoOgImageUrl);
+  }
+}
+
 function cmsValue(key, fallback = "") {
   if (!key) {
     return fallback;
@@ -144,6 +181,8 @@ function applyCmsContent() {
   if (!content) {
     return;
   }
+
+  applySeoMeta(content);
 
   document.querySelectorAll("[data-cms]").forEach((element) => {
     const key = element.getAttribute("data-cms");

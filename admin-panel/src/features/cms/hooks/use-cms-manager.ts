@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useSession } from "@/components/providers/app-providers";
+import { usePermissions } from "@/hooks/use-permissions";
 import { addActivityLog, loadCmsContent, saveCmsContent } from "@/lib/firebase/repository";
 import type { CmsContent } from "@/types";
 
 export function useCmsManager() {
+  const { sessionUser } = useSession();
+  const { canManageCms, role } = usePermissions();
   const [content, setContent] = useState<CmsContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -26,6 +30,11 @@ export function useCmsManager() {
   }, []);
 
   const save = async (values: CmsContent) => {
+    if (!canManageCms) {
+      toast.error("Only admins can update website content");
+      return;
+    }
+
     setIsSaving(true);
     try {
       await saveCmsContent(values);
@@ -33,8 +42,8 @@ export function useCmsManager() {
         action: "Updated website CMS content",
         entity: "cms",
         entityId: "website",
-        actorName: "Current admin",
-        actorRole: "admin",
+        actorName: sessionUser?.name ?? "Current user",
+        actorRole: role,
       });
       setContent(values);
       toast.success("Website content updated");
@@ -50,5 +59,6 @@ export function useCmsManager() {
     isLoading,
     isSaving,
     save,
+    canManageCms,
   };
 }

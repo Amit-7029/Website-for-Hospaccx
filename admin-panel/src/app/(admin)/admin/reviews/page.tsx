@@ -11,9 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useReviewsManager } from "@/features/reviews/hooks/use-reviews-manager";
+import { usePermissions } from "@/hooks/use-permissions";
 import { formatDate } from "@/lib/utils";
 
 export default function ReviewsPage() {
+  const { canDelete } = usePermissions();
   const {
     items,
     filter,
@@ -93,9 +95,11 @@ export default function ReviewsPage() {
                       <Button variant="secondary" onClick={() => void updateStatus(review, "approved")}>
                         Approve
                       </Button>
-                      <Button variant="destructive" onClick={() => setReviewToDelete(review)}>
-                        Delete
-                      </Button>
+                      {canDelete ? (
+                        <Button variant="destructive" onClick={() => setReviewToDelete(review)}>
+                          Delete
+                        </Button>
+                      ) : null}
                     </div>
                   </CardContent>
                 </Card>
@@ -111,15 +115,17 @@ export default function ReviewsPage() {
         </Card>
       </div>
 
-      <ConfirmDialog
-        open={Boolean(reviewToDelete)}
-        title="Delete review?"
-        description="This action permanently removes the review from your moderation queue."
-        destructive
-        confirmLabel="Delete review"
-        onClose={() => setReviewToDelete(null)}
-        onConfirm={() => void removeReview()}
-      />
+      {canDelete ? (
+        <ConfirmDialog
+          open={Boolean(reviewToDelete)}
+          title="Delete review?"
+          description="This action permanently removes the review from your moderation queue."
+          destructive
+          confirmLabel="Delete review"
+          onClose={() => setReviewToDelete(null)}
+          onConfirm={() => void removeReview()}
+        />
+      ) : null}
     </div>
   );
 }

@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useSession } from "@/components/providers/app-providers";
+import { usePermissions } from "@/hooks/use-permissions";
 import { addActivityLog, deleteDocument, listCollection, saveDocument } from "@/lib/firebase/repository";
 import type { DiagnosticService } from "@/types";
 
 export function useServicesManager() {
+  const { sessionUser } = useSession();
+  const { canDelete, role } = usePermissions();
   const [items, setItems] = useState<DiagnosticService[]>([]);
   const [editingService, setEditingService] = useState<DiagnosticService | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<DiagnosticService | null>(null);
@@ -41,8 +45,8 @@ export function useServicesManager() {
         action: editingService ? "Updated diagnostic service" : "Added diagnostic service",
         entity: "service",
         entityId: saved.id,
-        actorName: "Current admin",
-        actorRole: "admin",
+        actorName: sessionUser?.name ?? "Current user",
+        actorRole: role,
       });
 
       toast.success(editingService ? "Service updated" : "Service added");
@@ -56,6 +60,11 @@ export function useServicesManager() {
   };
 
   const removeService = async () => {
+    if (!canDelete) {
+      toast.error("Only admins can delete diagnostic services");
+      return;
+    }
+
     if (!serviceToDelete) {
       return;
     }
@@ -66,8 +75,8 @@ export function useServicesManager() {
         action: "Deleted diagnostic service",
         entity: "service",
         entityId: serviceToDelete.id,
-        actorName: "Current admin",
-        actorRole: "admin",
+        actorName: sessionUser?.name ?? "Current user",
+        actorRole: role,
       });
       toast.success("Service deleted");
       setServiceToDelete(null);
@@ -87,5 +96,6 @@ export function useServicesManager() {
     isSaving,
     saveService,
     removeService,
+    canDelete,
   };
 }

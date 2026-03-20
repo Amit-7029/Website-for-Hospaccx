@@ -2,11 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useSession } from "@/components/providers/app-providers";
+import { usePermissions } from "@/hooks/use-permissions";
 import { addActivityLog, deleteDocument, listCollection, saveDocument, uploadImage } from "@/lib/firebase/repository";
 import { DEFAULT_MEDIA_ITEMS } from "@/lib/media-defaults";
 import type { MediaItem } from "@/types";
 
 export function useMediaManager() {
+  const { sessionUser } = useSession();
+  const { canDelete, role } = usePermissions();
   const [items, setItems] = useState<MediaItem[]>([]);
   const [sectionFilter, setSectionFilter] = useState<MediaItem["section"] | "all">("all");
   const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
@@ -90,8 +94,8 @@ export function useMediaManager() {
         action: editingItem ? "Updated media asset" : "Added media asset",
         entity: "media",
         entityId: saved.id,
-        actorName: "Current admin",
-        actorRole: "admin",
+        actorName: sessionUser?.name ?? "Current user",
+        actorRole: role,
       });
 
       toast.success(editingItem ? "Media updated" : "Media added");
@@ -105,6 +109,11 @@ export function useMediaManager() {
   };
 
   const removeMedia = async () => {
+    if (!canDelete) {
+      toast.error("Only admins can delete media");
+      return;
+    }
+
     if (!itemToDelete) {
       return;
     }
@@ -115,8 +124,8 @@ export function useMediaManager() {
         action: "Deleted media asset",
         entity: "media",
         entityId: itemToDelete.id,
-        actorName: "Current admin",
-        actorRole: "admin",
+        actorName: sessionUser?.name ?? "Current user",
+        actorRole: role,
       });
       toast.success("Media deleted");
       setItemToDelete(null);
@@ -139,5 +148,6 @@ export function useMediaManager() {
     isSaving,
     saveMedia,
     removeMedia,
+    canDelete,
   };
 }

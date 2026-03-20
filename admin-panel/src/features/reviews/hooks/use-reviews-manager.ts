@@ -2,10 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useSession } from "@/components/providers/app-providers";
+import { usePermissions } from "@/hooks/use-permissions";
 import { addActivityLog, deleteDocument, listCollection, saveDocument } from "@/lib/firebase/repository";
 import type { Review } from "@/types";
 
 export function useReviewsManager() {
+  const { sessionUser } = useSession();
+  const { canDelete, role } = usePermissions();
   const [items, setItems] = useState<Review[]>([]);
   const [filter, setFilter] = useState<Review["status"] | "all">("all");
   const [reviewToDelete, setReviewToDelete] = useState<Review | null>(null);
@@ -41,8 +45,8 @@ export function useReviewsManager() {
         action: `Marked review as ${status}`,
         entity: "review",
         entityId: review.id,
-        actorName: "Current admin",
-        actorRole: "admin",
+        actorName: sessionUser?.name ?? "Current user",
+        actorRole: role,
       });
       toast.success(`Review marked as ${status}`);
       await load();
@@ -52,6 +56,11 @@ export function useReviewsManager() {
   };
 
   const removeReview = async () => {
+    if (!canDelete) {
+      toast.error("Only admins can delete reviews");
+      return;
+    }
+
     if (!reviewToDelete) {
       return;
     }
@@ -62,8 +71,8 @@ export function useReviewsManager() {
         action: "Deleted review",
         entity: "review",
         entityId: reviewToDelete.id,
-        actorName: "Current admin",
-        actorRole: "admin",
+        actorName: sessionUser?.name ?? "Current user",
+        actorRole: role,
       });
       toast.success("Review removed");
       setReviewToDelete(null);
@@ -87,5 +96,6 @@ export function useReviewsManager() {
     isLoading,
     updateStatus,
     removeReview,
+    canDelete,
   };
 }

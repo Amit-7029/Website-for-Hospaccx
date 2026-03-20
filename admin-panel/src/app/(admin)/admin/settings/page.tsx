@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { CMS_FIELD_SECTIONS } from "@/features/cms/cms-fields";
 import { useCmsManager } from "@/features/cms/hooks/use-cms-manager";
+import { usePermissions } from "@/hooks/use-permissions";
 import { DEFAULT_CMS_CONTENT } from "@/lib/constants";
 import { uploadImage } from "@/lib/firebase/repository";
 
@@ -23,11 +24,13 @@ function CmsImageField({
   label,
   value,
   onChange,
+  disabled = false,
 }: {
   fieldKey: keyof Values;
   label: string;
   value: string;
   onChange: (nextValue: string) => void;
+  disabled?: boolean;
 }) {
   const [isUploading, setIsUploading] = useState(false);
 
@@ -38,12 +41,13 @@ function CmsImageField({
       hint="Paste an image URL or upload a new image directly to Firebase Storage."
     >
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
-        <Input value={value} onChange={(event) => onChange(event.target.value)} />
+        <Input value={value} onChange={(event) => onChange(event.target.value)} disabled={disabled} />
         <div className="space-y-3 rounded-2xl border border-border/70 bg-muted/30 p-3">
           <input
             type="file"
             accept="image/*"
             className="block w-full text-sm"
+            disabled={disabled}
             onChange={async (event) => {
               const file = event.target.files?.[0];
               if (!file) {
@@ -78,7 +82,8 @@ function CmsImageField({
 }
 
 export default function SettingsPage() {
-  const { content, isLoading, isSaving, save } = useCmsManager();
+  const { content, isLoading, isSaving, save, canManageCms } = useCmsManager();
+  const { role } = usePermissions();
   const [values, setValues] = useState<Values>(DEFAULT_CMS_CONTENT);
 
   useEffect(() => {
@@ -111,6 +116,11 @@ export default function SettingsPage() {
             Doctors, services, reviews, and appointments already have their own modules. Use this screen to manage the
             homepage structure, hero navigation, and editable section copy.
           </CardDescription>
+          {!canManageCms ? (
+            <CardDescription className="text-amber-600 dark:text-amber-400">
+              Signed in as {role}. This screen is read-only for staff accounts.
+            </CardDescription>
+          ) : null}
         </CardHeader>
         <CardContent className="space-y-6">
           {isLoading ? (
@@ -143,12 +153,13 @@ export default function SettingsPage() {
 
                         if (field.kind === "image") {
                           return (
-                            <CmsImageField
+            <CmsImageField
                               key={field.key}
                               fieldKey={field.key}
                               label={field.label}
                               value={value}
                               onChange={(nextValue) => handleValueChange(field.key, nextValue)}
+                              disabled={!canManageCms}
                             />
                           );
                         }
@@ -156,10 +167,14 @@ export default function SettingsPage() {
                         if (field.kind === "textarea") {
                           return (
                             <FormField key={field.key} className="md:col-span-2" label={field.label} hint={field.hint}>
-                              <Textarea value={value} onChange={(event) => handleValueChange(field.key, event.target.value)} />
+                              <Textarea
+                                value={value}
+                                onChange={(event) => handleValueChange(field.key, event.target.value)}
+                                disabled={!canManageCms}
+                              />
                             </FormField>
                           );
-                        }
+                      }
 
                         return (
                           <FormField key={field.key} label={field.label} hint={field.hint}>
@@ -167,6 +182,7 @@ export default function SettingsPage() {
                               type={field.kind === "url" ? "url" : "text"}
                               value={value}
                               onChange={(event) => handleValueChange(field.key, event.target.value)}
+                              disabled={!canManageCms}
                             />
                           </FormField>
                         );
@@ -177,7 +193,9 @@ export default function SettingsPage() {
               </div>
 
               <div className="flex justify-end">
-                <Button disabled={isSaving}>{isSaving ? "Saving..." : "Save website content"}</Button>
+                <Button disabled={isSaving || !canManageCms}>
+                  {isSaving ? "Saving..." : canManageCms ? "Save website content" : "Admin access required"}
+                </Button>
               </div>
             </form>
           )}

@@ -2,12 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useSession } from "@/components/providers/app-providers";
+import { usePermissions } from "@/hooks/use-permissions";
 import { addActivityLog, deleteDocument, listCollection, saveDocument, uploadImage } from "@/lib/firebase/repository";
 import type { Doctor } from "@/types";
 
 const PAGE_SIZE = 6;
 
 export function useDoctorsManager() {
+  const { sessionUser } = useSession();
+  const { canDelete, role } = usePermissions();
   const [items, setItems] = useState<Doctor[]>([]);
   const [search, setSearch] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
@@ -85,8 +89,8 @@ export function useDoctorsManager() {
         action: editingDoctor ? "Updated doctor profile" : "Added doctor profile",
         entity: "doctor",
         entityId: saved.id,
-        actorName: "Current admin",
-        actorRole: "admin",
+        actorName: sessionUser?.name ?? "Current user",
+        actorRole: role,
       });
 
       toast.success(editingDoctor ? "Doctor updated" : "Doctor added");
@@ -100,6 +104,11 @@ export function useDoctorsManager() {
   };
 
   const removeDoctor = async () => {
+    if (!canDelete) {
+      toast.error("Only admins can delete doctor profiles");
+      return;
+    }
+
     if (!doctorToDelete) {
       return;
     }
@@ -110,8 +119,8 @@ export function useDoctorsManager() {
         action: "Deleted doctor profile",
         entity: "doctor",
         entityId: doctorToDelete.id,
-        actorName: "Current admin",
-        actorRole: "admin",
+        actorName: sessionUser?.name ?? "Current user",
+        actorRole: role,
       });
       toast.success("Doctor deleted");
       setDoctorToDelete(null);
@@ -140,5 +149,6 @@ export function useDoctorsManager() {
     setDoctorToDelete,
     saveDoctor,
     removeDoctor,
+    canDelete,
   };
 }

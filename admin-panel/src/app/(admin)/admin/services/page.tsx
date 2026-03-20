@@ -10,8 +10,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ServiceForm } from "@/features/services/components/service-form";
 import { useServicesManager } from "@/features/services/hooks/use-services-manager";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function ServicesPage() {
+  const { canDelete } = usePermissions();
   const {
     items,
     editingService,
@@ -50,9 +52,11 @@ export default function ServicesPage() {
                         <Pencil className="mr-2 h-4 w-4" />
                         Edit
                       </Button>
-                      <Button variant="destructive" size="icon" onClick={() => setServiceToDelete(service)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {canDelete ? (
+                        <Button variant="destructive" size="icon" onClick={() => setServiceToDelete(service)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      ) : null}
                     </div>
                   </CardContent>
                 </Card>
@@ -71,15 +75,17 @@ export default function ServicesPage() {
         <ServiceForm service={editingService} onCancel={() => setEditingService(null)} isSaving={isSaving} onSave={saveService} />
       </div>
 
-      <ConfirmDialog
-        open={Boolean(serviceToDelete)}
-        title="Delete service?"
-        description="This removes the service from the dashboard and published service catalog."
-        destructive
-        confirmLabel="Delete service"
-        onClose={() => setServiceToDelete(null)}
-        onConfirm={() => void removeService()}
-      />
+      {canDelete ? (
+        <ConfirmDialog
+          open={Boolean(serviceToDelete)}
+          title="Delete service?"
+          description="This removes the service from the dashboard and published service catalog."
+          destructive
+          confirmLabel="Delete service"
+          onClose={() => setServiceToDelete(null)}
+          onConfirm={() => void removeService()}
+        />
+      ) : null}
     </div>
   );
 }

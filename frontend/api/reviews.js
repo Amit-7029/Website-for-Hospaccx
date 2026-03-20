@@ -6,6 +6,12 @@ function json(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
+function sanitizeText(value) {
+  return String(value || "")
+    .replace(/[<>]/g, "")
+    .trim();
+}
+
 function normalizeDateValue(value) {
   if (!value) {
     return "";
@@ -59,8 +65,8 @@ export default async function handler(req, res) {
 
   try {
     const payload = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const name = String(payload?.name || "Anonymous Patient").trim() || "Anonymous Patient";
-    const feedback = String(payload?.feedback || payload?.message || "").trim();
+    const name = sanitizeText(payload?.name || "Anonymous Patient") || "Anonymous Patient";
+    const feedback = sanitizeText(payload?.feedback || payload?.message || "");
     const rating = Number(payload?.rating || 0);
 
     if (feedback.length < 20 || feedback.length > 320 || !Number.isInteger(rating) || rating < 1 || rating > 5) {

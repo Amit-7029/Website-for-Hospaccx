@@ -72,6 +72,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /notifications/{document=**} {
+      allow read: if isStaff();
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
     match /reviews/{document=**} {
       allow read: if isStaff() || (resource.data.status == "approved");
       allow create: if validReviewCreate();

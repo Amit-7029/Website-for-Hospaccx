@@ -3,10 +3,14 @@
 import { unparse } from "papaparse";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useSession } from "@/components/providers/app-providers";
+import { usePermissions } from "@/hooks/use-permissions";
 import { addActivityLog, listCollection, saveDocument } from "@/lib/firebase/repository";
 import type { Appointment } from "@/types";
 
 export function useAppointmentsManager() {
+  const { sessionUser } = useSession();
+  const { role } = usePermissions();
   const [items, setItems] = useState<Appointment[]>([]);
   const [filter, setFilter] = useState<Appointment["status"] | "all">("all");
   const [search, setSearch] = useState("");
@@ -50,8 +54,8 @@ export function useAppointmentsManager() {
         action: `Updated appointment to ${status}`,
         entity: "appointment",
         entityId: appointment.id,
-        actorName: "Current admin",
-        actorRole: "admin",
+        actorName: sessionUser?.name ?? "Current user",
+        actorRole: role,
       });
       toast.success(`Appointment marked as ${status}`);
       await load();

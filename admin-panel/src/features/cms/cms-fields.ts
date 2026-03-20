@@ -17,6 +17,16 @@ export type CmsFieldSection = {
 
 export const CMS_FIELD_SECTIONS: CmsFieldSection[] = [
   {
+    title: "SEO",
+    description: "Control homepage metadata used by search engines and social previews.",
+    fields: [
+      { key: "seoTitle", label: "Meta title" },
+      { key: "seoDescription", label: "Meta description", kind: "textarea" },
+      { key: "seoKeywords", label: "Meta keywords", kind: "textarea" },
+      { key: "seoOgImageUrl", label: "Open Graph image", kind: "image" },
+    ],
+  },
+  {
     title: "Topbar, links and brand",
     description: "Manage the top strip, shared contact links, social URLs, and brand tag.",
     fields: [

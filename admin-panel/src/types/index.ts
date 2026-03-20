@@ -67,8 +67,24 @@ export interface Appointment {
   createdAt?: string;
 }
 
+export interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  type: "appointment" | "review" | "system";
+  entityId?: string;
+  entityType?: "appointment" | "review" | "doctor" | "service" | "cms" | "media";
+  read: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface CmsContent {
   [key: string]: string;
+  seoTitle: string;
+  seoDescription: string;
+  seoKeywords: string;
+  seoOgImageUrl: string;
   heroHeading: string;
   heroDescription: string;
   topbarTagline: string;
@@ -208,4 +224,28 @@ export interface DashboardStats {
   totalReviews: number;
   pendingReviews: number;
   pendingAppointments: number;
+}
+
+export interface DashboardAnalyticsPoint {
+  label: string;
+  value: number;
+}
+
+export interface ReviewRatingsPoint {
+  label: string;
+  value: number;
+}
+
+export interface DashboardAnalytics {
+  dailyAppointments: DashboardAnalyticsPoint[];
+  monthlyGrowth: DashboardAnalyticsPoint[];
+  reviewRatings: ReviewRatingsPoint[];
+}
+
+export interface GlobalSearchResult {
+  id: string;
+  type: "doctor" | "service" | "appointment";
+  title: string;
+  subtitle: string;
+  href: string;
 }

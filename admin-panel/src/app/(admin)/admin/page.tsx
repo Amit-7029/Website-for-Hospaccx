@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { CalendarCheck2, MessageSquareQuote, Stethoscope, TimerReset } from "lucide-react";
 import { motion } from "framer-motion";
 import { PageHeader } from "@/components/shared/page-header";
@@ -8,10 +9,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useDashboardData } from "@/features/dashboard/hooks/use-dashboard-data";
+import { DashboardAnalyticsSkeleton } from "@/features/dashboard/components/dashboard-analytics-skeleton";
 import { formatDateTime } from "@/lib/utils";
 
+const DashboardAnalyticsSection = dynamic(
+  () => import("@/features/dashboard/components/dashboard-analytics").then((module) => module.DashboardAnalyticsSection),
+  {
+    ssr: false,
+    loading: () => <DashboardAnalyticsSkeleton />,
+  },
+);
+
 export default function AdminDashboardPage() {
-  const { stats, activity, cms, isLoading } = useDashboardData();
+  const { stats, activity, cms, analytics, isLoading } = useDashboardData();
 
   return (
     <div className="space-y-6">
@@ -98,6 +108,8 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {isLoading ? <DashboardAnalyticsSkeleton /> : <DashboardAnalyticsSection analytics={analytics} />}
     </div>
   );
 }

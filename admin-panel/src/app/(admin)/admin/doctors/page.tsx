@@ -14,8 +14,10 @@ import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DoctorForm } from "@/features/doctors/components/doctor-form";
 import { useDoctorsManager } from "@/features/doctors/hooks/use-doctors-manager";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function DoctorsPage() {
+  const { canDelete } = usePermissions();
   const {
     paginatedItems,
     departments,
@@ -114,9 +116,11 @@ export default function DoctorsPage() {
                             <Button variant="outline" className="flex-1" onClick={() => setEditingDoctor(doctor)}>
                               Edit
                             </Button>
-                            <Button variant="destructive" size="icon" onClick={() => setDoctorToDelete(doctor)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            {canDelete ? (
+                              <Button variant="destructive" size="icon" onClick={() => setDoctorToDelete(doctor)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            ) : null}
                           </div>
                         </CardContent>
                       </Card>
@@ -162,15 +166,17 @@ export default function DoctorsPage() {
         />
       </div>
 
-      <ConfirmDialog
-        open={Boolean(doctorToDelete)}
-        title="Delete doctor profile?"
-        description="This will permanently remove the doctor from the admin system and website data source."
-        destructive
-        confirmLabel="Delete doctor"
-        onClose={() => setDoctorToDelete(null)}
-        onConfirm={() => void removeDoctor()}
-      />
+      {canDelete ? (
+        <ConfirmDialog
+          open={Boolean(doctorToDelete)}
+          title="Delete doctor profile?"
+          description="This will permanently remove the doctor from the admin system and website data source."
+          destructive
+          confirmLabel="Delete doctor"
+          onClose={() => setDoctorToDelete(null)}
+          onConfirm={() => void removeDoctor()}
+        />
+      ) : null}
     </div>
   );
 }

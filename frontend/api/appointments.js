@@ -6,6 +6,12 @@ function json(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
+function sanitizeText(value) {
+  return String(value || "")
+    .replace(/[<>]/g, "")
+    .trim();
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return json(res, 405, { error: "Method not allowed" });
@@ -13,11 +19,11 @@ export default async function handler(req, res) {
 
   try {
     const payload = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const name = String(payload?.name || "").trim();
-    const phone = String(payload?.phone || "").trim();
-    const date = String(payload?.date || "").trim();
-    const doctor = String(payload?.doctor || "").trim();
-    const message = String(payload?.message || "").trim();
+    const name = sanitizeText(payload?.name);
+    const phone = sanitizeText(payload?.phone);
+    const date = sanitizeText(payload?.date);
+    const doctor = sanitizeText(payload?.doctor);
+    const message = sanitizeText(payload?.message);
 
     if (name.length < 2 || phone.length < 8 || date.length < 10) {
       return json(res, 400, { error: "Invalid appointment payload" });
@@ -32,6 +38,17 @@ export default async function handler(req, res) {
       doctor,
       message,
       status: "pending",
+      createdAt: timestamp,
+      updatedAt: timestamp
+    });
+
+    await db.collection("notifications").add({
+      title: "New appointment request",
+      message: `${name} requested an appointment${doctor ? ` with ${doctor}` : ""}.`,
+      type: "appointment",
+      entityId: created.id,
+      entityType: "appointment",
+      read: false,
       createdAt: timestamp,
       updatedAt: timestamp
     });
