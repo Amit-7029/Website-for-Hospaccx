@@ -94,6 +94,15 @@ body.modal-open {
     display: inline-flex;
     gap: 0.55rem;
     pointer-events: auto;
+    max-width: min(60vw, 28rem);
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 0.15rem;
+    scrollbar-width: none;
+}
+
+.hero__media-dots::-webkit-scrollbar {
+    display: none;
 }
 
 .hero-media-dot {

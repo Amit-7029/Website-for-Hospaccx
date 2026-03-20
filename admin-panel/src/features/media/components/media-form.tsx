@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -40,16 +40,29 @@ const SECTION_OPTIONS: Array<{ value: MediaItem["section"]; label: string }> = [
 
 export function MediaForm({
   item,
+  items,
+  preferredSection,
   onCancel,
   onSave,
   isSaving,
 }: {
   item: MediaItem | null;
+  items: MediaItem[];
+  preferredSection?: MediaItem["section"];
   onCancel: () => void;
   onSave: (values: SubmitValues & { imageFile?: File | null; imageUrl?: string }) => Promise<void>;
   isSaving: boolean;
 }) {
   const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const getNextOrder = useCallback((section: MediaItem["section"]) => {
+    const highestOrder = items
+      .filter((entry) => entry.section === section && entry.id !== item?.id)
+      .reduce((maxOrder, entry) => Math.max(maxOrder, Number(entry.order) || 0), 0);
+
+    return highestOrder + 1;
+  }, [items, item?.id]);
+
   const form = useForm<FormValues, unknown, SubmitValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -57,28 +70,55 @@ export function MediaForm({
       caption: item?.caption ?? "",
       alt: item?.alt ?? "",
       imageUrl: item?.imageUrl ?? "",
-      section: item?.section ?? "gallery",
+      section: item?.section ?? preferredSection ?? "gallery",
       category: item?.category ?? "Infrastructure",
       ctaLabel: item?.ctaLabel ?? "",
       ctaLink: item?.ctaLink ?? "",
-      order: item?.order ?? 1,
+      order: item?.order ?? getNextOrder(item?.section ?? preferredSection ?? "gallery"),
     },
   });
 
   useEffect(() => {
+    const activeSection = item?.section ?? preferredSection ?? "gallery";
+
     form.reset({
       title: item?.title ?? "",
       caption: item?.caption ?? "",
       alt: item?.alt ?? "",
       imageUrl: item?.imageUrl ?? "",
-      section: item?.section ?? "gallery",
+      section: activeSection,
       category: item?.category ?? "Infrastructure",
       ctaLabel: item?.ctaLabel ?? "",
       ctaLink: item?.ctaLink ?? "",
-      order: item?.order ?? 1,
+      order: item?.order ?? getNextOrder(activeSection),
     });
     setImageFile(null);
-  }, [form, item]);
+  }, [form, item, getNextOrder, preferredSection]);
+
+  useEffect(() => {
+    if (item) {
+      return;
+    }
+
+    const subscription = form.watch((values, { name }) => {
+      if (name !== "section") {
+        return;
+      }
+
+      const section = values.section;
+      if (!section) {
+        return;
+      }
+
+      form.setValue("order", getNextOrder(section), {
+        shouldDirty: true,
+        shouldTouch: false,
+        shouldValidate: true,
+      });
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form, item, getNextOrder]);
 
   const previewUrl = imageFile ? URL.createObjectURL(imageFile) : form.watch("imageUrl") || item?.imageUrl;
 
@@ -106,6 +146,12 @@ export function MediaForm({
               <Input type="number" min={0} max={999} {...form.register("order")} />
             </FormField>
           </div>
+
+          {!item && form.watch("section") === "hero" ? (
+            <p className="text-xs text-muted-foreground">
+              Hero slider supports multiple images. Use a new order number to add the next slide.
+            </p>
+          ) : null}
 
           <FormField label="Caption" error={form.formState.errors.caption?.message}>
             <Textarea {...form.register("caption")} placeholder="Short patient-friendly copy for this image card." />

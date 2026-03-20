@@ -106,7 +106,14 @@ export default function MediaPage() {
           </CardContent>
         </Card>
 
-        <MediaForm item={editingItem} onCancel={() => setEditingItem(null)} isSaving={isSaving} onSave={saveMedia} />
+        <MediaForm
+          item={editingItem}
+          items={items}
+          preferredSection={sectionFilter === "all" ? undefined : sectionFilter}
+          onCancel={() => setEditingItem(null)}
+          isSaving={isSaving}
+          onSave={saveMedia}
+        />
       </div>
 
       {canDelete ? (
