@@ -299,8 +299,8 @@ function getMediaItemsBySection(section, category = "") {
   });
 }
 
-function getSectionMediaItem(section, index) {
-  return getMediaItemsBySection(section)[index] ?? null;
+function getSectionMediaItem(section, order) {
+  return getMediaItemsBySection(section).find((item) => Number(item.order) === Number(order)) ?? null;
 }
 
 function renderSectionMediaCards(containerId, section, cards, cardClassName = "section-media-card") {
@@ -311,7 +311,7 @@ function renderSectionMediaCards(containerId, section, cards, cardClassName = "s
 
   container.innerHTML = cards
     .map((card, index) => {
-      const media = getSectionMediaItem(section, index);
+      const media = getSectionMediaItem(section, index + 1);
       const motionVariant = index % 2 === 0 ? "slideLeft" : "slideRight";
 
       return `
@@ -632,11 +632,10 @@ function renderServices() {
     return;
   }
 
-  const serviceMedia = getMediaItemsBySection("services");
   container.innerHTML = state.services
     .map(
       (service, index) => {
-        const media = serviceMedia[index] ?? null;
+        const media = getSectionMediaItem("services", index + 1);
         const motionVariant = index % 2 === 0 ? "slideLeft" : "slideRight";
 
         return `

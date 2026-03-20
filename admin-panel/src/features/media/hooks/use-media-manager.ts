@@ -12,6 +12,24 @@ function mediaSlotKey(item: Pick<MediaItem, "section" | "order">) {
   return `${item.section}:${item.order}`;
 }
 
+function getTimestampValue(item: Pick<MediaItem, "updatedAt" | "createdAt">) {
+  return new Date(item.updatedAt ?? item.createdAt ?? 0).getTime();
+}
+
+function dedupeMediaItems(items: MediaItem[]) {
+  const latestBySlot = new Map<string, MediaItem>();
+
+  items.forEach((item) => {
+    const slotKey = mediaSlotKey(item);
+    const current = latestBySlot.get(slotKey);
+    if (!current || getTimestampValue(item) >= getTimestampValue(current)) {
+      latestBySlot.set(slotKey, item);
+    }
+  });
+
+  return [...latestBySlot.values()];
+}
+
 export function useMediaManager() {
   const { sessionUser } = useSession();
   const { canDelete, role } = usePermissions();
@@ -26,23 +44,19 @@ export function useMediaManager() {
     setIsLoading(true);
     try {
       let mediaItems = await listCollection<MediaItem>("media");
-
-      const existingKeys = new Set(mediaItems.map((item) => mediaSlotKey(item)));
-      const missingDefaults = DEFAULT_MEDIA_ITEMS.filter((item) => !existingKeys.has(mediaSlotKey(item as MediaItem)));
-
-      if (!mediaItems.length || missingDefaults.length) {
+      if (!mediaItems.length) {
         const seededItems = await Promise.all(
-          (mediaItems.length ? missingDefaults : DEFAULT_MEDIA_ITEMS).map((item) =>
+          DEFAULT_MEDIA_ITEMS.map((item) =>
             saveDocument("media", {
               ...item,
             }),
           ),
         );
-        mediaItems = [...mediaItems, ...(seededItems as MediaItem[])];
+        mediaItems = seededItems as MediaItem[];
       }
 
       setItems(
-        [...mediaItems].sort((left, right) => {
+        dedupeMediaItems(mediaItems).sort((left, right) => {
           if (left.section !== right.section) {
             return left.section.localeCompare(right.section);
           }
@@ -75,6 +89,11 @@ export function useMediaManager() {
   ) => {
     setIsSaving(true);
     try {
+      const slotMatch =
+        editingItem ??
+        items.find((item) => item.section === values.section && Number(item.order) === Number(values.order)) ??
+        null;
+
       const imageUrl =
         values.imageFile instanceof File
           ? await uploadImage(values.imageFile, `media/${values.section}/${Date.now()}-${values.imageFile.name}`)
@@ -85,7 +104,7 @@ export function useMediaManager() {
       }
 
       const saved = await saveDocument("media", {
-        id: editingItem?.id,
+        id: slotMatch?.id,
         title: values.title,
         caption: values.caption,
         alt: values.alt,
@@ -95,18 +114,18 @@ export function useMediaManager() {
         ctaLabel: values.ctaLabel,
         ctaLink: values.ctaLink,
         order: values.order,
-        createdAt: editingItem?.createdAt,
+        createdAt: slotMatch?.createdAt,
       });
 
       await addActivityLog({
-        action: editingItem ? "Updated media asset" : "Added media asset",
+        action: slotMatch ? "Updated media asset" : "Added media asset",
         entity: "media",
         entityId: saved.id,
         actorName: sessionUser?.name ?? "Current user",
         actorRole: role,
       });
 
-      toast.success(editingItem ? "Media updated" : "Media added");
+      toast.success(slotMatch ? "Media updated" : "Media added");
       setEditingItem(null);
       await load();
     } catch (error) {

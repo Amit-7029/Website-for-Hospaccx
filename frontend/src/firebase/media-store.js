@@ -31,10 +31,33 @@ function sortMediaItems(items) {
   });
 }
 
+function mediaSlotKey(item) {
+  return `${String(item.section || "").trim()}:${Number(item.order ?? 0)}`;
+}
+
+function getTimestampValue(item) {
+  return new Date(item.updatedAt || item.createdAt || 0).getTime();
+}
+
+function dedupeMediaItems(items) {
+  const latestBySlot = new Map();
+
+  items.forEach((item) => {
+    const normalized = normalizeMediaItem(item);
+    const slotKey = mediaSlotKey(normalized);
+    const current = latestBySlot.get(slotKey);
+    if (!current || getTimestampValue(normalized) >= getTimestampValue(current)) {
+      latestBySlot.set(slotKey, normalized);
+    }
+  });
+
+  return sortMediaItems([...latestBySlot.values()]);
+}
+
 export async function loadMediaItems() {
   if (!isFirebaseConfigured()) {
     return {
-      items: sortMediaItems(fallbackMediaItems.map(normalizeMediaItem)),
+      items: dedupeMediaItems(fallbackMediaItems),
       source: "local"
     };
   }
@@ -42,7 +65,7 @@ export async function loadMediaItems() {
   const { firestore } = getFirebaseServices();
   if (!firestore) {
     return {
-      items: sortMediaItems(fallbackMediaItems.map(normalizeMediaItem)),
+      items: dedupeMediaItems(fallbackMediaItems),
       source: "local"
     };
   }
@@ -52,13 +75,13 @@ export async function loadMediaItems() {
     const remoteItems = sortMediaItems(snapshot.docs.map((entry, index) => normalizeMediaItem({ id: entry.id, ...entry.data() }, index)));
 
     return {
-      items: remoteItems.length ? remoteItems : sortMediaItems(fallbackMediaItems.map(normalizeMediaItem)),
+      items: remoteItems.length ? dedupeMediaItems(remoteItems) : dedupeMediaItems(fallbackMediaItems),
       source: remoteItems.length ? "firestore" : "local"
     };
   } catch (error) {
     console.error("Unable to load media from Firestore, falling back to local media.", error);
     return {
-      items: sortMediaItems(fallbackMediaItems.map(normalizeMediaItem)),
+      items: dedupeMediaItems(fallbackMediaItems),
       source: "local"
     };
   }
