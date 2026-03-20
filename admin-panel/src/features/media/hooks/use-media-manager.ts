@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/components/providers/app-providers";
 import { usePermissions } from "@/hooks/use-permissions";
-import { addActivityLog, deleteDocument, listCollection, saveDocument, uploadImage } from "@/lib/firebase/repository";
+import { addActivityLog, deleteMediaSlot, listCollection, saveDocument, uploadImage } from "@/lib/firebase/repository";
 import { DEFAULT_MEDIA_ITEMS } from "@/lib/media-defaults";
 import type { MediaItem } from "@/types";
 
@@ -146,11 +146,11 @@ export function useMediaManager() {
     }
 
     try {
-      await deleteDocument("media", itemToDelete.id);
+      await deleteMediaSlot(itemToDelete.section, itemToDelete.order);
       await addActivityLog({
         action: "Deleted media asset",
         entity: "media",
-        entityId: itemToDelete.id,
+        entityId: mediaSlotKey(itemToDelete),
         actorName: sessionUser?.name ?? "Current user",
         actorRole: role,
       });

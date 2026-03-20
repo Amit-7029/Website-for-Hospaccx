@@ -946,6 +946,7 @@ async function initializeMedia() {
   renderWhyChooseMedia();
   renderHealthcareMedia();
   renderPharmacyMedia();
+  renderServices();
   renderGallery();
 
   try {
@@ -957,6 +958,7 @@ async function initializeMedia() {
     renderWhyChooseMedia();
     renderHealthcareMedia();
     renderPharmacyMedia();
+    renderServices();
     renderGallery();
   } catch (error) {
     console.error(error);
@@ -967,6 +969,7 @@ async function initializeMedia() {
     renderWhyChooseMedia();
     renderHealthcareMedia();
     renderPharmacyMedia();
+    renderServices();
     renderGallery();
   }
 }

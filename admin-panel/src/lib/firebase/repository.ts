@@ -7,7 +7,10 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   setDoc,
+  where,
+  writeBatch,
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { getFirebaseServices, isFirebaseConfigured } from "@/lib/firebase/client";
@@ -167,6 +170,30 @@ export async function deleteDocument(name: CollectionName, id: string) {
 
   const { db } = getFirebaseServices();
   await deleteDoc(doc(db, name, id));
+}
+
+export async function deleteMediaSlot(section: string, order: number) {
+  if (!isFirebaseConfigured()) {
+    const localItems = readLocalCollection("media", fallbackSeed.media as MediaItem[]);
+    writeLocalCollection(
+      "media",
+      localItems.filter((item) => !(String(item.section) === String(section) && Number(item.order) === Number(order))),
+    );
+    return;
+  }
+
+  const { db } = getFirebaseServices();
+  const snapshot = await getDocs(query(collection(db, "media"), where("section", "==", section), where("order", "==", Number(order))));
+
+  if (snapshot.empty) {
+    return;
+  }
+
+  const batch = writeBatch(db);
+  snapshot.docs.forEach((item) => {
+    batch.delete(item.ref);
+  });
+  await batch.commit();
 }
 
 export async function loadCmsContent() {

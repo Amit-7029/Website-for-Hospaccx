@@ -2,6 +2,9 @@ import { collection, getDocs } from "firebase/firestore";
 import { fallbackMediaItems } from "../data/media";
 import { getFirebaseServices, isFirebaseConfigured } from "./client";
 
+const FIRESTORE_MEDIA_ENDPOINT = "https://firestore.googleapis.com/v1/projects";
+const DEFAULT_FIREBASE_PROJECT_ID = "hospaccx-admin";
+
 function normalizeMediaItem(item, index = 0) {
   return {
     id: item.id ?? `media-${index + 1}`,
@@ -54,7 +57,83 @@ function dedupeMediaItems(items) {
   return sortMediaItems([...latestBySlot.values()]);
 }
 
+function readRestFieldValue(field) {
+  if (!field || typeof field !== "object") {
+    return "";
+  }
+
+  if ("stringValue" in field) {
+    return field.stringValue;
+  }
+
+  if ("integerValue" in field) {
+    return Number(field.integerValue);
+  }
+
+  if ("doubleValue" in field) {
+    return Number(field.doubleValue);
+  }
+
+  if ("booleanValue" in field) {
+    return Boolean(field.booleanValue);
+  }
+
+  return "";
+}
+
+async function loadMediaItemsFromRest(projectId) {
+  if (!projectId || typeof fetch !== "function") {
+    return [];
+  }
+
+  const response = await fetch(
+    `${FIRESTORE_MEDIA_ENDPOINT}/${encodeURIComponent(projectId)}/databases/(default)/documents/media?t=${Date.now()}`,
+    { cache: "no-store" }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Media REST request failed with ${response.status}`);
+  }
+
+  const payload = await response.json();
+  const documents = Array.isArray(payload?.documents) ? payload.documents : [];
+
+  return documents.map((document, index) =>
+    normalizeMediaItem(
+      {
+        id: String(document?.name || "").split("/").pop() || `media-${index + 1}`,
+        title: readRestFieldValue(document?.fields?.title),
+        caption: readRestFieldValue(document?.fields?.caption),
+        alt: readRestFieldValue(document?.fields?.alt),
+        imageUrl: readRestFieldValue(document?.fields?.imageUrl),
+        section: readRestFieldValue(document?.fields?.section),
+        category: readRestFieldValue(document?.fields?.category),
+        ctaLabel: readRestFieldValue(document?.fields?.ctaLabel),
+        ctaLink: readRestFieldValue(document?.fields?.ctaLink),
+        order: readRestFieldValue(document?.fields?.order),
+        createdAt: readRestFieldValue(document?.fields?.createdAt),
+        updatedAt: readRestFieldValue(document?.fields?.updatedAt)
+      },
+      index
+    )
+  );
+}
+
 export async function loadMediaItems() {
+  const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || DEFAULT_FIREBASE_PROJECT_ID;
+
+  try {
+    const restItems = await loadMediaItemsFromRest(projectId);
+    if (restItems.length) {
+      return {
+        items: dedupeMediaItems(restItems),
+        source: "firestore"
+      };
+    }
+  } catch (error) {
+    console.warn("Unable to load media through Firestore REST, falling back to SDK/local media.", error);
+  }
+
   if (!isFirebaseConfigured()) {
     return {
       items: dedupeMediaItems(fallbackMediaItems),
