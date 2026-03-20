@@ -23,8 +23,6 @@ const state = {
   doctors: [],
   departments: [],
   selectedDepartment: "",
-  galleryDepartment: "",
-  searchQuery: "",
   doctorsSource: "local",
   cmsSource: "local",
   servicesSource: "local",
@@ -1080,10 +1078,7 @@ function renderDoctors() {
     filter.dataset.ready = "true";
     filter.addEventListener("change", (event) => {
       state.selectedDepartment = event.target.value;
-      state.galleryDepartment = event.target.value;
-      syncGalleryControls();
       renderDoctors();
-      renderDoctorsGallery();
     });
   }
 
@@ -1133,91 +1128,11 @@ function renderDoctors() {
     : '<article class="state-card"><h3>No doctors found</h3><p>Try a different department to view more specialists.</p></article>';
 
   container.querySelectorAll("[data-doctor-poster]").forEach((button) => {
-    button.addEventListener("click", () => openDoctorPosterPreview(button.dataset.doctorPoster));
+    button.addEventListener("click", () => openDoctorModal(button.dataset.doctorPoster));
   });
 
   container.querySelectorAll("[data-appointment-doctor]").forEach((button) => {
     button.addEventListener("click", () => selectAppointmentDoctorById(button.dataset.appointmentDoctor));
-  });
-
-  motion.refresh();
-}
-
-function renderGalleryTabs() {
-  const tabs = document.getElementById("doctorGalleryTabs");
-  if (!tabs) {
-    return;
-  }
-
-  const departments = ["All", ...state.departments];
-  tabs.innerHTML = departments
-    .map((department) => {
-      const active = (department === "All" ? "" : department) === state.galleryDepartment;
-      return `<button type="button" class="filter-chip${active ? " filter-chip--active" : ""}" data-department="${escapeHtml(
-        department === "All" ? "" : department
-      )}">${escapeHtml(department)}</button>`;
-    })
-    .join("");
-
-  tabs.querySelectorAll("[data-department]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.galleryDepartment = button.dataset.department ?? "";
-      state.selectedDepartment = state.galleryDepartment;
-      syncGalleryControls();
-      renderDoctors();
-      renderDoctorsGallery();
-    });
-  });
-
-  motion.refresh();
-}
-
-function syncGalleryControls() {
-  const search = document.getElementById("doctorPosterSearch");
-  if (search) {
-    search.value = state.searchQuery;
-  }
-  renderGalleryTabs();
-}
-
-function renderDoctorsGallery() {
-  const container = document.getElementById("doctorPosterGrid");
-  const summary = document.getElementById("doctorPosterSummary");
-
-  if (!container) {
-    return;
-  }
-
-  const filteredDoctors = getFilteredDoctorsForGallery();
-
-  if (summary) {
-    summary.textContent = filteredDoctors.length
-      ? `${filteredDoctors.length} doctors available in this gallery view`
-      : "No doctors matched the current filters";
-  }
-
-  container.innerHTML = filteredDoctors.length
-    ? filteredDoctors
-        .map(
-          (doctor) => `
-            <article class="doctor-poster" data-doctor-id="${escapeHtml(doctor.id)}">
-              <div class="doctor-poster__image-wrap">
-                <img src="${doctorGalleryImage(doctor)}" alt="${escapeHtml(doctor.name)}" class="doctor-poster__image" loading="lazy">
-              </div>
-              <div class="doctor-poster__body">
-                <p class="doctor-card__department">${escapeHtml(doctor.department)}</p>
-                <h3>${escapeHtml(doctor.name)}</h3>
-                <p>${escapeHtml(doctor.specialization)}</p>
-                <button type="button" class="doctor-poster__button" data-doctor-id="${escapeHtml(doctor.id)}">View Profile</button>
-              </div>
-            </article>
-          `
-        )
-        .join("")
-    : '<article class="state-card"><h3>No matching doctors</h3><p>Try another department or search by a different doctor name.</p></article>';
-
-  container.querySelectorAll("[data-doctor-id]").forEach((button) => {
-    button.addEventListener("click", () => openDoctorModal(button.dataset.doctorId));
   });
 
   motion.refresh();
@@ -1260,9 +1175,9 @@ function openDoctorModal(doctorId) {
             </ul>
           </section>
         </div>
-        <div class="card-actions">
+        <div class="card-actions card-actions--triple">
           <a href="tel:+919732029834" class="button button--secondary">Call Hospital</a>
-          <button type="button" class="doctor-card__action" data-appointment-doctor="${escapeHtml(doctor.id)}">Book Appointment</button>
+          <button type="button" class="button button--secondary doctor-card__cta" data-appointment-doctor="${escapeHtml(doctor.id)}">Book Appointment</button>
         </div>
       </div>
     </article>
@@ -1280,33 +1195,6 @@ function openDoctorModal(doctorId) {
   motion.refresh();
 }
 
-function openDoctorPosterPreview(doctorId) {
-  const modal = document.getElementById("doctorModal");
-  const body = document.getElementById("doctorModalBody");
-  const doctor = state.doctors.find((entry) => entry.id === doctorId);
-
-  if (!modal || !body || !doctor) {
-    return;
-  }
-
-  body.innerHTML = doctor.posterImage
-    ? `
-        <article class="poster-only-card">
-          <img src="${doctor.posterImage}" alt="${escapeHtml(doctor.name)}" class="poster-only-card__image">
-        </article>
-      `
-    : `
-        <article class="state-card">
-          <h3>Poster not available</h3>
-          <p>The clinic has not added a poster for ${escapeHtml(doctor.name)} yet.</p>
-        </article>
-      `;
-
-  openAnimatedLayer(modal);
-  document.body.classList.add("modal-open");
-  motion.refresh();
-}
-
 function closeDoctorModal() {
   const modal = document.getElementById("doctorModal");
   if (!modal) {
@@ -1318,15 +1206,9 @@ function closeDoctorModal() {
   });
 }
 
-function bindDoctorGalleryControls() {
-  const search = document.getElementById("doctorPosterSearch");
+function bindDoctorModalControls() {
   const doctorModal = document.getElementById("doctorModal");
   const doctorCloseButton = document.getElementById("doctorModalClose");
-
-  search?.addEventListener("input", (event) => {
-    state.searchQuery = event.target.value;
-    renderDoctorsGallery();
-  });
 
   doctorCloseButton?.addEventListener("click", closeDoctorModal);
 
@@ -1814,8 +1696,6 @@ async function initializeDoctors() {
   updateDoctorCount(fallbackDoctors.length);
   renderDepartments();
   renderDoctors();
-  renderGalleryTabs();
-  renderDoctorsGallery();
   populateDepartmentSelect();
   setupAppointmentForm();
   if (hasDoctorQuery) {
@@ -1838,8 +1718,6 @@ async function initializeDoctors() {
     updateDoctorCount(resolvedDoctors.length);
     renderDepartments();
     renderDoctors();
-    renderGalleryTabs();
-    renderDoctorsGallery();
     populateDepartmentSelect();
     if (hasDoctorQuery) {
       prefillDoctorFromQuery();
@@ -1861,8 +1739,6 @@ async function initializeDoctors() {
     updateDoctorCount(fallbackDoctors.length);
     renderDepartments();
     renderDoctors();
-    renderGalleryTabs();
-    renderDoctorsGallery();
     populateDepartmentSelect();
     if (hasDoctorQuery) {
       prefillDoctorFromQuery();
@@ -1884,12 +1760,12 @@ renderPharmacyMedia();
 renderServices();
 renderTreatmentPreviews();
 renderBlogPreview();
-bindDoctorGalleryControls();
 bindGlobalLightboxControls();
 setupHeroSectionMenus();
 motion = createMotionSystem(document);
 motion.refresh();
 setupReviewForm();
+bindDoctorModalControls();
 initializeContent();
 initializeReviews();
 initializeMedia();
