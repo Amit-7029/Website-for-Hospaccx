@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 const INLINE_IMAGE_MAX_BYTES = 450 * 1024;
+const ALLOWED_UPLOAD_FOLDERS = new Set(["doctors", "media", "hero", "highlights", "gallery", "whyChoose", "healthcare", "pharmacies", "services"]);
 
 function sanitizeFileName(name: string) {
   return name.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/-+/g, "-");
@@ -26,7 +27,8 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get("file");
-    const folder = String(formData.get("folder") || "doctors").trim() || "doctors";
+    const rawFolder = String(formData.get("folder") || "doctors").trim() || "doctors";
+    const folder = ALLOWED_UPLOAD_FOLDERS.has(rawFolder) ? rawFolder : "media";
 
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "Image file is required" }, { status: 400 });

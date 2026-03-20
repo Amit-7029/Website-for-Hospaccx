@@ -48,23 +48,42 @@ export async function POST(request: Request) {
     cookies().set(SESSION_COOKIE, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     });
 
-    return NextResponse.json({ user: profile });
+    return NextResponse.json(
+      { user: profile },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
+    );
   } catch (error) {
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Unable to create admin session",
       },
-      { status: 500 },
+      {
+        status: 500,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
     );
   }
 }
 
 export async function DELETE() {
   cookies().delete(SESSION_COOKIE);
-  return NextResponse.json({ success: true });
+  return NextResponse.json(
+    { success: true },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    },
+  );
 }

@@ -1013,12 +1013,8 @@ function updateDoctorCount(value) {
 
 function renderDoctorListSkeleton() {
   const doctorGrid = document.getElementById("doctorGrid");
-  const posterGrid = document.getElementById("doctorPosterGrid");
   if (doctorGrid) {
     doctorGrid.innerHTML = Array.from({ length: 4 }, () => '<article class="doctor-card doctor-card--skeleton"></article>').join("");
-  }
-  if (posterGrid) {
-    posterGrid.innerHTML = Array.from({ length: 6 }, () => '<article class="doctor-poster doctor-poster--skeleton"></article>').join("");
   }
 
   motion.refresh();
@@ -1026,16 +1022,11 @@ function renderDoctorListSkeleton() {
 
 function renderDoctorError(message) {
   const doctorGrid = document.getElementById("doctorGrid");
-  const posterGrid = document.getElementById("doctorPosterGrid");
   const appointmentHelper = document.getElementById("doctorScheduleHelper");
   const html = `<article class="state-card state-card--error"><h3>Unable to load doctors</h3><p>${escapeHtml(message)}</p></article>`;
 
   if (doctorGrid) {
     doctorGrid.innerHTML = html;
-  }
-
-  if (posterGrid) {
-    posterGrid.innerHTML = html;
   }
 
   if (appointmentHelper) {
@@ -1049,21 +1040,6 @@ function getFilteredDoctorsForCards() {
   return state.selectedDepartment
     ? state.doctors.filter((doctor) => doctor.department === state.selectedDepartment)
     : state.doctors;
-}
-
-function getFilteredDoctorsForGallery() {
-  const query = state.searchQuery.trim().toLowerCase();
-
-  return state.doctors.filter((doctor) => {
-    const matchesDepartment = !state.galleryDepartment || doctor.department === state.galleryDepartment;
-    const matchesSearch =
-      !query ||
-      doctor.name.toLowerCase().includes(query) ||
-      doctor.specialization.toLowerCase().includes(query) ||
-      doctor.department.toLowerCase().includes(query);
-
-    return matchesDepartment && matchesSearch;
-  });
 }
 
 function renderDoctors() {
