@@ -1083,13 +1083,17 @@ function renderDoctors() {
           (doctor) => `
             <article class="doctor-card">
               <div class="doctor-card__header">
-                <span class="doctor-card__avatar" aria-hidden="true">
+                <button
+                  type="button"
+                  class="doctor-card__avatar doctor-card__avatar-button"
+                  data-doctor-poster="${escapeHtml(doctor.id)}"
+                  aria-label="View profile for ${escapeHtml(doctor.name)}">
                   <img
                     src="${doctorAvatar(doctor)}"
-                    alt=""
+                    alt="${escapeHtml(doctor.name)}"
                     class="doctor-card__avatar-image"
                     loading="lazy">
-                </span>
+                </button>
                 <div>
                   <p class="doctor-card__department">${escapeHtml(doctor.department)}</p>
                   <h3>${escapeHtml(doctor.name)}</h3>
