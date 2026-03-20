@@ -12,9 +12,9 @@ import {
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { getFirebaseServices, isFirebaseConfigured } from "@/lib/firebase/client";
 import { DEFAULT_CMS_CONTENT, DEFAULT_SERVICES } from "@/lib/constants";
-import type { ActivityLog, Appointment, CmsContent, DiagnosticService, Doctor, Review } from "@/types";
+import type { ActivityLog, Appointment, CmsContent, DiagnosticService, Doctor, MediaItem, Review } from "@/types";
 
-type CollectionName = "doctors" | "services" | "reviews" | "appointments" | "activityLogs";
+type CollectionName = "doctors" | "services" | "reviews" | "appointments" | "activityLogs" | "media";
 
 const storageKeys = {
   doctors: "hospaccx-admin-doctors",
@@ -22,6 +22,7 @@ const storageKeys = {
   reviews: "hospaccx-admin-reviews",
   appointments: "hospaccx-admin-appointments",
   activityLogs: "hospaccx-admin-activity-logs",
+  media: "hospaccx-admin-media",
   cms: "hospaccx-admin-cms",
 };
 
@@ -31,6 +32,7 @@ const fallbackSeed = {
   reviews: [] as Review[],
   appointments: [] as Appointment[],
   activityLogs: [] as ActivityLog[],
+  media: [] as MediaItem[],
   cms: DEFAULT_CMS_CONTENT,
 };
 

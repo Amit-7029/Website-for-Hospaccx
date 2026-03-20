@@ -58,6 +58,12 @@
 </div>
 
 <header class="hero" id="home">
+    <div class="hero__media-shell" aria-hidden="true">
+        <div class="hero__media-track" id="heroMediaSlider"></div>
+        <div class="hero__media-backdrop"></div>
+        <div class="hero__media-dots" id="heroMediaDots"></div>
+    </div>
+
     <nav class="nav container">
         <div class="nav__top">
             <a href="#home" class="brand">
@@ -253,6 +259,17 @@
                     </article>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section class="section section--soft" id="inside-center">
+        <div class="container">
+            <div class="section__heading">
+                <p class="eyebrow" data-cms="insideCenterEyebrow">Inside Our Center</p>
+                <h2 data-cms="insideCenterHeading">Real spaces that support diagnostics, doctors, and patient care</h2>
+                <p class="section__note" data-cms="insideCenterNote">A cleaner look at our lab workflow, reception support, and specialist environment.</p>
+            </div>
+            <div class="media-showcase-grid" id="mediaShowcaseGrid"></div>
         </div>
     </section>
 
@@ -753,6 +770,11 @@
         <button type="button" class="modal-close" id="doctorModalClose" aria-label="Close doctor details">×</button>
         <div id="doctorModalBody"></div>
     </div>
+</div>
+
+<div class="lightbox" id="siteLightbox" hidden>
+    <button type="button" class="lightbox__close" id="siteLightboxClose" aria-label="Close image preview">Close</button>
+    <img id="siteLightboxImage" alt="">
 </div>
 
 <script type="module" src="/src/main.js"></script>

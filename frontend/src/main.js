@@ -1,10 +1,11 @@
 import "./styles.css";
-import { galleryItems } from "./data/gallery";
 import { blogPosts, diagnosticServices, facilities, testimonials, treatments, trustIndicators } from "./data/content";
 import { doctors as fallbackDoctors } from "./data/doctors";
+import { MEDIA_IMAGE_FALLBACK, fallbackMediaItems } from "./data/media";
 import { createAppointment } from "./firebase/appointments-store";
 import { loadDoctors } from "./firebase/doctors-store";
 import { DEFAULT_CMS_CONTENT, loadCmsContent, loadDiagnosticServices } from "./firebase/content-store";
+import { loadMediaItems } from "./firebase/media-store";
 import { createReview, loadReviews } from "./firebase/reviews-store";
 import { closeAnimatedLayer, createMotionSystem, openAnimatedLayer } from "./motion";
 
@@ -29,15 +30,19 @@ const state = {
   servicesSource: "local",
   cmsContent: null,
   services: diagnosticServices,
+  mediaItems: fallbackMediaItems,
+  mediaSource: "local",
   reviews: [],
   reviewsSource: "local",
-  visibleReviewCount: 6
+  visibleReviewCount: 6,
+  activeHeroSlide: 0
 };
 
 let motion = {
   refresh() {},
   disconnect() {}
 };
+let heroAutoplayTimer = 0;
 
 function createMediaQueryList(query, matchesFallback = false) {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
@@ -245,6 +250,35 @@ function doctorGalleryImage(doctor) {
   return doctor.posterImage || doctorAvatar(doctor);
 }
 
+function getMediaItemsBySection(section, category = "") {
+  return state.mediaItems.filter((item) => {
+    if (item.section !== section) {
+      return false;
+    }
+
+    return category ? item.category === category : true;
+  });
+}
+
+function imageMarkup(src, alt, className, eager = false) {
+  return `<img src="${escapeHtml(src || MEDIA_IMAGE_FALLBACK)}" alt="${escapeHtml(alt || "Hospaccx media")}" class="${className}" loading="${eager ? "eager" : "lazy"}" onerror="this.onerror=null;this.src='${MEDIA_IMAGE_FALLBACK}'">`;
+}
+
+function scheduleHeroAutoplay(slideCount) {
+  if (heroAutoplayTimer) {
+    window.clearTimeout(heroAutoplayTimer);
+  }
+
+  if (slideCount <= 1) {
+    return;
+  }
+
+  heroAutoplayTimer = window.setTimeout(() => {
+    state.activeHeroSlide = (state.activeHeroSlide + 1) % slideCount;
+    renderHeroMedia();
+  }, 5200);
+}
+
 const departmentDescriptions = {
   CARDIOLOGY: "Heart care consultations with specialist support for chest discomfort, blood pressure, and cardiac follow-up.",
   "CHEST SPECIALIST": "Respiratory evaluation and chest care support for cough, breathing concerns, and lung-related conditions.",
@@ -299,25 +333,115 @@ function renderDepartments() {
   motion.refresh();
 }
 
+function renderHeroMedia() {
+  const slider = document.getElementById("heroMediaSlider");
+  const dots = document.getElementById("heroMediaDots");
+  const slides = getMediaItemsBySection("hero");
+
+  if (!slider) {
+    return;
+  }
+
+  if (!slides.length) {
+    slider.innerHTML = "";
+    if (dots) {
+      dots.innerHTML = "";
+    }
+    return;
+  }
+
+  const safeIndex = Math.min(state.activeHeroSlide, slides.length - 1);
+  state.activeHeroSlide = Math.max(0, safeIndex);
+
+  slider.innerHTML = slides
+    .map(
+      (item, index) => `
+        <article class="hero-slide${index === state.activeHeroSlide ? " is-active" : ""}" data-motion="fadeIn" style="--motion-delay:${index * 90}ms">
+          ${imageMarkup(item.imageUrl, item.alt || item.title, "hero-slide__image", index === 0)}
+          <div class="hero-slide__overlay"></div>
+        </article>
+      `
+    )
+    .join("");
+
+  if (dots) {
+    dots.innerHTML = slides
+      .map(
+        (item, index) => `
+          <button
+            type="button"
+            class="hero-media-dot${index === state.activeHeroSlide ? " is-active" : ""}"
+            aria-label="${escapeHtml(item.title || `Hero slide ${index + 1}`)}"
+            data-hero-slide="${index}"></button>
+        `
+      )
+      .join("");
+
+    dots.querySelectorAll("[data-hero-slide]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.activeHeroSlide = Number(button.dataset.heroSlide || 0);
+        renderHeroMedia();
+      });
+    });
+  }
+
+  scheduleHeroAutoplay(slides.length);
+  motion.refresh();
+}
+
+function renderMediaHighlights() {
+  const container = document.getElementById("mediaShowcaseGrid");
+  if (!container) {
+    return;
+  }
+
+  const highlightItems = getMediaItemsBySection("highlights");
+  container.innerHTML = highlightItems
+    .map(
+      (item, index) => `
+        <article class="media-feature-card" data-motion="${index % 2 === 0 ? "slideLeft" : "slideRight"}" style="--motion-delay:${index * 80}ms">
+          <div class="media-feature-card__image-wrap">
+            ${imageMarkup(item.imageUrl, item.alt || item.title, "media-feature-card__image")}
+          </div>
+          <div class="media-feature-card__body">
+            <p class="eyebrow">${escapeHtml(item.category)}</p>
+            <h3>${escapeHtml(item.title)}</h3>
+            <p>${escapeHtml(item.caption)}</p>
+          </div>
+        </article>
+      `
+    )
+    .join("");
+
+  motion.refresh();
+}
+
 function renderGallery() {
   const container = document.getElementById("galleryGrid");
   if (!container) {
     return;
   }
 
-  container.innerHTML = galleryItems
+  const items = getMediaItemsBySection("gallery").slice(0, 6);
+  container.innerHTML = items
     .map(
-      (item) => `
+      (item, index) => `
         <figure class="gallery-card${item.large ? " gallery-card--large" : ""}">
-          <img src="${item.src}" alt="${escapeHtml(item.alt)}" loading="lazy">
+          <button class="gallery-card__button" type="button" data-src="${escapeHtml(item.imageUrl)}" data-alt="${escapeHtml(item.alt || item.title)}">
+            ${imageMarkup(item.imageUrl, item.alt || item.title, "gallery-card__image")}
+          </button>
           <figcaption>
             <span>${escapeHtml(item.caption)}</span>
-            ${item.link ? `<a class="gallery-card__link" href="${item.link}" target="_blank" rel="noreferrer">Open location</a>` : ""}
+            ${item.ctaLink ? `<a class="gallery-card__link" href="${item.ctaLink}" target="${item.ctaLink.startsWith("#") ? "_self" : "_blank"}" rel="noreferrer">${escapeHtml(item.ctaLabel || "Open image")}</a>` : ""}
           </figcaption>
         </figure>
       `
     )
     .join("");
+
+  container.querySelectorAll("[data-src]").forEach((button) => {
+    button.addEventListener("click", () => openGalleryLightbox(button.dataset.src, button.dataset.alt));
+  });
 
   motion.refresh();
 }
@@ -511,6 +635,31 @@ function renderTestimonials() {
   motion.refresh();
 }
 
+function openGalleryLightbox(src, alt = "") {
+  const lightbox = document.getElementById("siteLightbox");
+  const image = document.getElementById("siteLightboxImage");
+
+  if (!lightbox || !image || !src) {
+    return;
+  }
+
+  image.setAttribute("src", src);
+  image.setAttribute("alt", alt);
+  openAnimatedLayer(lightbox);
+  document.body.classList.add("modal-open");
+}
+
+function closeGalleryLightbox() {
+  const lightbox = document.getElementById("siteLightbox");
+  if (!lightbox) {
+    return;
+  }
+
+  closeAnimatedLayer(lightbox, () => {
+    document.body.classList.remove("modal-open");
+  });
+}
+
 function setupReviewForm() {
   const form = document.getElementById("reviewForm");
   const message = document.getElementById("reviewFormMessage");
@@ -630,6 +779,30 @@ async function initializeReviews() {
     if (reviewSourceNote) {
       reviewSourceNote.textContent = "Reviews could not be loaded right now. Please try again shortly.";
     }
+  }
+}
+
+async function initializeMedia() {
+  state.mediaItems = fallbackMediaItems;
+  state.mediaSource = "local";
+  renderHeroMedia();
+  renderMediaHighlights();
+  renderGallery();
+
+  try {
+    const { items, source } = await loadMediaItems();
+    state.mediaItems = items?.length ? items : fallbackMediaItems;
+    state.mediaSource = source;
+    renderHeroMedia();
+    renderMediaHighlights();
+    renderGallery();
+  } catch (error) {
+    console.error(error);
+    state.mediaItems = fallbackMediaItems;
+    state.mediaSource = "local";
+    renderHeroMedia();
+    renderMediaHighlights();
+    renderGallery();
   }
 }
 
@@ -992,6 +1165,19 @@ function bindDoctorGalleryControls() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeDoctorModal();
+      closeGalleryLightbox();
+    }
+  });
+}
+
+function bindGlobalLightboxControls() {
+  const lightbox = document.getElementById("siteLightbox");
+  const closeButton = document.getElementById("siteLightboxClose");
+
+  closeButton?.addEventListener("click", closeGalleryLightbox);
+  lightbox?.addEventListener("click", (event) => {
+    if (event.target === lightbox) {
+      closeGalleryLightbox();
     }
   });
 }
@@ -1516,19 +1702,20 @@ async function initializeDoctors() {
   }
 }
 
-renderGallery();
 renderTrustIndicators();
 renderFacilities();
 renderServices();
 renderTreatmentPreviews();
 renderBlogPreview();
 bindDoctorGalleryControls();
+bindGlobalLightboxControls();
 setupHeroSectionMenus();
 motion = createMotionSystem(document);
 motion.refresh();
 setupReviewForm();
 initializeContent();
 initializeReviews();
+initializeMedia();
 initializeDoctors();
 
 window.addEventListener("pageshow", () => {
