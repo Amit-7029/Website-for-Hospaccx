@@ -210,10 +210,47 @@ export async function uploadImage(file: File, path: string) {
     });
   }
 
-  const { storage } = getFirebaseServices();
-  const objectRef = ref(storage, path);
-  await uploadBytes(objectRef, file);
-  return getDownloadURL(objectRef);
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", path.split("/")[0] || "doctors");
+
+    const response = await fetch("/api/uploads/doctor-image", {
+      method: "POST",
+      body: formData,
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(payload?.error ?? "Unable to upload image");
+    }
+
+    const payload = (await response.json()) as { url?: string };
+    if (!payload.url) {
+      throw new Error("Image upload did not return a file URL");
+    }
+
+    return payload.url;
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Image upload timed out. Please try a smaller file or retry.");
+    }
+
+    if (error instanceof Error && error.message) {
+      throw error;
+    }
+
+    const { storage } = getFirebaseServices();
+    const objectRef = ref(storage, path);
+    await uploadBytes(objectRef, file);
+    return getDownloadURL(objectRef);
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
 }
 
 export async function addActivityLog(log: Omit<ActivityLog, "id" | "createdAt">) {

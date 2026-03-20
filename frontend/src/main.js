@@ -583,20 +583,16 @@ function setupReviewForm() {
     }
 
     try {
-      const createdReview = await createReview({
+      await createReview({
         name: name || "Anonymous Patient",
         rating,
         feedback
       });
-
-      state.reviews = [createdReview, ...state.reviews];
-      state.visibleReviewCount = Math.max(6, state.visibleReviewCount);
-      renderTestimonials();
       form.reset();
       syncReviewStars(0);
 
       if (message) {
-        message.textContent = "Thank you. Your review has been submitted successfully.";
+        message.textContent = "Thank you. Your review has been received and will appear after approval.";
       }
     } catch (error) {
       console.error(error);

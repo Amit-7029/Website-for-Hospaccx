@@ -5,6 +5,14 @@ function cleanEnvValue(value) {
   return typeof value === "string" ? value.trim() : value;
 }
 
+function resolveProjectId() {
+  return (
+    cleanEnvValue(process.env.FIREBASE_PROJECT_ID) ||
+    cleanEnvValue(process.env.VITE_FIREBASE_PROJECT_ID) ||
+    cleanEnvValue(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID)
+  );
+}
+
 function getPrivateKey() {
   const privateKey = cleanEnvValue(process.env.FIREBASE_PRIVATE_KEY);
   if (!privateKey) {
@@ -17,7 +25,7 @@ function getPrivateKey() {
 export function getFirebaseAdminDb() {
   if (!getApps().length) {
     const clientEmail = cleanEnvValue(process.env.FIREBASE_CLIENT_EMAIL);
-    const projectId = cleanEnvValue(process.env.VITE_FIREBASE_PROJECT_ID);
+    const projectId = resolveProjectId();
 
     if (!clientEmail || !projectId) {
       throw new Error("Firebase admin environment variables are missing.");

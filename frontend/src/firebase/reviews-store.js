@@ -40,6 +40,32 @@ function normalizeReview(id, data, fallbackIndex = 0) {
 }
 
 export async function loadReviews() {
+  try {
+    const response = await fetch("/api/reviews", {
+      method: "GET",
+      headers: {
+        Accept: "application/json"
+      },
+      cache: "no-store"
+    });
+
+    if (response.ok) {
+      const payload = await response.json();
+      if (Array.isArray(payload?.reviews)) {
+        const apiReviews = payload.reviews
+          .map((item, index) => normalizeReview(item.id, item, index))
+          .filter((review) => review.feedback);
+
+        return {
+          reviews: apiReviews,
+          source: "firestore"
+        };
+      }
+    }
+  } catch (error) {
+    console.error("Review API read fallback triggered:", error);
+  }
+
   if (!isFirebaseConfigured()) {
     return {
       reviews: fallbackTestimonials.map((item, index) => normalizeReview(`local-${index + 1}`, item, index)),
@@ -99,7 +125,7 @@ export async function createReview(payload) {
   if (!isFirebaseConfigured()) {
     return {
       id: `local-${Date.now()}`,
-      ...normalizeReview(null, { ...payload, createdAt: new Date() })
+      ...normalizeReview(null, { ...payload, createdAt: new Date(), status: "pending" })
     };
   }
 
@@ -118,6 +144,7 @@ export async function createReview(payload) {
 
   return normalizeReview(created.id, {
     ...payload,
-    createdAt: new Date()
+    createdAt: new Date(),
+    status: "pending"
   });
 }

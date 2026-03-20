@@ -16,14 +16,31 @@ function getPrivateKey() {
   return privateKey.replace(/\\n/g, "\n");
 }
 
+function resolveProjectId() {
+  return (
+    cleanEnvValue(process.env.FIREBASE_PROJECT_ID) ||
+    cleanEnvValue(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID)
+  );
+}
+
+function resolveStorageBucket() {
+  const explicitBucket = cleanEnvValue(process.env.FIREBASE_STORAGE_BUCKET) || cleanEnvValue(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
+  if (explicitBucket) {
+    return explicitBucket;
+  }
+
+  const projectId = resolveProjectId();
+  return projectId ? `${projectId}.firebasestorage.app` : undefined;
+}
+
 function getAdminApp() {
   if (getApps().length) {
     return getApp();
   }
 
   const clientEmail = cleanEnvValue(process.env.FIREBASE_CLIENT_EMAIL);
-  const projectId = cleanEnvValue(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
-  const storageBucket = cleanEnvValue(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
+  const projectId = resolveProjectId();
+  const storageBucket = resolveStorageBucket();
 
   if (!clientEmail || !projectId) {
     throw new Error("Firebase admin credentials are not configured");
@@ -47,4 +64,16 @@ export function getFirebaseAdminServices() {
     db: getFirestore(app),
     storage: getStorage(app),
   };
+}
+
+export function getFirebaseAdminStorageCandidates() {
+  const projectId = resolveProjectId();
+  const candidates = [
+    cleanEnvValue(process.env.FIREBASE_STORAGE_BUCKET),
+    cleanEnvValue(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET),
+    projectId ? `${projectId}.firebasestorage.app` : undefined,
+    projectId ? `${projectId}.appspot.com` : undefined,
+  ].filter(Boolean);
+
+  return [...new Set(candidates)];
 }
