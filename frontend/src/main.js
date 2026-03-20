@@ -41,6 +41,7 @@ let motion = {
   disconnect() {}
 };
 let heroAutoplayTimer = 0;
+const HERO_SLIDE_DURATION_MS = 3000;
 
 function createMediaQueryList(query, matchesFallback = false) {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
@@ -341,19 +342,24 @@ function imageMarkup(src, alt, className, eager = false) {
   return `<img src="${escapeHtml(src || MEDIA_IMAGE_FALLBACK)}" alt="${escapeHtml(alt || "Hospaccx media")}" class="${className}" loading="${eager ? "eager" : "lazy"}" onerror="this.onerror=null;this.src='${MEDIA_IMAGE_FALLBACK}'">`;
 }
 
-function scheduleHeroAutoplay(slideCount) {
+function clearHeroAutoplay() {
   if (heroAutoplayTimer) {
-    window.clearTimeout(heroAutoplayTimer);
+    window.clearInterval(heroAutoplayTimer);
+    heroAutoplayTimer = 0;
   }
+}
+
+function scheduleHeroAutoplay(slideCount) {
+  clearHeroAutoplay();
 
   if (slideCount <= 1) {
     return;
   }
 
-  heroAutoplayTimer = window.setTimeout(() => {
+  heroAutoplayTimer = window.setInterval(() => {
     state.activeHeroSlide = (state.activeHeroSlide + 1) % slideCount;
-    renderHeroMedia();
-  }, 5200);
+    renderHeroMedia(false);
+  }, HERO_SLIDE_DURATION_MS);
 }
 
 const departmentDescriptions = {
@@ -410,7 +416,7 @@ function renderDepartments() {
   motion.refresh();
 }
 
-function renderHeroMedia() {
+function renderHeroMedia(resetAutoplay = true) {
   const slider = document.getElementById("heroMediaSlider");
   const dots = document.getElementById("heroMediaDots");
   const slides = getMediaItemsBySection("hero");
@@ -424,6 +430,7 @@ function renderHeroMedia() {
     if (dots) {
       dots.innerHTML = "";
     }
+    clearHeroAutoplay();
     return;
   }
 
@@ -433,7 +440,7 @@ function renderHeroMedia() {
   slider.innerHTML = slides
     .map(
       (item, index) => `
-        <article class="hero-slide${index === state.activeHeroSlide ? " is-active" : ""}" data-motion="fadeIn" style="--motion-delay:${index * 90}ms">
+        <article class="hero-slide${index === state.activeHeroSlide ? " is-active" : ""}">
           ${imageMarkup(item.imageUrl, item.alt || item.title, "hero-slide__image", index === 0)}
           <div class="hero-slide__overlay"></div>
         </article>
@@ -457,12 +464,14 @@ function renderHeroMedia() {
     dots.querySelectorAll("[data-hero-slide]").forEach((button) => {
       button.addEventListener("click", () => {
         state.activeHeroSlide = Number(button.dataset.heroSlide || 0);
-        renderHeroMedia();
+        renderHeroMedia(true);
       });
     });
   }
 
-  scheduleHeroAutoplay(slides.length);
+  if (resetAutoplay) {
+    scheduleHeroAutoplay(slides.length);
+  }
   motion.refresh();
 }
 

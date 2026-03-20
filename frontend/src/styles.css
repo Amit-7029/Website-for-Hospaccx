@@ -62,13 +62,26 @@ body.modal-open {
     position: absolute;
     inset: 0;
     opacity: 0;
-    transform: scale(1.04);
-    transition: opacity 720ms var(--motion-ease), transform 720ms var(--motion-ease);
+    transform: translate3d(36px, 0, 0) scale(1.03);
+    transition: opacity 620ms var(--motion-ease), transform 620ms var(--motion-ease);
+    will-change: opacity, transform;
 }
 
 .hero-slide.is-active {
     opacity: 1;
-    transform: scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
+    animation: heroSlideInRight 620ms var(--motion-ease);
+}
+
+@keyframes heroSlideInRight {
+    0% {
+        opacity: 0;
+        transform: translate3d(52px, 0, 0) scale(1.035);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
 }
 
 .hero-slide__image,
