@@ -27,9 +27,9 @@ export function Sidebar() {
     <>
       <motion.aside
         animate={{ width: sidebarOpen ? 280 : 88 }}
-        className="hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex lg:flex-col"
+        className="sticky top-0 hidden h-screen overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex lg:flex-col"
       >
-        <div className="border-b border-sidebar-border px-6 py-6">
+        <div className="shrink-0 border-b border-sidebar-border px-6 py-6">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Hospaccx Admin</p>
           {sidebarOpen ? (
             <>
@@ -38,7 +38,7 @@ export function Sidebar() {
             </>
           ) : null}
         </div>
-        <nav className="flex-1 space-y-2 p-4">
+        <nav className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
@@ -72,9 +72,9 @@ export function Sidebar() {
             initial={{ x: -24, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -24, opacity: 0 }}
-            className="absolute inset-y-0 left-0 flex w-[88vw] max-w-[320px] flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-2xl"
+            className="absolute inset-y-0 left-0 flex h-screen w-[88vw] max-w-[320px] overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-2xl"
           >
-            <div className="flex items-start justify-between border-b border-sidebar-border px-5 py-5">
+            <div className="flex shrink-0 items-start justify-between border-b border-sidebar-border px-5 py-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Hospaccx Admin</p>
                 <h2 className="mt-3 text-base font-semibold leading-tight">{siteConfig.hospitalName}</h2>
@@ -89,7 +89,7 @@ export function Sidebar() {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <nav className="flex-1 space-y-2 overflow-y-auto p-4">
+            <nav className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
               {navItems.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href;
                 return (
