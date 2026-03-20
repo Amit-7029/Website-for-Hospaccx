@@ -3,6 +3,7 @@ import { getFirebaseAdminServices, getFirebaseAdminStorageCandidates } from "@/l
 import { getSessionUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
+const INLINE_IMAGE_MAX_BYTES = 450 * 1024;
 
 function sanitizeFileName(name: string) {
   return name.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/-+/g, "-");
@@ -10,6 +11,10 @@ function sanitizeFileName(name: string) {
 
 function buildDownloadUrl(bucketName: string, objectPath: string, token: string) {
   return `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(objectPath)}?alt=media&token=${token}`;
+}
+
+function buildInlineDataUrl(file: File, bytes: Buffer) {
+  return `data:${file.type};base64,${bytes.toString("base64")}`;
 }
 
 export async function POST(request: Request) {
@@ -65,8 +70,22 @@ export async function POST(request: Request) {
       }
     }
 
+    if (file.size <= INLINE_IMAGE_MAX_BYTES) {
+      return NextResponse.json({
+        url: buildInlineDataUrl(file, bytes),
+        path: objectPath,
+        storageMode: "inline",
+      });
+    }
+
     console.error("Doctor image upload failed:", lastError);
-    return NextResponse.json({ error: "Unable to upload doctor image" }, { status: 500 });
+    return NextResponse.json(
+      {
+        error:
+          "Firebase Storage is not available for this project yet. Please use an image under 450 KB, or enable Firebase Storage for larger uploads.",
+      },
+      { status: 500 },
+    );
   } catch (error) {
     console.error("Doctor image upload route error:", error);
     return NextResponse.json({ error: "Unable to upload doctor image" }, { status: 500 });
