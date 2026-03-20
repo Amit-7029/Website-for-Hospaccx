@@ -164,6 +164,69 @@ body.modal-open {
     padding: 1.2rem 1.25rem 1.35rem;
 }
 
+.section-media-card__image-wrap,
+.service-card__media-wrap {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    border-radius: calc(var(--radius-lg) - 6px);
+    margin-bottom: 1.2rem;
+    background: linear-gradient(135deg, rgba(103, 61, 230, 0.1), rgba(101, 201, 255, 0.16));
+}
+
+.section-media-card__image,
+.service-card__media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 420ms var(--motion-ease);
+}
+
+.section-media-card__badge,
+.service-card__media-badge {
+    position: absolute;
+    left: 1rem;
+    bottom: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(19, 16, 39, 0.74);
+    color: #fff;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    backdrop-filter: blur(10px);
+}
+
+.section-media-card__content,
+.service-card__body {
+    display: grid;
+    gap: 0.68rem;
+}
+
+.section-media-card__eyebrow {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--primary);
+}
+
+.testimonial-card--media,
+.service-card--media {
+    overflow: hidden;
+}
+
+.testimonial-card--media:hover .section-media-card__image,
+.service-card--media:hover .service-card__media {
+    transform: scale(1.06);
+}
+
 .media-feature-card__body p:not(.eyebrow) {
     margin: 0;
     color: var(--muted);

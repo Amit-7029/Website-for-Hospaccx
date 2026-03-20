@@ -31,6 +31,26 @@ function sortMediaItems(items) {
   });
 }
 
+function mediaSlotKey(item) {
+  return `${String(item.section || "").trim()}:${Number(item.order ?? 0)}`;
+}
+
+function mergeMediaItems(remoteItems) {
+  const merged = [];
+  const seen = new Set();
+
+  [...remoteItems, ...fallbackMediaItems.map(normalizeMediaItem)].forEach((item) => {
+    const normalized = normalizeMediaItem(item);
+    const key = mediaSlotKey(normalized);
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(normalized);
+    }
+  });
+
+  return sortMediaItems(merged);
+}
+
 export async function loadMediaItems() {
   if (!isFirebaseConfigured()) {
     return {
@@ -52,7 +72,7 @@ export async function loadMediaItems() {
     const remoteItems = sortMediaItems(snapshot.docs.map((entry, index) => normalizeMediaItem({ id: entry.id, ...entry.data() }, index)));
 
     return {
-      items: remoteItems.length ? remoteItems : sortMediaItems(fallbackMediaItems.map(normalizeMediaItem)),
+      items: remoteItems.length ? mergeMediaItems(remoteItems) : sortMediaItems(fallbackMediaItems.map(normalizeMediaItem)),
       source: remoteItems.length ? "firestore" : "local"
     };
   } catch (error) {

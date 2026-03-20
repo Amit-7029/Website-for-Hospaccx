@@ -38,8 +38,8 @@ export interface MediaItem {
   caption?: string;
   alt?: string;
   imageUrl: string;
-  section: "hero" | "highlights" | "gallery";
-  category: "Doctors" | "Infrastructure" | "Reports" | "Lab" | "Reception" | "Hero";
+  section: "hero" | "highlights" | "gallery" | "whyChoose" | "healthcare" | "pharmacies" | "services";
+  category: string;
   ctaLabel?: string;
   ctaLink?: string;
   order: number;

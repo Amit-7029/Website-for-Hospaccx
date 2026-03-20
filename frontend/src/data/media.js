@@ -126,6 +126,166 @@ export const fallbackMediaItems = [
     section: "gallery",
     category: "Reports",
     order: 6
+  },
+  {
+    id: "why-choose-1",
+    title: "Medical Excellence",
+    caption: "Advanced diagnostic equipment and specialist-led care designed to keep reporting reliable and patient guidance clear.",
+    alt: "Diagnostic care support at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/WhatsApp Image 2026-03-15 at 6.57.54 PM (1).jpeg",
+    section: "whyChoose",
+    category: "Why Choose Us",
+    order: 1
+  },
+  {
+    id: "why-choose-2",
+    title: "Patient-Centered Care",
+    caption: "A clean, reassuring patient environment supported by coordinated staff and structured assistance.",
+    alt: "Reception and patient support environment at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/reception.jpg",
+    section: "whyChoose",
+    category: "Why Choose Us",
+    order: 2
+  },
+  {
+    id: "why-choose-3",
+    title: "Community Trust",
+    caption: "Accessible healthcare built around trust, compassionate support, and practical patient convenience.",
+    alt: "Front building view of Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/dignostic center front in day.jpg",
+    section: "whyChoose",
+    category: "Why Choose Us",
+    order: 3
+  },
+  {
+    id: "healthcare-1",
+    title: "Integrated Care",
+    caption: "Diagnostic services, specialist care, and care navigation coordinated through one healthcare ecosystem.",
+    alt: "Hospital care infrastructure at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/hospital-front.jpg",
+    section: "healthcare",
+    category: "Complete Healthcare",
+    order: 1
+  },
+  {
+    id: "healthcare-2",
+    title: "Emergency & ICU",
+    caption: "Emergency and ICU readiness supported by organized spaces and patient-first medical response planning.",
+    alt: "Emergency and ICU support environment at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/WhatsApp Image 2026-03-15 at 6.57.54 PM (2).jpeg",
+    section: "healthcare",
+    category: "Complete Healthcare",
+    order: 2
+  },
+  {
+    id: "healthcare-3",
+    title: "Cashless Support",
+    caption: "Supportive front-desk and care coordination for eligible card and payment assistance workflows.",
+    alt: "Patient support area at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/reception (2).jpg",
+    section: "healthcare",
+    category: "Complete Healthcare",
+    order: 3
+  },
+  {
+    id: "pharmacy-1",
+    title: "Vivekananda Ausadhalaya",
+    caption: "Pharmacy access aligned with hospital diagnostics and patient convenience.",
+    alt: "Pharmacy support visual for Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/dignostic center front.jpg",
+    section: "pharmacies",
+    category: "Pharmacy",
+    order: 1
+  },
+  {
+    id: "pharmacy-2",
+    title: "Hospaccx Medicine",
+    caption: "Supportive medicine access designed for continuity of care and easier patient follow-up.",
+    alt: "Medicine support visual for Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/reception.jpg",
+    section: "pharmacies",
+    category: "Pharmacy",
+    order: 2
+  },
+  {
+    id: "pharmacy-3",
+    title: "Patient-Focused Assistance",
+    caption: "Guidance-driven pharmacy coordination that supports diagnosis, treatment, and recovery.",
+    alt: "Patient assistance area at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/reception (2).jpg",
+    section: "pharmacies",
+    category: "Pharmacy",
+    order: 3
+  },
+  {
+    id: "service-media-1",
+    title: "Clinical Biochemistry",
+    caption: "Laboratory support for clearer metabolic, organ-function, and overall health evaluation.",
+    alt: "Clinical biochemistry service visual at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/WhatsApp Image 2026-03-15 at 6.57.54 PM (1).jpeg",
+    section: "services",
+    category: "Laboratory",
+    order: 1
+  },
+  {
+    id: "service-media-2",
+    title: "Clinical Haematology",
+    caption: "Blood-focused laboratory support for ongoing clinical evaluation and reporting.",
+    alt: "Clinical haematology visual at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/WhatsApp Image 2026-03-15 at 6.57.54 PM (2).jpeg",
+    section: "services",
+    category: "Laboratory",
+    order: 2
+  },
+  {
+    id: "service-media-3",
+    title: "Clinical Pathology",
+    caption: "Routine sample evaluation with patient-friendly reporting support.",
+    alt: "Clinical pathology visual at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/WhatsApp Image 2026-03-15 at 6.57.54 PM.jpeg",
+    section: "services",
+    category: "Laboratory",
+    order: 3
+  },
+  {
+    id: "service-media-4",
+    title: "Histopathology / FNAC",
+    caption: "Tissue and cellular review supported by accurate lab workflow and reporting care.",
+    alt: "Histopathology visual at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/hospital-front.jpg",
+    section: "services",
+    category: "Laboratory",
+    order: 4
+  },
+  {
+    id: "service-media-5",
+    title: "Hormone Testing",
+    caption: "Hormone and endocrine testing support guided through careful sample handling.",
+    alt: "Hormone testing visual at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/reception.jpg",
+    section: "services",
+    category: "Laboratory",
+    order: 5
+  },
+  {
+    id: "service-media-6",
+    title: "Microbiology",
+    caption: "Focused infection and organism-based testing support for clinical planning.",
+    alt: "Microbiology service visual at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/dignostic center front in day.jpg",
+    section: "services",
+    category: "Laboratory",
+    order: 6
+  },
+  {
+    id: "service-media-7",
+    title: "Serology & Immunology",
+    caption: "Immune-response and marker-based laboratory support designed for clearer diagnosis.",
+    alt: "Serology and immunology service visual at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/reception (2).jpg",
+    section: "services",
+    category: "Laboratory",
+    order: 7
   }
 ];
 

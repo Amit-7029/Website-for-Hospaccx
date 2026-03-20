@@ -18,8 +18,8 @@ const schema = z.object({
   caption: z.string().min(2),
   alt: z.string().min(2),
   imageUrl: z.string().optional(),
-  section: z.enum(["hero", "highlights", "gallery"]),
-  category: z.enum(["Doctors", "Infrastructure", "Reports", "Lab", "Reception", "Hero"]),
+  section: z.enum(["hero", "highlights", "gallery", "whyChoose", "healthcare", "pharmacies", "services"]),
+  category: z.string().min(2),
   ctaLabel: z.string().optional(),
   ctaLink: z.string().optional(),
   order: z.coerce.number().int().min(0).max(999),
@@ -28,8 +28,15 @@ const schema = z.object({
 type FormValues = z.input<typeof schema>;
 type SubmitValues = z.output<typeof schema>;
 
-const SECTION_OPTIONS: MediaItem["section"][] = ["hero", "highlights", "gallery"];
-const CATEGORY_OPTIONS: MediaItem["category"][] = ["Hero", "Lab", "Doctors", "Reception", "Infrastructure", "Reports"];
+const SECTION_OPTIONS: Array<{ value: MediaItem["section"]; label: string }> = [
+  { value: "hero", label: "Hero" },
+  { value: "highlights", label: "Inside Our Center" },
+  { value: "whyChoose", label: "Why Choose Us" },
+  { value: "healthcare", label: "Complete Healthcare" },
+  { value: "pharmacies", label: "Pharmacies" },
+  { value: "services", label: "Diagnostic Services" },
+  { value: "gallery", label: "Gallery" },
+];
 
 export function MediaForm({
   item,
@@ -112,20 +119,14 @@ export function MediaForm({
             <FormField label="Section" error={form.formState.errors.section?.message}>
               <Select {...form.register("section")}>
                 {SECTION_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </Select>
             </FormField>
             <FormField label="Category" error={form.formState.errors.category?.message}>
-              <Select {...form.register("category")}>
-                {CATEGORY_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </Select>
+              <Input {...form.register("category")} placeholder="Why Choose Us, Pharmacy, Laboratory..." />
             </FormField>
           </div>
 

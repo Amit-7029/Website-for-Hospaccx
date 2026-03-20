@@ -49,6 +49,10 @@ export default function MediaPage() {
                   <option value="all">All sections</option>
                   <option value="hero">Hero</option>
                   <option value="highlights">Highlights</option>
+                  <option value="whyChoose">Why Choose Us</option>
+                  <option value="healthcare">Complete Healthcare</option>
+                  <option value="pharmacies">Pharmacies</option>
+                  <option value="services">Diagnostic Services</option>
                   <option value="gallery">Gallery</option>
                 </Select>
               </div>

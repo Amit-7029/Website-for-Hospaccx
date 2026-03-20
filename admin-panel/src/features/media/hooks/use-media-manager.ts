@@ -8,6 +8,10 @@ import { addActivityLog, deleteDocument, listCollection, saveDocument, uploadIma
 import { DEFAULT_MEDIA_ITEMS } from "@/lib/media-defaults";
 import type { MediaItem } from "@/types";
 
+function mediaSlotKey(item: Pick<MediaItem, "section" | "order">) {
+  return `${item.section}:${item.order}`;
+}
+
 export function useMediaManager() {
   const { sessionUser } = useSession();
   const { canDelete, role } = usePermissions();
@@ -22,15 +26,19 @@ export function useMediaManager() {
     setIsLoading(true);
     try {
       let mediaItems = await listCollection<MediaItem>("media");
-      if (!mediaItems.length) {
+
+      const existingKeys = new Set(mediaItems.map((item) => mediaSlotKey(item)));
+      const missingDefaults = DEFAULT_MEDIA_ITEMS.filter((item) => !existingKeys.has(mediaSlotKey(item as MediaItem)));
+
+      if (!mediaItems.length || missingDefaults.length) {
         const seededItems = await Promise.all(
-          DEFAULT_MEDIA_ITEMS.map((item) =>
+          (mediaItems.length ? missingDefaults : DEFAULT_MEDIA_ITEMS).map((item) =>
             saveDocument("media", {
               ...item,
             }),
           ),
         );
-        mediaItems = seededItems as MediaItem[];
+        mediaItems = [...mediaItems, ...(seededItems as MediaItem[])];
       }
 
       setItems(

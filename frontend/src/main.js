@@ -299,6 +299,46 @@ function getMediaItemsBySection(section, category = "") {
   });
 }
 
+function getSectionMediaItem(section, index) {
+  return getMediaItemsBySection(section)[index] ?? null;
+}
+
+function renderSectionMediaCards(containerId, section, cards, cardClassName = "section-media-card") {
+  const container = document.getElementById(containerId);
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = cards
+    .map((card, index) => {
+      const media = getSectionMediaItem(section, index);
+      const motionVariant = index % 2 === 0 ? "slideLeft" : "slideRight";
+
+      return `
+        <article class="${cardClassName}" data-motion="${motionVariant}" style="--motion-delay:${index * 90}ms">
+          ${
+            media
+              ? `
+                <div class="section-media-card__image-wrap">
+                  ${imageMarkup(media.imageUrl, media.alt || media.title || card.title, "section-media-card__image")}
+                  <span class="section-media-card__badge">${escapeHtml(media.category || card.badge || "")}</span>
+                </div>
+              `
+              : ""
+          }
+          <div class="section-media-card__content">
+            ${card.badge ? `<p class="section-media-card__eyebrow">${escapeHtml(card.badge)}</p>` : ""}
+            <h3>${escapeHtml(card.title)}</h3>
+            <p>${escapeHtml(card.text)}</p>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  motion.refresh();
+}
+
 function imageMarkup(src, alt, className, eager = false) {
   return `<img src="${escapeHtml(src || MEDIA_IMAGE_FALLBACK)}" alt="${escapeHtml(alt || "Hospaccx media")}" class="${className}" loading="${eager ? "eager" : "lazy"}" onerror="this.onerror=null;this.src='${MEDIA_IMAGE_FALLBACK}'">`;
 }
@@ -455,6 +495,66 @@ function renderMediaHighlights() {
   motion.refresh();
 }
 
+function renderWhyChooseMedia() {
+  renderSectionMediaCards("whyChooseGrid", "whyChoose", [
+    {
+      badge: cmsValue("whyChooseEyebrow", "Why Choose Us"),
+      title: cmsValue("whyChooseCardOneTitle", "Medical Excellence"),
+      text: cmsValue("whyChooseCardOneText", "Advanced diagnostic equipment, reliable reports, and experienced specialist doctors.")
+    },
+    {
+      badge: cmsValue("whyChooseEyebrow", "Why Choose Us"),
+      title: cmsValue("whyChooseCardTwoTitle", "Patient-Centered Care"),
+      text: cmsValue("whyChooseCardTwoText", "Hygienic, patient-friendly environment supported by efficient and professional staff.")
+    },
+    {
+      badge: cmsValue("whyChooseEyebrow", "Why Choose Us"),
+      title: cmsValue("whyChooseCardThreeTitle", "Community Trust"),
+      text: cmsValue("whyChooseCardThreeText", "Affordable and accessible healthcare services focused on trust, compassion, and accuracy.")
+    }
+  ], "testimonial-card testimonial-card--media");
+}
+
+function renderHealthcareMedia() {
+  renderSectionMediaCards("healthcareGrid", "healthcare", [
+    {
+      badge: cmsValue("healthcareEyebrow", "Complete Healthcare"),
+      title: cmsValue("healthcareCardOneTitle", "Integrated Care"),
+      text: cmsValue("healthcareCardOneText", "Diagnostic, ICU support, specialist doctors, and pharmacy access organized through one healthcare system.")
+    },
+    {
+      badge: cmsValue("healthcareEyebrow", "Complete Healthcare"),
+      title: cmsValue("healthcareCardTwoTitle", "Emergency & ICU"),
+      text: cmsValue("healthcareCardTwoText", "24x7 emergency and ICU facility with advanced critical care support available whenever patients need it most.")
+    },
+    {
+      badge: cmsValue("healthcareEyebrow", "Complete Healthcare"),
+      title: cmsValue("healthcareCardThreeTitle", "Cashless Support"),
+      text: cmsValue("healthcareCardThreeText", "Swasthya Sathi Card accepted with cashless treatment support available for eligible patients.")
+    }
+  ], "testimonial-card testimonial-card--media");
+}
+
+function renderPharmacyMedia() {
+  renderSectionMediaCards("pharmacyGrid", "pharmacies", [
+    {
+      badge: cmsValue("pharmaciesEyebrow", "Our Pharmacies"),
+      title: cmsValue("pharmacyCardOneTitle", "Vivekananda Ausadhalaya"),
+      text: cmsValue("pharmacyCardOneText", "Trusted pharmacy support connected with your healthcare services for accessible medicine availability.")
+    },
+    {
+      badge: cmsValue("pharmaciesEyebrow", "Our Pharmacies"),
+      title: cmsValue("pharmacyCardTwoTitle", "Hospaccx Medicine"),
+      text: cmsValue("pharmacyCardTwoText", "Dedicated pharmacy support designed to improve convenience, continuity of care, and patient access to medicines.")
+    },
+    {
+      badge: cmsValue("pharmaciesEyebrow", "Our Pharmacies"),
+      title: cmsValue("pharmacyCardThreeTitle", "Patient-Focused Assistance"),
+      text: cmsValue("pharmacyCardThreeText", "Pharmacy guidance aligned with diagnosis, consultation, and treatment pathways for a smoother patient experience.")
+    }
+  ], "service-card service-card--media");
+}
+
 function renderGallery() {
   const container = document.getElementById("galleryGrid");
   if (!container) {
@@ -532,15 +632,33 @@ function renderServices() {
     return;
   }
 
+  const serviceMedia = getMediaItemsBySection("services");
   container.innerHTML = state.services
     .map(
-      (service) => `
-        <article class="service-card">
-          <span class="service-card__icon" aria-hidden="true">${escapeHtml(service.icon)}</span>
-          <h3>${escapeHtml(service.title)}</h3>
-          <p>${escapeHtml(service.description)}</p>
+      (service, index) => {
+        const media = serviceMedia[index] ?? null;
+        const motionVariant = index % 2 === 0 ? "slideLeft" : "slideRight";
+
+        return `
+        <article class="service-card service-card--media" data-motion="${motionVariant}" style="--motion-delay:${index * 80}ms">
+          ${
+            media
+              ? `
+                <div class="service-card__media-wrap">
+                  ${imageMarkup(media.imageUrl, media.alt || service.title, "service-card__media")}
+                  <span class="service-card__media-badge">${escapeHtml(media.category || "Laboratory")}</span>
+                </div>
+              `
+              : ""
+          }
+          <div class="service-card__body">
+            <span class="service-card__icon" aria-hidden="true">${escapeHtml(service.icon)}</span>
+            <h3>${escapeHtml(service.title)}</h3>
+            <p>${escapeHtml(service.description)}</p>
+          </div>
         </article>
-      `
+      `;
+      }
     )
     .join("");
 
@@ -826,6 +944,9 @@ async function initializeMedia() {
   state.mediaSource = "local";
   renderHeroMedia();
   renderMediaHighlights();
+  renderWhyChooseMedia();
+  renderHealthcareMedia();
+  renderPharmacyMedia();
   renderGallery();
 
   try {
@@ -834,6 +955,9 @@ async function initializeMedia() {
     state.mediaSource = source;
     renderHeroMedia();
     renderMediaHighlights();
+    renderWhyChooseMedia();
+    renderHealthcareMedia();
+    renderPharmacyMedia();
     renderGallery();
   } catch (error) {
     console.error(error);
@@ -841,6 +965,9 @@ async function initializeMedia() {
     state.mediaSource = "local";
     renderHeroMedia();
     renderMediaHighlights();
+    renderWhyChooseMedia();
+    renderHealthcareMedia();
+    renderPharmacyMedia();
     renderGallery();
   }
 }
@@ -851,6 +978,9 @@ async function initializeContent() {
   state.services = diagnosticServices;
   state.servicesSource = "local";
   applyCmsContent();
+  renderWhyChooseMedia();
+  renderHealthcareMedia();
+  renderPharmacyMedia();
   renderServices();
 
   try {
@@ -865,6 +995,9 @@ async function initializeContent() {
     state.servicesSource = servicesSource;
 
     applyCmsContent();
+    renderWhyChooseMedia();
+    renderHealthcareMedia();
+    renderPharmacyMedia();
     renderServices();
   } catch (error) {
     console.error(error);
@@ -1743,6 +1876,9 @@ async function initializeDoctors() {
 
 renderTrustIndicators();
 renderFacilities();
+renderWhyChooseMedia();
+renderHealthcareMedia();
+renderPharmacyMedia();
 renderServices();
 renderTreatmentPreviews();
 renderBlogPreview();
