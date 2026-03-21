@@ -35,7 +35,7 @@ export default function MediaPage() {
     <div className="space-y-6">
       <PageHeader
         title="Media Library"
-        description="Manage hero banners, real hospital photos, and gallery assets used across the website."
+        description="Manage hero slider images, real hospital photos, and gallery assets used across the website."
         action={canUploadMedia ? { label: "Add media", onClick: () => setEditingItem(null) } : undefined}
       />
 

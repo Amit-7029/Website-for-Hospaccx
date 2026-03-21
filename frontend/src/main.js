@@ -182,26 +182,6 @@ function heroValue(key, fallback = "") {
   return state.heroContent?.[key] ?? DEFAULT_HERO_CONTENT[key] ?? fallback;
 }
 
-function updateHeroImage(imageUrl) {
-  const heroImage = document.getElementById("heroImage");
-  if (!heroImage) {
-    return;
-  }
-
-  const fallbackImage = DEFAULT_HERO_CONTENT.imageUrl;
-  heroImage.onerror = () => {
-    if (heroImage.dataset.fallbackApplied === "true") {
-      return;
-    }
-
-    heroImage.dataset.fallbackApplied = "true";
-    heroImage.src = fallbackImage;
-  };
-
-  heroImage.dataset.fallbackApplied = "false";
-  heroImage.src = imageUrl || fallbackImage;
-}
-
 function setHeroBackgroundStyles() {
   const hero = document.querySelector(".hero");
   if (!hero) {
@@ -231,7 +211,6 @@ function applyHeroContent() {
     href: heroValue("secondaryButtonLink", DEFAULT_HERO_CONTENT.secondaryButtonLink),
     text: heroValue("secondaryButtonText", DEFAULT_HERO_CONTENT.secondaryButtonText)
   });
-  updateHeroImage(heroValue("imageUrl", DEFAULT_HERO_CONTENT.imageUrl));
   setHeroBackgroundStyles();
 }
 
@@ -482,6 +461,8 @@ function renderDepartments() {
 function renderHeroMedia(resetAutoplay = true) {
   const slider = document.getElementById("heroMediaSlider");
   const dots = document.getElementById("heroMediaDots");
+  const visualSlider = document.getElementById("heroVisualSlider");
+  const visualDots = document.getElementById("heroVisualDots");
   const mediaSlides = getMediaItemsBySection("hero");
   const fallbackBackgroundSlide = {
     id: "hero-background-fallback",
@@ -489,28 +470,42 @@ function renderHeroMedia(resetAutoplay = true) {
     alt: "Banerjee Diagnostic Foundation and Hospaccx hero background",
     imageUrl: heroValue("backgroundImageUrl", DEFAULT_HERO_CONTENT.backgroundImageUrl)
   };
-  const slides = mediaSlides.length ? mediaSlides : [fallbackBackgroundSlide];
+  const fallbackVisualSlide = {
+    id: "hero-visual-fallback",
+    title: "Hero hospital image",
+    alt: "Banerjee Diagnostic Foundation and Hospaccx hospital image",
+    imageUrl: heroValue("imageUrl", DEFAULT_HERO_CONTENT.imageUrl)
+  };
+  const backgroundSlides = mediaSlides.length ? mediaSlides : [fallbackBackgroundSlide];
+  const visualSlides = mediaSlides.length ? mediaSlides : [fallbackVisualSlide];
 
-  if (!slider) {
+  if (!slider || !visualSlider) {
     return;
   }
 
-  if (!slides.length) {
+  if (!backgroundSlides.length || !visualSlides.length) {
     slider.innerHTML = "";
+    visualSlider.innerHTML = "";
     if (dots) {
       dots.innerHTML = "";
+    }
+    if (visualDots) {
+      visualDots.innerHTML = "";
     }
     clearHeroAutoplay();
     return;
   }
 
-  const safeIndex = Math.min(state.activeHeroSlide, slides.length - 1);
+  const maxSlides = Math.max(backgroundSlides.length, visualSlides.length);
+  const safeIndex = Math.min(state.activeHeroSlide, maxSlides - 1);
   state.activeHeroSlide = Math.max(0, safeIndex);
+  const activeBackgroundIndex = state.activeHeroSlide % backgroundSlides.length;
+  const activeVisualIndex = state.activeHeroSlide % visualSlides.length;
 
-  slider.innerHTML = slides
+  slider.innerHTML = backgroundSlides
     .map(
       (item, index) => `
-        <article class="hero-slide${index === state.activeHeroSlide ? " is-active" : ""}">
+        <article class="hero-slide${index === activeBackgroundIndex ? " is-active" : ""}">
           ${imageMarkup(item.imageUrl, item.alt || item.title, "hero-slide__image", index === 0)}
           <div class="hero-slide__overlay"></div>
         </article>
@@ -518,31 +513,57 @@ function renderHeroMedia(resetAutoplay = true) {
     )
     .join("");
 
-  if (dots && slides.length > 1) {
-    dots.innerHTML = slides
+  visualSlider.innerHTML = visualSlides
+    .map(
+      (item, index) => `
+        <article class="hero-visual-slide${index === activeVisualIndex ? " is-active" : ""}">
+          ${imageMarkup(item.imageUrl, item.alt || item.title, "hero__visual-image", index === 0)}
+        </article>
+      `
+    )
+    .join("");
+
+  if (dots && maxSlides > 1) {
+    dots.innerHTML = backgroundSlides
       .map(
         (item, index) => `
           <button
             type="button"
-            class="hero-media-dot${index === state.activeHeroSlide ? " is-active" : ""}"
+            class="hero-media-dot${index === activeBackgroundIndex ? " is-active" : ""}"
             aria-label="${escapeHtml(item.title || `Hero slide ${index + 1}`)}"
             data-hero-slide="${index}"></button>
         `
       )
       .join("");
-
-    dots.querySelectorAll("[data-hero-slide]").forEach((button) => {
-      button.addEventListener("click", () => {
-        state.activeHeroSlide = Number(button.dataset.heroSlide || 0);
-        renderHeroMedia(true);
-      });
-    });
   } else if (dots) {
     dots.innerHTML = "";
   }
 
+  if (visualDots && maxSlides > 1) {
+    visualDots.innerHTML = visualSlides
+      .map(
+        (item, index) => `
+          <button
+            type="button"
+            class="hero-media-dot${index === activeVisualIndex ? " is-active" : ""}"
+            aria-label="${escapeHtml(item.title || `Hero image ${index + 1}`)}"
+            data-hero-visual-slide="${index}"></button>
+        `
+      )
+      .join("");
+  } else if (visualDots) {
+    visualDots.innerHTML = "";
+  }
+
+  document.querySelectorAll("[data-hero-slide], [data-hero-visual-slide]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.activeHeroSlide = Number(button.dataset.heroSlide || button.dataset.heroVisualSlide || 0);
+      renderHeroMedia(true);
+    });
+  });
+
   if (resetAutoplay) {
-    scheduleHeroAutoplay(slides.length);
+    scheduleHeroAutoplay(maxSlides);
   }
   motion.refresh();
 }
