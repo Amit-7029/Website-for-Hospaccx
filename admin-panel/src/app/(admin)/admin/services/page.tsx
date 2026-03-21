@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ClipboardList, Pencil, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -10,10 +11,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ServiceForm } from "@/features/services/components/service-form";
 import { useServicesManager } from "@/features/services/hooks/use-services-manager";
+import { LivePreviewShell } from "@/features/preview/components/live-preview-shell";
+import { useDebouncedPreview } from "@/hooks/use-debounced-preview";
 import { usePermissions } from "@/hooks/use-permissions";
+import { usePreviewStore } from "@/store/preview-store";
+import type { DiagnosticService } from "@/types";
 
 export default function ServicesPage() {
-  const { canDelete } = usePermissions();
+  const { canAddServices, canDeleteServices, canEditServices, canManageServices } = usePermissions();
+  const setServiceDraft = usePreviewStore((state) => state.setServiceDraft);
+  const setSection = usePreviewStore((state) => state.setSection);
   const {
     items,
     editingService,
@@ -25,13 +32,31 @@ export default function ServicesPage() {
     saveService,
     removeService,
   } = useServicesManager();
+  const [previewService, setPreviewService] = useState<DiagnosticService | null>(null);
+
+  useEffect(() => {
+    setSection("services");
+  }, [setSection]);
+
+  useDebouncedPreview(previewService, setServiceDraft);
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Diagnostic Services"
         description="Maintain clean, category-based service content used across the diagnostic and laboratory sections."
-        action={{ label: "Add service", onClick: () => setEditingService(null) }}
+        action={
+          canAddServices
+            ? {
+                label: "Add service",
+                onClick: () => {
+                  setEditingService(null);
+                  setPreviewService(null);
+                  setServiceDraft(null);
+                },
+              }
+            : undefined
+        }
       />
       <div className="grid gap-6 xl:grid-cols-[1.25fr,0.85fr]">
         <Card>
@@ -48,11 +73,13 @@ export default function ServicesPage() {
                       <p className="mt-2 text-sm text-muted-foreground">{service.description}</p>
                     </div>
                     <div className="flex gap-3">
-                      <Button variant="outline" className="flex-1" onClick={() => setEditingService(service)}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Edit
-                      </Button>
-                      {canDelete ? (
+                      {canEditServices ? (
+                        <Button variant="outline" className="flex-1" onClick={() => setEditingService(service)}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Edit
+                        </Button>
+                      ) : null}
+                      {canDeleteServices ? (
                         <Button variant="destructive" size="icon" onClick={() => setServiceToDelete(service)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -72,10 +99,63 @@ export default function ServicesPage() {
             )}
           </CardContent>
         </Card>
-        <ServiceForm service={editingService} onCancel={() => setEditingService(null)} isSaving={isSaving} onSave={saveService} />
+        <div className="space-y-6">
+          {canManageServices ? (
+            <ServiceForm
+              service={editingService}
+              onCancel={() => {
+                setEditingService(null);
+                setServiceDraft(null);
+              }}
+              onReset={() => setServiceDraft(null)}
+              onPreviewChange={(values) => {
+                if (!values.title && !values.description && !values.category) {
+                  setPreviewService(null);
+                  return;
+                }
+
+                setPreviewService({
+                  id: editingService?.id ?? "__preview-service__",
+                  createdAt: editingService?.createdAt,
+                  updatedAt: editingService?.updatedAt,
+                  ...values,
+                });
+              }}
+              isSaving={isSaving}
+              onSave={async (values) => {
+                const saved = await saveService(values);
+                if (saved) {
+                  setPreviewService(null);
+                  setServiceDraft(null);
+                }
+              }}
+            />
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-sm text-muted-foreground">
+                This role can view service records, but creating or editing services requires{" "}
+                <span className="font-medium text-foreground">services_add</span> or{" "}
+                <span className="font-medium text-foreground">services_edit</span>.
+              </CardContent>
+            </Card>
+          )}
+
+          <LivePreviewShell
+            title="Services preview"
+            description="See how service cards will appear on the homepage and services experience before saving."
+            allowedSections={["services", "homepage"]}
+            seed={{
+              services: items,
+            }}
+            onReset={() => {
+              setServiceDraft(null);
+              setPreviewService(null);
+            }}
+          />
+        </div>
       </div>
 
-      {canDelete ? (
+      {canDeleteServices ? (
         <ConfirmDialog
           open={Boolean(serviceToDelete)}
           title="Delete service?"

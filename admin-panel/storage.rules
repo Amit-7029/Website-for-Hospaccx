@@ -5,17 +5,106 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    function role() {
-      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role;
+    function userDoc() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid));
     }
 
-    function isAdmin() {
-      return signedIn() && role() == "admin";
+    function hasUserDoc() {
+      return signedIn() && userDoc().data != null;
+    }
+
+    function isActiveUser() {
+      return hasUserDoc() &&
+        (!userDoc().data.keys().hasAny(["status"]) || userDoc().data.status != "inactive");
+    }
+
+    function isLegacyAdmin() {
+      return hasUserDoc() && userDoc().data.role == "admin";
+    }
+
+    function hasExplicitPermission(permission) {
+      return hasUserDoc() &&
+        userDoc().data.keys().hasAny(["permissions"]) &&
+        userDoc().data.permissions is list &&
+        userDoc().data.permissions.hasAny(permissionAliases(permission));
+    }
+
+    function permissionAliases(permission) {
+      return
+        permission == "doctors_add" ? ["doctors_add"] :
+        permission == "doctors_edit" ? ["doctors_edit", "edit_doctors"] :
+        permission == "media_upload" ? ["media_upload", "access_media"] :
+        permission == "settings_edit" ? ["settings_edit", "access_settings"] :
+        [permission];
+    }
+
+    function legacyStaffHas(permission) {
+      return [
+        "dashboard_view",
+        "doctors_view",
+        "services_view",
+        "appointments_view",
+        "reviews_view"
+      ].hasAny([permission]);
+    }
+
+    function usesLegacyFallback() {
+      return !userDoc().data.keys().hasAny(["roleId"]) ||
+        userDoc().data.roleId == "system_admin" ||
+        userDoc().data.roleId == "system_staff";
+    }
+
+    function hasPermission(permission) {
+      return isActiveUser() && (
+        isLegacyAdmin() ||
+        hasExplicitPermission(permission) ||
+        (usesLegacyFallback() && userDoc().data.role == "staff" && legacyStaffHas(permission))
+      );
     }
 
     match /doctors/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if hasPermission("doctors_add") || hasPermission("doctors_edit");
+    }
+
+    match /media/{allPaths=**} {
+      allow read: if true;
+      allow write: if hasPermission("media_upload");
+    }
+
+    match /hero/{allPaths=**} {
+      allow read: if true;
+      allow write: if hasPermission("settings_edit") || hasPermission("media_upload");
+    }
+
+    match /highlights/{allPaths=**} {
+      allow read: if true;
+      allow write: if hasPermission("media_upload");
+    }
+
+    match /gallery/{allPaths=**} {
+      allow read: if true;
+      allow write: if hasPermission("media_upload");
+    }
+
+    match /whyChoose/{allPaths=**} {
+      allow read: if true;
+      allow write: if hasPermission("media_upload");
+    }
+
+    match /healthcare/{allPaths=**} {
+      allow read: if true;
+      allow write: if hasPermission("media_upload");
+    }
+
+    match /pharmacies/{allPaths=**} {
+      allow read: if true;
+      allow write: if hasPermission("media_upload");
+    }
+
+    match /services/{allPaths=**} {
+      allow read: if true;
+      allow write: if hasPermission("media_upload");
     }
   }
 }

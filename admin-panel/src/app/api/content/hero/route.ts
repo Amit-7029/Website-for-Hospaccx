@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getFirebaseAdminServices } from "@/lib/firebase/admin";
 import { getSessionUser } from "@/lib/session";
 import { DEFAULT_HERO_CONTENT } from "@/lib/constants";
+import { sessionHasPermission } from "@/lib/rbac";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,10 @@ export async function GET() {
   const sessionUser = await getSessionUser();
   if (!sessionUser) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!sessionHasPermission(sessionUser, "settings_view")) {
+    return NextResponse.json({ error: "Settings permission required" }, { status: 403 });
   }
 
   try {
@@ -53,8 +58,8 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (sessionUser.role !== "admin") {
-    return NextResponse.json({ error: "Only admins can update hero content" }, { status: 403 });
+  if (!sessionHasPermission(sessionUser, "settings_edit")) {
+    return NextResponse.json({ error: "Settings permission required" }, { status: 403 });
   }
 
   try {

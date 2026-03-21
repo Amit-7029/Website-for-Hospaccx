@@ -17,24 +17,114 @@ service cloud.firestore {
       return get(userDocPath());
     }
 
-    function isAdmin() {
+    function isActiveUser() {
+      return hasUserDoc() &&
+        (!userDoc().data.keys().hasAny(["status"]) || userDoc().data.status != "inactive");
+    }
+
+    function isLegacyAdmin() {
       return hasUserDoc() && userDoc().data.role == "admin";
     }
 
-    function isStaff() {
-      return hasUserDoc() && (userDoc().data.role == "staff" || userDoc().data.role == "admin");
+    function permissionAliases(permission) {
+      return
+        permission == "dashboard_view" ? ["dashboard_view", "access_dashboard"] :
+        permission == "doctors_view" ? ["doctors_view", "view_doctors"] :
+        permission == "doctors_add" ? ["doctors_add"] :
+        permission == "doctors_edit" ? ["doctors_edit", "edit_doctors"] :
+        permission == "doctors_delete" ? ["doctors_delete", "delete_doctors"] :
+        permission == "services_view" ? ["services_view", "view_services"] :
+        permission == "services_add" ? ["services_add"] :
+        permission == "services_edit" ? ["services_edit", "edit_services"] :
+        permission == "services_delete" ? ["services_delete", "delete_services"] :
+        permission == "media_view" ? ["media_view", "access_media"] :
+        permission == "media_upload" ? ["media_upload"] :
+        permission == "media_delete" ? ["media_delete"] :
+        permission == "reviews_view" ? ["reviews_view"] :
+        permission == "reviews_approve" ? ["reviews_approve", "moderate_reviews"] :
+        permission == "reviews_delete" ? ["reviews_delete"] :
+        permission == "appointments_view" ? ["appointments_view", "access_appointments"] :
+        permission == "appointments_update" ? ["appointments_update"] :
+        permission == "appointments_delete" ? ["appointments_delete"] :
+        permission == "seo_view" ? ["seo_view", "access_seo"] :
+        permission == "seo_edit" ? ["seo_edit"] :
+        permission == "settings_view" ? ["settings_view", "access_settings"] :
+        permission == "settings_edit" ? ["settings_edit"] :
+        permission == "users_view" ? ["users_view", "manage_users"] :
+        permission == "users_add" ? ["users_add"] :
+        permission == "users_edit" ? ["users_edit"] :
+        permission == "users_delete" ? ["users_delete"] :
+        permission == "roles_view" ? ["roles_view", "manage_users"] :
+        permission == "roles_add" ? ["roles_add"] :
+        permission == "roles_edit" ? ["roles_edit"] :
+        permission == "roles_delete" ? ["roles_delete"] :
+        [permission];
+    }
+
+    function hasRoleDoc() {
+      return hasUserDoc() &&
+        userDoc().data.keys().hasAny(["roleId"]) &&
+        exists(/databases/$(database)/documents/roles/$(userDoc().data.roleId));
+    }
+
+    function roleDoc() {
+      return get(/databases/$(database)/documents/roles/$(userDoc().data.roleId));
+    }
+
+    function hasRolePermission(permission) {
+      return hasRoleDoc() &&
+        roleDoc().data.keys().hasAny(["permissions"]) &&
+        roleDoc().data.permissions is list &&
+        roleDoc().data.permissions.hasAny(permissionAliases(permission));
+    }
+
+    function hasExplicitPermission(permission) {
+      return hasUserDoc() &&
+        userDoc().data.keys().hasAny(["permissions"]) &&
+        userDoc().data.permissions is list &&
+        userDoc().data.permissions.hasAny(permissionAliases(permission));
+    }
+
+    function legacyStaffHas(permission) {
+      return [
+        "dashboard_view",
+        "doctors_view",
+        "services_view",
+        "appointments_view",
+        "reviews_view"
+      ].hasAny([permission]);
+    }
+
+    function usesLegacyFallback() {
+      return !userDoc().data.keys().hasAny(["roleId"]) ||
+        userDoc().data.roleId == "system_admin" ||
+        userDoc().data.roleId == "system_staff";
+    }
+
+    function hasPermission(permission) {
+      return isActiveUser() && (
+        isLegacyAdmin() ||
+        hasRolePermission(permission) ||
+        hasExplicitPermission(permission) ||
+        (usesLegacyFallback() && userDoc().data.role == "staff" && legacyStaffHas(permission))
+      );
     }
 
     function validReviewCreate() {
-      return request.resource.data.keys().hasOnly(["name", "rating", "feedback", "status", "createdAt"]) &&
-        request.resource.data.feedback is string &&
-        request.resource.data.feedback.size() >= 20 &&
-        request.resource.data.feedback.size() <= 320 &&
+      return request.resource.data.keys().hasOnly(["name", "rating", "feedback", "message", "status", "createdAt", "updatedAt"]) &&
+        (
+          (request.resource.data.feedback is string &&
+            request.resource.data.feedback.size() >= 20 &&
+            request.resource.data.feedback.size() <= 320) ||
+          (request.resource.data.message is string &&
+            request.resource.data.message.size() >= 20 &&
+            request.resource.data.message.size() <= 320)
+        ) &&
         request.resource.data.rating is int &&
         request.resource.data.rating >= 1 &&
         request.resource.data.rating <= 5 &&
         request.resource.data.status == "pending" &&
-        (!("name" in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() <= 50));
+        (!request.resource.data.keys().hasAny(["name"]) || (request.resource.data.name is string && request.resource.data.name.size() <= 50));
     }
 
     function validAppointmentCreate() {
@@ -48,61 +138,91 @@ service cloud.firestore {
         request.resource.data.date is string &&
         request.resource.data.date.size() >= 10 &&
         request.resource.data.status == "pending" &&
-        (!("doctor" in request.resource.data) || (request.resource.data.doctor is string && request.resource.data.doctor.size() <= 120)) &&
-        (!("message" in request.resource.data) || (request.resource.data.message is string && request.resource.data.message.size() <= 300));
+        (!request.resource.data.keys().hasAny(["doctor"]) || (request.resource.data.doctor is string && request.resource.data.doctor.size() <= 120)) &&
+        (!request.resource.data.keys().hasAny(["message"]) || (request.resource.data.message is string && request.resource.data.message.size() <= 300));
+    }
+
+    function seoFieldUpdateOnly() {
+      return resource != null &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "seoTitle",
+          "seoDescription",
+          "seoKeywords",
+          "seoOgImageUrl",
+          "updatedAt"
+        ]);
     }
 
     match /users/{userId} {
-      allow read: if isAdmin() || (signedIn() && request.auth.uid == userId);
-      allow write: if isAdmin();
+      allow read: if hasPermission("users_view") || (signedIn() && request.auth.uid == userId);
+      allow create: if hasPermission("users_add");
+      allow update: if hasPermission("users_edit");
+      allow delete: if hasPermission("users_delete");
+    }
+
+    match /roles/{roleId} {
+      allow read: if hasPermission("roles_view");
+      allow create: if hasPermission("roles_add");
+      allow update: if hasPermission("roles_edit");
+      allow delete: if hasPermission("roles_delete");
     }
 
     match /doctors/{document=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create: if hasPermission("doctors_add");
+      allow update: if hasPermission("doctors_edit");
+      allow delete: if hasPermission("doctors_delete");
     }
 
     match /services/{document=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create: if hasPermission("services_add");
+      allow update: if hasPermission("services_edit");
+      allow delete: if hasPermission("services_delete");
     }
 
     match /media/{document=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update: if hasPermission("media_upload");
+      allow delete: if hasPermission("media_delete");
     }
 
     match /content/{document=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update, delete: if hasPermission("settings_edit");
     }
 
     match /notifications/{document=**} {
-      allow read: if isStaff();
-      allow create, update: if isStaff();
-      allow delete: if isAdmin();
+      allow read: if hasPermission("dashboard_view");
+      allow create, update: if hasPermission("dashboard_view");
+      allow delete: if hasPermission("users_delete") || hasPermission("roles_delete");
     }
 
     match /reviews/{document=**} {
-      allow read: if isStaff() || (resource.data.status == "approved");
+      allow read: if hasPermission("reviews_view") || hasPermission("reviews_approve") || hasPermission("reviews_delete") || (resource.data.status == "approved");
       allow create: if validReviewCreate();
-      allow update, delete: if isAdmin();
+      allow update: if hasPermission("reviews_approve");
+      allow delete: if hasPermission("reviews_delete");
     }
 
     match /appointments/{document=**} {
-      allow read: if isStaff();
+      allow read: if hasPermission("appointments_view");
       allow create: if validAppointmentCreate();
-      allow update, delete: if isAdmin() || isStaff();
+      allow update: if hasPermission("appointments_update");
+      allow delete: if hasPermission("appointments_delete");
     }
 
     match /cms/{document=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create: if hasPermission("settings_edit");
+      allow update: if hasPermission("settings_edit") || (hasPermission("seo_edit") && seoFieldUpdateOnly());
+      allow delete: if hasPermission("settings_edit");
     }
 
     match /activityLogs/{document=**} {
-      allow read: if isAdmin();
-      allow write: if isAdmin() || isStaff();
+      allow read: if hasPermission("dashboard_view");
+      allow create: if isActiveUser();
+      allow update, delete: if hasPermission("users_edit") || hasPermission("users_delete");
     }
   }
 }

@@ -1,28 +1,44 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { startTransition } from "react";
 import { motion } from "framer-motion";
-import { CalendarCheck2, ClipboardList, Globe2, Images, LayoutDashboard, MessageSquareQuote, PanelTop, Settings, Stethoscope, X } from "lucide-react";
+import { CalendarCheck2, ClipboardList, Eye, Globe2, Images, LayoutDashboard, MessageSquareQuote, PanelTop, Settings, ShieldCheck, Stethoscope, Users, X } from "lucide-react";
 import { siteConfig } from "@/config/site";
+import { usePermissions } from "@/hooks/use-permissions";
 import { cn } from "@/lib/utils";
 import { useUiStore } from "@/store/ui-store";
+import type { UserPermission } from "@/types";
 
 const navItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/hero", label: "Hero", icon: PanelTop },
-  { href: "/admin/doctors", label: "Doctors", icon: Stethoscope },
-  { href: "/admin/services", label: "Services", icon: ClipboardList },
-  { href: "/admin/media", label: "Media", icon: Images },
-  { href: "/admin/reviews", label: "Reviews", icon: MessageSquareQuote },
-  { href: "/admin/appointments", label: "Appointments", icon: CalendarCheck2 },
-  { href: "/admin/seo", label: "SEO", icon: Globe2 },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, permission: "dashboard_view" },
+  { href: "/admin/hero", label: "Hero", icon: PanelTop, permission: "settings_view" },
+  { href: "/admin/doctors", label: "Doctors", icon: Stethoscope, permission: "doctors_view" },
+  { href: "/admin/services", label: "Services", icon: ClipboardList, permission: "services_view" },
+  { href: "/admin/media", label: "Media", icon: Images, permission: "media_view" },
+  { href: "/admin/reviews", label: "Reviews", icon: MessageSquareQuote, permission: "reviews_view" },
+  { href: "/admin/appointments", label: "Appointments", icon: CalendarCheck2, permission: "appointments_view" },
+  { href: "/admin/preview", label: "Preview", icon: Eye, permission: "dashboard_view" },
+  { href: "/admin/seo", label: "SEO", icon: Globe2, permission: "seo_view" },
+  { href: "/admin/settings", label: "Settings", icon: Settings, permission: "settings_view" },
+  { href: "/admin/roles", label: "Roles", icon: ShieldCheck, permission: "roles_view" },
+  { href: "/admin/users", label: "Users", icon: Users, permission: "users_view" },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { sidebarOpen, mobileSidebarOpen, closeMobileSidebar } = useUiStore();
+  const { hasPermission } = usePermissions();
+  const visibleItems = navItems.filter((item) => hasPermission(item.permission as UserPermission));
+
+  const handleMobileNavigate = (href: string) => {
+    closeMobileSidebar();
+    startTransition(() => {
+      router.push(href);
+    });
+  };
 
   return (
     <>
@@ -40,7 +56,7 @@ export function Sidebar() {
           ) : null}
         </div>
         <nav className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
-          {navItems.map(({ href, label, icon: Icon }) => {
+          {visibleItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
               <Link
@@ -91,15 +107,15 @@ export function Sidebar() {
               </button>
             </div>
             <nav className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 pb-6 pt-4">
-              {navItems.map(({ href, label, icon: Icon }) => {
+              {visibleItems.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href;
                 return (
-                  <Link
+                  <button
+                    type="button"
                     key={href}
-                    href={href}
-                    onClick={closeMobileSidebar}
+                    onClick={() => handleMobileNavigate(href)}
                     className={cn(
-                      "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all",
+                      "flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all",
                       active
                         ? "bg-sidebar-accent text-sidebar-accent-foreground"
                         : "text-slate-300 hover:bg-sidebar-accent/70 hover:text-white",
@@ -107,7 +123,7 @@ export function Sidebar() {
                   >
                     <Icon className="h-5 w-5 shrink-0" />
                     <span>{label}</span>
-                  </Link>
+                  </button>
                 );
               })}
             </nav>

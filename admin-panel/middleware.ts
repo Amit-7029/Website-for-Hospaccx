@@ -1,8 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
-
 const SESSION_COOKIE = "hospaccx_admin_session";
-const ADMIN_ONLY_ROUTES = ["/admin/settings", "/admin/seo", "/admin/hero"];
 
 async function verify(token: string) {
   const secret = process.env.SESSION_SECRET;
@@ -13,7 +11,7 @@ async function verify(token: string) {
   try {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
     return {
-      role: payload.role === "admin" ? "admin" : "staff",
+      status: payload.status === "inactive" ? "inactive" : "active",
     };
   } catch {
     return null;
@@ -44,8 +42,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (ADMIN_ONLY_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`)) && verified.role !== "admin") {
-    return NextResponse.redirect(new URL("/admin", request.url));
+  if (verified.status !== "active") {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();

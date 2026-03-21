@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { listCollection } from "@/lib/firebase/repository";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { usePermissions } from "@/hooks/use-permissions";
 import type { Appointment, DiagnosticService, Doctor, GlobalSearchResult } from "@/types";
 
 export function useGlobalSearch() {
+  const { canViewDoctors, canViewServices, canAccessAppointments } = usePermissions();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,9 +25,9 @@ export function useGlobalSearch() {
       setIsLoading(true);
       try {
         const [doctors, services, appointments] = await Promise.all([
-          listCollection<Doctor>("doctors"),
-          listCollection<DiagnosticService>("services"),
-          listCollection<Appointment>("appointments"),
+          canViewDoctors ? listCollection<Doctor>("doctors") : Promise.resolve([] as Doctor[]),
+          canViewServices ? listCollection<DiagnosticService>("services") : Promise.resolve([] as DiagnosticService[]),
+          canAccessAppointments ? listCollection<Appointment>("appointments") : Promise.resolve([] as Appointment[]),
         ]);
 
         const doctorResults: GlobalSearchResult[] = doctors
@@ -80,7 +82,7 @@ export function useGlobalSearch() {
     }
 
     void run();
-  }, [debouncedQuery]);
+  }, [canAccessAppointments, canViewDoctors, canViewServices, debouncedQuery]);
 
   return useMemo(
     () => ({

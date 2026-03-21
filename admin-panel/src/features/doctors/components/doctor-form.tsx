@@ -27,14 +27,28 @@ export function DoctorForm({
   doctor,
   onCancel,
   onSave,
+  onPreviewChange,
+  onReset,
   isSaving,
 }: {
   doctor: Doctor | null;
   onCancel: () => void;
   onSave: (values: Values & { imageFile?: File | null; imageUrl?: string }) => Promise<void>;
+  onPreviewChange?: (values: {
+    name: string;
+    qualification: string;
+    specialization: string;
+    department: string;
+    availability: string[];
+    description: string;
+    services: string[];
+    imageUrl?: string;
+  }) => void;
+  onReset?: () => void;
   isSaving: boolean;
 }) {
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | undefined>(doctor?.imageUrl);
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -59,7 +73,50 @@ export function DoctorForm({
       services: doctor?.services.join("\n") ?? "",
     });
     setImageFile(null);
+    setPreviewImageUrl(doctor?.imageUrl);
   }, [doctor, form]);
+
+  useEffect(() => {
+    if (!imageFile) {
+      setPreviewImageUrl(doctor?.imageUrl);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(imageFile);
+    setPreviewImageUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [doctor?.imageUrl, imageFile]);
+
+  useEffect(() => {
+    const pushPreview = (values: Values) => {
+      onPreviewChange?.({
+        name: values.name?.trim() ?? "",
+        qualification: values.qualification?.trim() ?? "",
+        specialization: values.specialization?.trim() ?? "",
+        department: values.department?.trim() ?? "",
+        availability: values.availability
+          ?.split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean) ?? [],
+        description: values.description?.trim() ?? "",
+        services: values.services
+          ?.split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean) ?? [],
+        imageUrl: previewImageUrl,
+      });
+    };
+
+    pushPreview(form.getValues());
+    const subscription = form.watch((value) => {
+      pushPreview(value as Values);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form, onPreviewChange, previewImageUrl]);
 
   return (
     <Card>
@@ -116,6 +173,26 @@ export function DoctorForm({
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                form.reset({
+                  name: doctor?.name ?? "",
+                  qualification: doctor?.qualification ?? "",
+                  specialization: doctor?.specialization ?? "",
+                  department: doctor?.department ?? "",
+                  availability: doctor?.availability.join("\n") ?? "",
+                  description: doctor?.description ?? "",
+                  services: doctor?.services.join("\n") ?? "",
+                });
+                setImageFile(null);
+                setPreviewImageUrl(doctor?.imageUrl);
+                onReset?.();
+              }}
+            >
+              Reset
             </Button>
             <Button disabled={isSaving}>{isSaving ? "Saving..." : doctor ? "Save changes" : "Add doctor"}</Button>
           </div>

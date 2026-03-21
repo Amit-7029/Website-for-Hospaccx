@@ -12,7 +12,6 @@ import {
   where,
   writeBatch,
 } from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { getFirebaseServices, isFirebaseConfigured } from "@/lib/firebase/client";
 import { DEFAULT_CMS_CONTENT, DEFAULT_HERO_CONTENT, DEFAULT_SERVICES } from "@/lib/constants";
 import type {
@@ -24,10 +23,21 @@ import type {
   HeroContent,
   MediaItem,
   NotificationItem,
+  RoleRecord,
   Review,
+  UserRecord,
 } from "@/types";
 
-type CollectionName = "doctors" | "services" | "reviews" | "appointments" | "activityLogs" | "media" | "notifications";
+type CollectionName =
+  | "doctors"
+  | "services"
+  | "reviews"
+  | "appointments"
+  | "activityLogs"
+  | "media"
+  | "notifications"
+  | "roles"
+  | "users";
 
 const storageKeys = {
   doctors: "hospaccx-admin-doctors",
@@ -37,6 +47,8 @@ const storageKeys = {
   activityLogs: "hospaccx-admin-activity-logs",
   media: "hospaccx-admin-media",
   notifications: "hospaccx-admin-notifications",
+  roles: "hospaccx-admin-roles",
+  users: "hospaccx-admin-users",
   cms: "hospaccx-admin-cms",
   heroContent: "hospaccx-admin-hero-content",
 };
@@ -49,9 +61,15 @@ const fallbackSeed = {
   activityLogs: [] as ActivityLog[],
   media: [] as MediaItem[],
   notifications: [] as NotificationItem[],
+  roles: [] as RoleRecord[],
+  users: [] as UserRecord[],
   cms: DEFAULT_CMS_CONTENT,
   heroContent: DEFAULT_HERO_CONTENT,
 };
+
+const MAX_INLINE_IMAGE_BYTES = 340 * 1024;
+const MAX_IMAGE_WIDTH = 1600;
+const MAX_IMAGE_HEIGHT = 1200;
 
 function readLocalCollection<T>(key: keyof typeof storageKeys, defaultValue: T): T {
   if (typeof window === "undefined") {
@@ -75,6 +93,95 @@ function writeLocalCollection<T>(key: keyof typeof storageKeys, value: T) {
   if (typeof window !== "undefined") {
     window.localStorage.setItem(storageKeys[key], JSON.stringify(value));
   }
+}
+
+function fileToDataUrl(file: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Failed to read image file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImageFromFile(file: File) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Unable to process image"));
+    };
+
+    image.src = objectUrl;
+  });
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("Unable to compress image"));
+          return;
+        }
+
+        resolve(blob);
+      },
+      "image/jpeg",
+      quality,
+    );
+  });
+}
+
+async function createInlineUploadImage(file: File) {
+  if (file.type === "image/svg+xml" || file.type === "image/gif") {
+    if (file.size > MAX_INLINE_IMAGE_BYTES) {
+      throw new Error("Please use a JPG or PNG image under 340 KB for storage-free uploads.");
+    }
+
+    return fileToDataUrl(file);
+  }
+
+  const source = await loadImageFromFile(file);
+  const ratio = Math.min(MAX_IMAGE_WIDTH / source.width, MAX_IMAGE_HEIGHT / source.height, 1);
+  const width = Math.max(1, Math.round(source.width * ratio));
+  const height = Math.max(1, Math.round(source.height * ratio));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("Your browser could not process this image");
+  }
+
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, width, height);
+  context.drawImage(source, 0, 0, width, height);
+
+  let blob = await canvasToBlob(canvas, 0.86);
+  const qualities = [0.8, 0.72, 0.64, 0.56, 0.48, 0.4];
+
+  for (const quality of qualities) {
+    if (blob.size <= MAX_INLINE_IMAGE_BYTES) {
+      break;
+    }
+
+    blob = await canvasToBlob(canvas, quality);
+  }
+
+  if (blob.size > MAX_INLINE_IMAGE_BYTES) {
+    throw new Error("Image is still too large after optimization. Please use a smaller image.");
+  }
+
+  return fileToDataUrl(blob);
 }
 
 function sortByUpdatedAt<T extends { updatedAt?: string; createdAt?: string }>(items: T[]) {
@@ -129,18 +236,21 @@ function normalizeCollectionItem<T extends { id: string }>(name: CollectionName,
 
 export async function listCollection<T extends { id: string; updatedAt?: string; createdAt?: string }>(
   name: CollectionName,
+  options?: {
+    includeSystem?: boolean;
+  },
 ) {
   if (!isFirebaseConfigured()) {
     const local = readLocalCollection(name, fallbackSeed[name] as unknown as T[]);
-    return sortByUpdatedAt(local).filter((item) => !(item as T & { system?: boolean }).system);
+    const sorted = sortByUpdatedAt(local);
+    return options?.includeSystem ? sorted : sorted.filter((item) => !(item as T & { system?: boolean }).system);
   }
 
   const { db } = getFirebaseServices();
   const snapshot = await getDocs(collection(db, name));
-  const items = snapshot.docs
-    .map((item) => normalizeCollectionItem(name, { id: item.id, ...item.data() } as T))
-    .filter((item) => !(item as T & { system?: boolean }).system);
-  return sortByUpdatedAt(items);
+  const items = snapshot.docs.map((item) => normalizeCollectionItem(name, { id: item.id, ...item.data() } as T));
+  const filteredItems = options?.includeSystem ? items : items.filter((item) => !(item as T & { system?: boolean }).system);
+  return sortByUpdatedAt(filteredItems);
 }
 
 export async function saveDocument<
@@ -341,56 +451,9 @@ export async function saveHeroContent(content: HeroContent) {
 }
 
 export async function uploadImage(file: File, path: string) {
-  if (!isFirebaseConfigured()) {
-    return await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(new Error("Failed to read image file"));
-      reader.readAsDataURL(file);
-    });
-  }
-
-  const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), 20000);
-
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("folder", path.split("/")[0] || "doctors");
-
-    const response = await fetch("/api/uploads/doctor-image", {
-      method: "POST",
-      body: formData,
-      signal: controller.signal,
-    });
-
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      throw new Error(payload?.error ?? "Unable to upload image");
-    }
-
-    const payload = (await response.json()) as { url?: string };
-    if (!payload.url) {
-      throw new Error("Image upload did not return a file URL");
-    }
-
-    return payload.url;
-  } catch (error) {
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Image upload timed out. Please try a smaller file or retry.");
-    }
-
-    if (error instanceof Error && error.message) {
-      throw error;
-    }
-
-    const { storage } = getFirebaseServices();
-    const objectRef = ref(storage, path);
-    await uploadBytes(objectRef, file);
-    return getDownloadURL(objectRef);
-  } finally {
-    window.clearTimeout(timeoutId);
-  }
+  void path;
+  void isFirebaseConfigured();
+  return createInlineUploadImage(file);
 }
 
 export async function addActivityLog(log: Omit<ActivityLog, "id" | "createdAt">) {

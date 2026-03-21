@@ -15,7 +15,7 @@ import { useMediaManager } from "@/features/media/hooks/use-media-manager";
 import { usePermissions } from "@/hooks/use-permissions";
 
 export default function MediaPage() {
-  const { canDelete } = usePermissions();
+  const { canDeleteMedia, canUploadMedia, canViewMedia } = usePermissions();
   const {
     items,
     totalItems,
@@ -36,7 +36,7 @@ export default function MediaPage() {
       <PageHeader
         title="Media Library"
         description="Manage hero banners, real hospital photos, and gallery assets used across the website."
-        action={{ label: "Add media", onClick: () => setEditingItem(null) }}
+        action={canUploadMedia ? { label: "Add media", onClick: () => setEditingItem(null) } : undefined}
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr,0.8fr]">
@@ -82,11 +82,11 @@ export default function MediaPage() {
                         <p className="mt-2 text-sm text-muted-foreground">{item.caption}</p>
                       </div>
                       <div className="flex gap-3">
-                        <Button variant="outline" className="flex-1" onClick={() => setEditingItem(item)}>
+                        <Button variant="outline" className="flex-1" onClick={() => setEditingItem(item)} disabled={!canUploadMedia}>
                           <Pencil className="mr-2 h-4 w-4" />
                           Edit
                         </Button>
-                        {canDelete ? (
+                        {canDeleteMedia ? (
                           <Button variant="destructive" size="icon" onClick={() => setItemToDelete(item)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -106,17 +106,26 @@ export default function MediaPage() {
           </CardContent>
         </Card>
 
-        <MediaForm
-          item={editingItem}
-          items={items}
-          preferredSection={sectionFilter === "all" ? undefined : sectionFilter}
-          onCancel={() => setEditingItem(null)}
-          isSaving={isSaving}
-          onSave={saveMedia}
-        />
+        {canUploadMedia ? (
+          <MediaForm
+            item={editingItem}
+            items={items}
+            preferredSection={sectionFilter === "all" ? undefined : sectionFilter}
+            onCancel={() => setEditingItem(null)}
+            isSaving={isSaving}
+            onSave={saveMedia}
+          />
+        ) : (
+          <Card>
+            <CardContent className="p-6 text-sm text-muted-foreground">
+              This role can view the media library, but uploading or editing assets requires{" "}
+              <span className="font-medium text-foreground">media_upload</span>.
+            </CardContent>
+          </Card>
+        )}
       </div>
 
-      {canDelete ? (
+      {canDeleteMedia ? (
         <ConfirmDialog
           open={Boolean(itemToDelete)}
           title="Delete media asset?"

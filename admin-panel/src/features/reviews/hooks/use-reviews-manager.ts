@@ -9,7 +9,7 @@ import type { Review } from "@/types";
 
 export function useReviewsManager() {
   const { sessionUser } = useSession();
-  const { canDelete, role } = usePermissions();
+  const { canApproveReviews, canDeleteReviews, canViewReviews, role } = usePermissions();
   const [items, setItems] = useState<Review[]>([]);
   const [filter, setFilter] = useState<Review["status"] | "all">("all");
   const [reviewToDelete, setReviewToDelete] = useState<Review | null>(null);
@@ -36,6 +36,11 @@ export function useReviewsManager() {
   }, [filter, items]);
 
   const updateStatus = async (review: Review, status: Review["status"]) => {
+    if (!canApproveReviews) {
+      toast.error("You do not have permission to approve or reject reviews");
+      return;
+    }
+
     try {
       await saveDocument("reviews", {
         ...review,
@@ -56,8 +61,8 @@ export function useReviewsManager() {
   };
 
   const removeReview = async () => {
-    if (!canDelete) {
-      toast.error("Only admins can delete reviews");
+    if (!canDeleteReviews) {
+      toast.error("You do not have permission to delete reviews");
       return;
     }
 
@@ -88,6 +93,7 @@ export function useReviewsManager() {
 
   return {
     items: filteredItems,
+    allItems: items,
     filter,
     setFilter,
     averageRating,
@@ -96,6 +102,9 @@ export function useReviewsManager() {
     isLoading,
     updateStatus,
     removeReview,
-    canDelete,
+    canViewReviews,
+    canApproveReviews,
+    canDeleteReviews,
+    canModerateReviews: canApproveReviews || canDeleteReviews,
   };
 }

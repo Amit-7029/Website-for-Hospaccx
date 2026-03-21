@@ -9,7 +9,7 @@ import type { DiagnosticService } from "@/types";
 
 export function useServicesManager() {
   const { sessionUser } = useSession();
-  const { canDelete, role } = usePermissions();
+  const { canAddServices, canDeleteServices, canEditServices, role } = usePermissions();
   const [items, setItems] = useState<DiagnosticService[]>([]);
   const [editingService, setEditingService] = useState<DiagnosticService | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<DiagnosticService | null>(null);
@@ -33,6 +33,12 @@ export function useServicesManager() {
   }, []);
 
   const saveService = async (service: Omit<DiagnosticService, "id" | "createdAt" | "updatedAt">) => {
+    const canSaveService = editingService ? canEditServices : canAddServices;
+    if (!canSaveService) {
+      toast.error(editingService ? "You do not have permission to edit services" : "You do not have permission to add services");
+      return false;
+    }
+
     setIsSaving(true);
     try {
       const saved = await saveDocument("services", {
@@ -52,16 +58,18 @@ export function useServicesManager() {
       toast.success(editingService ? "Service updated" : "Service added");
       setEditingService(null);
       await load();
+      return true;
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to save service");
+      return false;
     } finally {
       setIsSaving(false);
     }
   };
 
   const removeService = async () => {
-    if (!canDelete) {
-      toast.error("Only admins can delete diagnostic services");
+    if (!canDeleteServices) {
+      toast.error("You do not have permission to delete diagnostic services");
       return;
     }
 
@@ -96,6 +104,8 @@ export function useServicesManager() {
     isSaving,
     saveService,
     removeService,
-    canDelete,
+    canAddServices,
+    canEditServices,
+    canDeleteServices,
   };
 }

@@ -9,7 +9,7 @@ import type { CmsContent } from "@/types";
 
 export function useCmsManager() {
   const { sessionUser } = useSession();
-  const { canManageCms, role } = usePermissions();
+  const { canEditSettings, role } = usePermissions();
   const [content, setContent] = useState<CmsContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -30,7 +30,7 @@ export function useCmsManager() {
   }, []);
 
   const save = async (values: CmsContent) => {
-    if (!canManageCms) {
+    if (!canEditSettings) {
       toast.error("Only admins can update website content");
       return;
     }
@@ -59,6 +59,6 @@ export function useCmsManager() {
     isLoading,
     isSaving,
     save,
-    canManageCms,
+    canManageCms: canEditSettings,
   };
 }

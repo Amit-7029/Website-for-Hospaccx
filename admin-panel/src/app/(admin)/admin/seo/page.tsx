@@ -16,7 +16,7 @@ type SeoValues = Pick<typeof DEFAULT_CMS_CONTENT, "seoTitle" | "seoDescription" 
 
 export default function SeoSettingsPage() {
   const { content, isLoading, isSaving, save } = useCmsManager();
-  const { canManageSeo } = usePermissions();
+  const { canEditSeo } = usePermissions();
   const [values, setValues] = useState<SeoValues>({
     seoTitle: DEFAULT_CMS_CONTENT.seoTitle,
     seoDescription: DEFAULT_CMS_CONTENT.seoDescription,
@@ -75,34 +75,34 @@ export default function SeoSettingsPage() {
                 <Input
                   value={values.seoTitle}
                   onChange={(event) => setValues((current) => ({ ...current, seoTitle: event.target.value }))}
-                  disabled={!canManageSeo}
+                  disabled={!canEditSeo}
                 />
               </FormField>
               <FormField label="Meta description" hint="This appears in search snippets.">
                 <Textarea
                   value={values.seoDescription}
                   onChange={(event) => setValues((current) => ({ ...current, seoDescription: event.target.value }))}
-                  disabled={!canManageSeo}
+                  disabled={!canEditSeo}
                 />
               </FormField>
               <FormField label="Keywords" hint="Comma-separated keywords for internal control and metadata.">
                 <Textarea
                   value={values.seoKeywords}
                   onChange={(event) => setValues((current) => ({ ...current, seoKeywords: event.target.value }))}
-                  disabled={!canManageSeo}
+                  disabled={!canEditSeo}
                 />
               </FormField>
               <FormField label="Open Graph image URL">
                 <Input
                   value={values.seoOgImageUrl}
                   onChange={(event) => setValues((current) => ({ ...current, seoOgImageUrl: event.target.value }))}
-                  disabled={!canManageSeo}
+                  disabled={!canEditSeo}
                 />
               </FormField>
 
               <div className="flex justify-end">
-                <Button disabled={isSaving || !canManageSeo}>
-                  {isSaving ? "Saving..." : canManageSeo ? "Save SEO settings" : "Admin access required"}
+                <Button disabled={isSaving || !canEditSeo}>
+                  {isSaving ? "Saving..." : canEditSeo ? "Save SEO settings" : "Admin access required"}
                 </Button>
               </div>
             </form>

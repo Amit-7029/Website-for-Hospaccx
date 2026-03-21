@@ -22,7 +22,7 @@ export function AppProviders({
   children: React.ReactNode;
   initialUser: AdminUser | null;
 }) {
-  const [sessionUser] = useState(initialUser);
+  const [sessionUser, setSessionUser] = useState(initialUser);
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const { theme, setTheme } = useUiStore();
@@ -50,12 +50,68 @@ export function AppProviders({
     }
 
     const { auth } = getFirebaseServices();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const syncSession = async (user: User | null, forceRefresh = false) => {
       setFirebaseUser(user);
-      setIsCheckingAuth(false);
+
+      if (!user) {
+        setIsCheckingAuth(false);
+        return;
+      }
+
+      try {
+        const idToken = await user.getIdToken(forceRefresh);
+        const response = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ idToken }),
+        });
+
+        if (response.ok) {
+          const payload = (await response.json()) as { user?: AdminUser };
+          if (payload.user) {
+            setSessionUser(payload.user);
+          }
+        }
+      } catch (error) {
+        console.error("Unable to refresh admin session:", error);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      await syncSession(user);
     });
 
-    return unsubscribe;
+    const handleVisibilityRefresh = async () => {
+      if (document.visibilityState === "visible" && auth.currentUser) {
+        await syncSession(auth.currentUser, true);
+      }
+    };
+
+    const handleWindowFocus = async () => {
+      if (auth.currentUser) {
+        await syncSession(auth.currentUser, true);
+      }
+    };
+
+    const interval = window.setInterval(() => {
+      if (auth.currentUser) {
+        void syncSession(auth.currentUser, true);
+      }
+    }, 15000);
+
+    document.addEventListener("visibilitychange", handleVisibilityRefresh);
+    window.addEventListener("focus", handleWindowFocus);
+
+    return () => {
+      unsubscribe();
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityRefresh);
+      window.removeEventListener("focus", handleWindowFocus);
+    };
   }, []);
 
   const value = useMemo<SessionContextValue>(

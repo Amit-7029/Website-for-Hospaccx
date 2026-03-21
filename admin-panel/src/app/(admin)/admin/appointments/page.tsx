@@ -10,9 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppointmentsManager } from "@/features/appointments/hooks/use-appointments-manager";
+import { usePermissions } from "@/hooks/use-permissions";
 import { formatDateTime } from "@/lib/utils";
 
 export default function AppointmentsPage() {
+  const { canUpdateAppointments, canViewAppointments } = usePermissions();
   const { items, filter, setFilter, search, setSearch, isLoading, updateStatus, exportCsv } = useAppointmentsManager();
 
   return (
@@ -20,7 +22,7 @@ export default function AppointmentsPage() {
       <PageHeader
         title="Appointments"
         description="Track appointment requests, update patient status, and export operational data for staff follow-up."
-        action={{ label: "Export CSV", onClick: exportCsv }}
+        action={canViewAppointments ? { label: "Export CSV", onClick: exportCsv } : undefined}
       />
       <Card>
         <CardContent className="space-y-4 p-6">
@@ -73,13 +75,13 @@ export default function AppointmentsPage() {
                   </div>
                   {appointment.message ? <p className="text-sm text-muted-foreground">{appointment.message}</p> : null}
                   <div className="flex flex-wrap gap-3">
-                    <Button variant="outline" onClick={() => void updateStatus(appointment, "pending")}>
+                    <Button variant="outline" onClick={() => void updateStatus(appointment, "pending")} disabled={!canUpdateAppointments}>
                       Pending
                     </Button>
-                    <Button variant="secondary" onClick={() => void updateStatus(appointment, "confirmed")}>
+                    <Button variant="secondary" onClick={() => void updateStatus(appointment, "confirmed")} disabled={!canUpdateAppointments}>
                       Confirm
                     </Button>
-                    <Button onClick={() => void updateStatus(appointment, "completed")}>Complete</Button>
+                    <Button onClick={() => void updateStatus(appointment, "completed")} disabled={!canUpdateAppointments}>Complete</Button>
                   </div>
                 </CardContent>
               </Card>

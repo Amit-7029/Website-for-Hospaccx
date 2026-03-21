@@ -1,11 +1,72 @@
 export type UserRole = "admin" | "staff";
+export type UserStatus = "active" | "inactive";
+export type UserPermission =
+  | "dashboard_view"
+  | "doctors_view"
+  | "doctors_add"
+  | "doctors_edit"
+  | "doctors_delete"
+  | "services_view"
+  | "services_add"
+  | "services_edit"
+  | "services_delete"
+  | "media_view"
+  | "media_upload"
+  | "media_delete"
+  | "reviews_view"
+  | "reviews_approve"
+  | "reviews_delete"
+  | "appointments_view"
+  | "appointments_update"
+  | "appointments_delete"
+  | "seo_view"
+  | "seo_edit"
+  | "settings_view"
+  | "settings_edit"
+  | "users_view"
+  | "users_add"
+  | "users_edit"
+  | "users_delete"
+  | "roles_view"
+  | "roles_add"
+  | "roles_edit"
+  | "roles_delete";
 
 export interface AdminUser {
   uid: string;
   email: string;
   name: string;
   role: UserRole;
+  roleId?: string;
+  roleName?: string;
+  permissions: UserPermission[];
+  status: UserStatus;
+  isActive: boolean;
   avatarUrl?: string;
+}
+
+export interface RoleRecord {
+  id: string;
+  name: string;
+  description: string;
+  permissions: UserPermission[];
+  system?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UserRecord {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  roleId?: string;
+  roleName?: string;
+  permissions?: UserPermission[];
+  status: UserStatus;
+  system?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Doctor {

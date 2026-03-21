@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { MessageSquareQuote } from "lucide-react";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -10,14 +11,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LivePreviewShell } from "@/features/preview/components/live-preview-shell";
 import { useReviewsManager } from "@/features/reviews/hooks/use-reviews-manager";
 import { usePermissions } from "@/hooks/use-permissions";
 import { formatDate } from "@/lib/utils";
+import { usePreviewStore } from "@/store/preview-store";
 
 export default function ReviewsPage() {
-  const { canDelete } = usePermissions();
+  const { canApproveReviews, canDeleteReviews, canViewReviews } = usePermissions();
+  const setSection = usePreviewStore((state) => state.setSection);
   const {
     items,
+    allItems,
     filter,
     setFilter,
     averageRating,
@@ -28,6 +33,10 @@ export default function ReviewsPage() {
     removeReview,
   } = useReviewsManager();
 
+  useEffect(() => {
+    setSection("reviews");
+  }, [setSection]);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -35,7 +44,7 @@ export default function ReviewsPage() {
         description="Moderate incoming feedback, approve genuine patient experiences, and remove inappropriate submissions."
       />
 
-      <div className="grid gap-6 xl:grid-cols-[0.9fr,1.4fr]">
+      <div className="grid gap-6 xl:grid-cols-[0.82fr,1.2fr,420px]">
         <Card>
           <CardHeader>
             <CardTitle>Trust Snapshot</CardTitle>
@@ -89,13 +98,13 @@ export default function ReviewsPage() {
                     </div>
                     <p className="text-sm leading-6 text-muted-foreground">{review.message}</p>
                     <div className="flex flex-wrap gap-3">
-                      <Button variant="outline" onClick={() => void updateStatus(review, "pending")}>
+                      <Button variant="outline" onClick={() => void updateStatus(review, "pending")} disabled={!canApproveReviews}>
                         Mark pending
                       </Button>
-                      <Button variant="secondary" onClick={() => void updateStatus(review, "approved")}>
+                      <Button variant="secondary" onClick={() => void updateStatus(review, "approved")} disabled={!canApproveReviews}>
                         Approve
                       </Button>
-                      {canDelete ? (
+                      {canDeleteReviews ? (
                         <Button variant="destructive" onClick={() => setReviewToDelete(review)}>
                           Delete
                         </Button>
@@ -113,9 +122,18 @@ export default function ReviewsPage() {
             )}
           </CardContent>
         </Card>
+
+        <LivePreviewShell
+          title="Reviews preview"
+          description="See the approved patient review section exactly as it will appear on the website."
+          allowedSections={["reviews", "homepage"]}
+          seed={{
+            reviews: allItems,
+          }}
+        />
       </div>
 
-      {canDelete ? (
+      {canDeleteReviews ? (
         <ConfirmDialog
           open={Boolean(reviewToDelete)}
           title="Delete review?"

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getFirebaseAdminServices, getFirebaseAdminStorageCandidates } from "@/lib/firebase/admin";
+import { sessionHasPermission } from "@/lib/rbac";
 import { getSessionUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,14 @@ function buildInlineDataUrl(file: File, bytes: Buffer) {
   return `data:${file.type};base64,${bytes.toString("base64")}`;
 }
 
+function canUploadToFolder(folder: string, permissionsSource: Awaited<ReturnType<typeof getSessionUser>>) {
+  if (folder === "doctors") {
+    return sessionHasPermission(permissionsSource, "doctors_add") || sessionHasPermission(permissionsSource, "doctors_edit");
+  }
+
+  return sessionHasPermission(permissionsSource, "media_upload") || sessionHasPermission(permissionsSource, "settings_edit");
+}
+
 export async function POST(request: Request) {
   try {
     const sessionUser = await getSessionUser();
@@ -29,6 +38,10 @@ export async function POST(request: Request) {
     const file = formData.get("file");
     const rawFolder = String(formData.get("folder") || "doctors").trim() || "doctors";
     const folder = ALLOWED_UPLOAD_FOLDERS.has(rawFolder) ? rawFolder : "media";
+
+    if (!canUploadToFolder(folder, sessionUser)) {
+      return NextResponse.json({ error: "You do not have permission to upload images here" }, { status: 403 });
+    }
 
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "Image file is required" }, { status: 400 });

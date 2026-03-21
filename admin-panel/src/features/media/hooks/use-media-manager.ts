@@ -32,7 +32,7 @@ function dedupeMediaItems(items: MediaItem[]) {
 
 export function useMediaManager() {
   const { sessionUser } = useSession();
-  const { canDelete, role } = usePermissions();
+  const { canDeleteMedia, canUploadMedia, role } = usePermissions();
   const [items, setItems] = useState<MediaItem[]>([]);
   const [sectionFilter, setSectionFilter] = useState<MediaItem["section"] | "all">("all");
   const [editingItem, setEditingItem] = useState<MediaItem | null>(null);
@@ -87,6 +87,11 @@ export function useMediaManager() {
   const saveMedia = async (
     values: Omit<MediaItem, "id" | "createdAt" | "updatedAt" | "imageUrl"> & { imageUrl?: string; imageFile?: File | null },
   ) => {
+    if (!canUploadMedia) {
+      toast.error("You do not have permission to upload or update media");
+      return;
+    }
+
     setIsSaving(true);
     try {
       const slotMatch =
@@ -136,8 +141,8 @@ export function useMediaManager() {
   };
 
   const removeMedia = async () => {
-    if (!canDelete) {
-      toast.error("Only admins can delete media");
+    if (!canDeleteMedia) {
+      toast.error("You do not have permission to delete media");
       return;
     }
 
@@ -175,6 +180,7 @@ export function useMediaManager() {
     isSaving,
     saveMedia,
     removeMedia,
-    canDelete,
+    canUploadMedia,
+    canDeleteMedia,
   };
 }

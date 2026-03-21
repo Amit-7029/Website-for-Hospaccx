@@ -10,7 +10,7 @@ import type { Appointment } from "@/types";
 
 export function useAppointmentsManager() {
   const { sessionUser } = useSession();
-  const { role } = usePermissions();
+  const { canDeleteAppointments, canUpdateAppointments, role } = usePermissions();
   const [items, setItems] = useState<Appointment[]>([]);
   const [filter, setFilter] = useState<Appointment["status"] | "all">("all");
   const [search, setSearch] = useState("");
@@ -45,6 +45,11 @@ export function useAppointmentsManager() {
   }, [filter, items, search]);
 
   const updateStatus = async (appointment: Appointment, status: Appointment["status"]) => {
+    if (!canUpdateAppointments) {
+      toast.error("You do not have permission to update appointments");
+      return;
+    }
+
     try {
       await saveDocument("appointments", {
         ...appointment,
@@ -93,5 +98,7 @@ export function useAppointmentsManager() {
     isLoading,
     updateStatus,
     exportCsv,
+    canUpdateAppointments,
+    canDeleteAppointments,
   };
 }

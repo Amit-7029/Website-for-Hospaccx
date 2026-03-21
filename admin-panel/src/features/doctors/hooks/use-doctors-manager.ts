@@ -11,7 +11,7 @@ const PAGE_SIZE = 6;
 
 export function useDoctorsManager() {
   const { sessionUser } = useSession();
-  const { canDelete, role } = usePermissions();
+  const { canAddDoctors, canDeleteDoctors, canEditDoctors, role } = usePermissions();
   const [items, setItems] = useState<Doctor[]>([]);
   const [search, setSearch] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
@@ -65,6 +65,12 @@ export function useDoctorsManager() {
   const saveDoctor = async (
     doctor: Omit<Doctor, "id" | "createdAt" | "updatedAt" | "imageUrl"> & { imageUrl?: string; imageFile?: File | null },
   ) => {
+    const canSaveDoctor = editingDoctor ? canEditDoctors : canAddDoctors;
+    if (!canSaveDoctor) {
+      toast.error(editingDoctor ? "You do not have permission to edit doctors" : "You do not have permission to add doctors");
+      return false;
+    }
+
     setIsSaving(true);
     try {
       const imageUrl =
@@ -96,16 +102,18 @@ export function useDoctorsManager() {
       toast.success(editingDoctor ? "Doctor updated" : "Doctor added");
       setEditingDoctor(null);
       await load();
+      return true;
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to save doctor");
+      return false;
     } finally {
       setIsSaving(false);
     }
   };
 
   const removeDoctor = async () => {
-    if (!canDelete) {
-      toast.error("Only admins can delete doctor profiles");
+    if (!canDeleteDoctors) {
+      toast.error("You do not have permission to delete doctor profiles");
       return;
     }
 
@@ -149,6 +157,8 @@ export function useDoctorsManager() {
     setDoctorToDelete,
     saveDoctor,
     removeDoctor,
-    canDelete,
+    canDeleteDoctors,
+    canAddDoctors,
+    canEditDoctors,
   };
 }

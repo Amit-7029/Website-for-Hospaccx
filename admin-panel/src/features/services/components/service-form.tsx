@@ -24,11 +24,15 @@ export function ServiceForm({
   service,
   onCancel,
   onSave,
+  onPreviewChange,
+  onReset,
   isSaving,
 }: {
   service: DiagnosticService | null;
   onCancel: () => void;
   onSave: (values: Values) => Promise<void>;
+  onPreviewChange?: (values: Values) => void;
+  onReset?: () => void;
   isSaving: boolean;
 }) {
   const form = useForm<Values>({
@@ -49,6 +53,24 @@ export function ServiceForm({
       category: service?.category ?? "Laboratory",
     });
   }, [service, form]);
+
+  useEffect(() => {
+    const pushPreview = (values: Values) => {
+      onPreviewChange?.({
+        title: values.title?.trim() ?? "",
+        description: values.description?.trim() ?? "",
+        icon: values.icon?.trim() ?? "",
+        category: values.category?.trim() ?? "",
+      });
+    };
+
+    pushPreview(form.getValues());
+    const subscription = form.watch((value) => {
+      pushPreview(value as Values);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form, onPreviewChange]);
 
   return (
     <Card>
@@ -74,6 +96,21 @@ export function ServiceForm({
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                form.reset({
+                  title: service?.title ?? "",
+                  description: service?.description ?? "",
+                  icon: service?.icon ?? "",
+                  category: service?.category ?? "Laboratory",
+                });
+                onReset?.();
+              }}
+            >
+              Reset
             </Button>
             <Button disabled={isSaving}>{isSaving ? "Saving..." : service ? "Save changes" : "Add service"}</Button>
           </div>

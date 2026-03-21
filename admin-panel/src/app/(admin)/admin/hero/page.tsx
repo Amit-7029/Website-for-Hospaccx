@@ -14,9 +14,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { LivePreviewShell } from "@/features/preview/components/live-preview-shell";
 import { useHeroManager } from "@/features/hero/hooks/use-hero-manager";
+import { useDebouncedPreview } from "@/hooks/use-debounced-preview";
 import { DEFAULT_HERO_CONTENT } from "@/lib/constants";
 import { uploadImage } from "@/lib/firebase/repository";
+import { usePreviewStore } from "@/store/preview-store";
 import type { HeroContent } from "@/types";
 
 const heroSchema = z.object({
@@ -37,6 +40,8 @@ type HeroFormValues = z.infer<typeof heroSchema>;
 export default function HeroEditorPage() {
   const { content, isLoading, isSaving, save, canManageCms } = useHeroManager();
   const [isUploading, setIsUploading] = useState(false);
+  const setHeroDraft = usePreviewStore((state) => state.setHeroDraft);
+  const setSection = usePreviewStore((state) => state.setSection);
   const form = useForm<HeroFormValues>({
     resolver: zodResolver(heroSchema),
     defaultValues: DEFAULT_HERO_CONTENT,
@@ -56,13 +61,36 @@ export default function HeroEditorPage() {
         overlayOpacity: content.overlayOpacity,
         overlayColor: content.overlayColor,
       });
+      setHeroDraft(null);
     }
-  }, [content, form]);
+  }, [content, form, setHeroDraft]);
+
+  useEffect(() => {
+    setSection("hero");
+  }, [setSection]);
 
   const imageUrl = form.watch("imageUrl");
   const backgroundImageUrl = form.watch("backgroundImageUrl");
   const overlayOpacity = form.watch("overlayOpacity");
   const overlayColor = form.watch("overlayColor");
+  const previewValues = form.watch();
+
+  useDebouncedPreview(
+    {
+      ...previewValues,
+      heading: previewValues.heading || DEFAULT_HERO_CONTENT.heading,
+      subheading: previewValues.subheading || DEFAULT_HERO_CONTENT.subheading,
+      primaryButtonText: previewValues.primaryButtonText || DEFAULT_HERO_CONTENT.primaryButtonText,
+      secondaryButtonText: previewValues.secondaryButtonText || DEFAULT_HERO_CONTENT.secondaryButtonText,
+      primaryButtonLink: previewValues.primaryButtonLink || DEFAULT_HERO_CONTENT.primaryButtonLink,
+      secondaryButtonLink: previewValues.secondaryButtonLink || DEFAULT_HERO_CONTENT.secondaryButtonLink,
+      imageUrl: previewValues.imageUrl || DEFAULT_HERO_CONTENT.imageUrl,
+      backgroundImageUrl: previewValues.backgroundImageUrl || DEFAULT_HERO_CONTENT.backgroundImageUrl,
+      overlayOpacity: previewValues.overlayOpacity ?? DEFAULT_HERO_CONTENT.overlayOpacity,
+      overlayColor: previewValues.overlayColor || DEFAULT_HERO_CONTENT.overlayColor,
+    },
+    setHeroDraft,
+  );
 
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
@@ -146,7 +174,7 @@ export default function HeroEditorPage() {
                   <Input {...form.register("imageUrl")} disabled={!canManageCms} />
                 </FormField>
 
-                <FormField label="Upload / replace hero image" hint="Uploads to Firebase Storage and updates the image URL field automatically.">
+                <FormField label="Upload / replace hero image" hint="Optimizes the image and stores it directly in website content without Firebase Storage.">
                   <input
                     type="file"
                     accept="image/*"
@@ -162,14 +190,14 @@ export default function HeroEditorPage() {
                       event.target.value = "";
                     }}
                   />
-                  <p className="text-xs text-muted-foreground">{isUploading ? "Uploading hero image..." : "Best results: wide landscape image under 1 MB."}</p>
+                  <p className="text-xs text-muted-foreground">{isUploading ? "Optimizing hero image..." : "Best results: wide landscape image. Large files are auto-compressed before save."}</p>
                 </FormField>
 
                 <FormField label="Background image URL" error={form.formState.errors.backgroundImageUrl?.message}>
                   <Input {...form.register("backgroundImageUrl")} disabled={!canManageCms} />
                 </FormField>
 
-                <FormField label="Upload / replace background image" hint="This image is used as the full hero background with overlay protection.">
+                <FormField label="Upload / replace background image" hint="This image is optimized and saved directly for the full hero background.">
                   <input
                     type="file"
                     accept="image/*"
@@ -228,54 +256,48 @@ export default function HeroEditorPage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button type="submit" disabled={isSaving || isUploading || !canManageCms}>
-                    {isSaving ? "Saving..." : canManageCms ? "Save hero section" : "Admin access required"}
-                  </Button>
+                  <div className="flex flex-wrap justify-end gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isSaving || isUploading}
+                      onClick={() => {
+                        form.reset(content ?? DEFAULT_HERO_CONTENT);
+                        setHeroDraft(null);
+                      }}
+                    >
+                      Reset changes
+                    </Button>
+                    <Button type="submit" disabled={isSaving || isUploading || !canManageCms}>
+                      {isSaving ? "Saving..." : canManageCms ? "Save hero section" : "Admin access required"}
+                    </Button>
+                  </div>
                 </div>
               </div>
 
-              <Card className="overflow-hidden rounded-[28px] border-border/70">
-                <div className="bg-gradient-to-br from-sky-100 via-white to-indigo-100 p-4">
-                  <div className="overflow-hidden rounded-[24px] border border-border/60 bg-card shadow-soft">
-                    <div
-                      className="relative aspect-[4/4.4] overflow-hidden bg-muted"
-                      style={{
-                        backgroundImage: `linear-gradient(${overlayColor || DEFAULT_HERO_CONTENT.overlayColor}${Math.round((overlayOpacity ?? DEFAULT_HERO_CONTENT.overlayOpacity) * 255).toString(16).padStart(2, "0")}, ${overlayColor || DEFAULT_HERO_CONTENT.overlayColor}${Math.round((overlayOpacity ?? DEFAULT_HERO_CONTENT.overlayOpacity) * 255).toString(16).padStart(2, "0")}), url(${backgroundImageUrl || DEFAULT_HERO_CONTENT.backgroundImageUrl})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                      }}
-                    >
-                      <img
-                        src={imageUrl || DEFAULT_HERO_CONTENT.imageUrl}
-                        alt="Hero preview"
-                        className="absolute bottom-0 right-0 h-[62%] w-[72%] rounded-tl-[28px] object-cover shadow-2xl"
-                        onError={(event) => {
-                          event.currentTarget.src = DEFAULT_HERO_CONTENT.imageUrl;
-                        }}
-                      />
-                      <div className="absolute left-5 top-5 max-w-[72%] space-y-3 text-white">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/80">Live preview</p>
-                        <h3 className="text-2xl font-semibold leading-tight">
-                          {form.watch("heading") || DEFAULT_HERO_CONTENT.heading}
-                        </h3>
-                        <p className="text-sm text-white/82">
-                          {form.watch("subheading") || DEFAULT_HERO_CONTENT.subheading}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="space-y-4 p-5">
-                      <div className="flex flex-wrap gap-3">
-                        <span className="inline-flex rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
-                          {form.watch("primaryButtonText") || DEFAULT_HERO_CONTENT.primaryButtonText}
-                        </span>
-                        <span className="inline-flex rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground">
-                          {form.watch("secondaryButtonText") || DEFAULT_HERO_CONTENT.secondaryButtonText}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
+              <LivePreviewShell
+                title="Hero live preview"
+                description="Type on the left and we’ll mirror the hero instantly. Draft mode keeps your unsaved hero changes separate from Firebase until you save."
+                allowedSections={["hero", "homepage"]}
+                seed={{
+                  hero: {
+                    heading: previewValues.heading || DEFAULT_HERO_CONTENT.heading,
+                    subheading: previewValues.subheading || DEFAULT_HERO_CONTENT.subheading,
+                    primaryButtonText: previewValues.primaryButtonText || DEFAULT_HERO_CONTENT.primaryButtonText,
+                    secondaryButtonText: previewValues.secondaryButtonText || DEFAULT_HERO_CONTENT.secondaryButtonText,
+                    primaryButtonLink: previewValues.primaryButtonLink || DEFAULT_HERO_CONTENT.primaryButtonLink,
+                    secondaryButtonLink: previewValues.secondaryButtonLink || DEFAULT_HERO_CONTENT.secondaryButtonLink,
+                    imageUrl,
+                    backgroundImageUrl,
+                    overlayOpacity,
+                    overlayColor,
+                  } as HeroContent,
+                }}
+                onReset={() => {
+                  form.reset(content ?? DEFAULT_HERO_CONTENT);
+                  setHeroDraft(null);
+                }}
+              />
             </form>
           )}
         </CardContent>
