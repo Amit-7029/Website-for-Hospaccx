@@ -115,6 +115,7 @@ export interface HeroContent {
   secondaryButtonText: string;
   primaryButtonLink: string;
   secondaryButtonLink: string;
+  visualBadgeText: string;
   imageUrl: string;
   backgroundImageUrl: string;
   overlayOpacity: number;

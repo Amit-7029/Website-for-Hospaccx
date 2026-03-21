@@ -14,6 +14,7 @@ const heroSchema = z.object({
   secondaryButtonText: z.string().trim().min(2),
   primaryButtonLink: z.string().trim().min(1),
   secondaryButtonLink: z.string().trim().min(1),
+  visualBadgeText: z.string().trim().min(3).max(80),
   imageUrl: z.string().trim().min(1),
   backgroundImageUrl: z.string().trim().min(1),
   overlayOpacity: z.number().min(0.3).max(0.7),

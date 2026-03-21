@@ -73,6 +73,9 @@ function PreviewHero({ snapshot }: { snapshot: WebsitePreviewSnapshot }) {
                     event.currentTarget.src = "/images/hospital-front.jpg";
                   }}
                 />
+                <div className="absolute left-4 top-4 inline-flex max-w-[calc(100%-2rem)] items-center rounded-full border border-white/15 bg-slate-950/60 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.28em] text-white shadow-[0_12px_28px_-20px_rgba(15,23,42,0.85)] backdrop-blur">
+                  <span className="truncate">{hero.visualBadgeText}</span>
+                </div>
               </div>
               <div className="space-y-2 p-4 text-white">
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/70">

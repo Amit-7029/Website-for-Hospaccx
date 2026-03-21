@@ -29,6 +29,7 @@ const heroSchema = z.object({
   secondaryButtonText: z.string().trim().min(2, "Secondary button text is required"),
   primaryButtonLink: z.string().trim().min(1, "Primary button link is required"),
   secondaryButtonLink: z.string().trim().min(1, "Secondary button link is required"),
+  visualBadgeText: z.string().trim().min(3, "Hero badge text is required").max(80, "Keep the badge text concise"),
   imageUrl: z.string().trim().min(1, "Hero image is required"),
   backgroundImageUrl: z.string().trim().min(1, "Background image is required"),
   overlayOpacity: z.number().min(0.3, "Overlay opacity must be at least 0.3").max(0.7, "Overlay opacity must be 0.7 or less"),
@@ -56,6 +57,7 @@ export default function HeroEditorPage() {
         secondaryButtonText: content.secondaryButtonText,
         primaryButtonLink: content.primaryButtonLink,
         secondaryButtonLink: content.secondaryButtonLink,
+        visualBadgeText: content.visualBadgeText,
         imageUrl: content.imageUrl,
         backgroundImageUrl: content.backgroundImageUrl,
         overlayOpacity: content.overlayOpacity,
@@ -84,6 +86,7 @@ export default function HeroEditorPage() {
       secondaryButtonText: previewValues.secondaryButtonText || DEFAULT_HERO_CONTENT.secondaryButtonText,
       primaryButtonLink: previewValues.primaryButtonLink || DEFAULT_HERO_CONTENT.primaryButtonLink,
       secondaryButtonLink: previewValues.secondaryButtonLink || DEFAULT_HERO_CONTENT.secondaryButtonLink,
+      visualBadgeText: previewValues.visualBadgeText || DEFAULT_HERO_CONTENT.visualBadgeText,
       imageUrl: previewValues.imageUrl || DEFAULT_HERO_CONTENT.imageUrl,
       backgroundImageUrl: previewValues.backgroundImageUrl || DEFAULT_HERO_CONTENT.backgroundImageUrl,
       overlayOpacity: previewValues.overlayOpacity ?? DEFAULT_HERO_CONTENT.overlayOpacity,
@@ -160,6 +163,10 @@ export default function HeroEditorPage() {
                     <Input {...form.register("secondaryButtonText")} disabled={!canManageCms} />
                   </FormField>
                 </div>
+
+                <FormField label="Hero visual badge" hint="This small pill appears above the hero image slider." error={form.formState.errors.visualBadgeText?.message}>
+                  <Input {...form.register("visualBadgeText")} disabled={!canManageCms} />
+                </FormField>
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormField label="Primary button link" hint="Examples: #appointment or /contact.html" error={form.formState.errors.primaryButtonLink?.message}>
@@ -287,6 +294,7 @@ export default function HeroEditorPage() {
                     secondaryButtonText: previewValues.secondaryButtonText || DEFAULT_HERO_CONTENT.secondaryButtonText,
                     primaryButtonLink: previewValues.primaryButtonLink || DEFAULT_HERO_CONTENT.primaryButtonLink,
                     secondaryButtonLink: previewValues.secondaryButtonLink || DEFAULT_HERO_CONTENT.secondaryButtonLink,
+                    visualBadgeText: previewValues.visualBadgeText || DEFAULT_HERO_CONTENT.visualBadgeText,
                     imageUrl,
                     backgroundImageUrl,
                     overlayOpacity,

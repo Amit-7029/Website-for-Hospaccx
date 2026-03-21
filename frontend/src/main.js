@@ -203,6 +203,7 @@ function setHeroBackgroundStyles() {
 function applyHeroContent() {
   updateTextContent("#heroHeading", heroValue("heading", DEFAULT_HERO_CONTENT.heading));
   updateTextContent("#heroSubheading", heroValue("subheading", DEFAULT_HERO_CONTENT.subheading));
+  updateTextContent("#heroVisualBadge", heroValue("visualBadgeText", DEFAULT_HERO_CONTENT.visualBadgeText));
   updateLink("#heroPrimaryButton", {
     href: heroValue("primaryButtonLink", DEFAULT_HERO_CONTENT.primaryButtonLink),
     text: heroValue("primaryButtonText", DEFAULT_HERO_CONTENT.primaryButtonText)

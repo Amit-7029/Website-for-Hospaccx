@@ -11,6 +11,7 @@ const DEFAULT_HERO_CONTENT = {
   secondaryButtonText: "Call Now",
   primaryButtonLink: "#appointment",
   secondaryButtonLink: "tel:+919732029834",
+  visualBadgeText: "LARGEST NABL LAB IN BIRBHUM",
   imageUrl: "/images/hospital-front.jpg",
   backgroundImageUrl: "/images/dignostic center front in day.jpg",
   overlayOpacity: 0.56,
