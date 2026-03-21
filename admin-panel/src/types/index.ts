@@ -55,6 +55,9 @@ export interface HeroContent {
   primaryButtonLink: string;
   secondaryButtonLink: string;
   imageUrl: string;
+  backgroundImageUrl: string;
+  overlayOpacity: number;
+  overlayColor: string;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -202,6 +202,24 @@ function updateHeroImage(imageUrl) {
   heroImage.src = imageUrl || fallbackImage;
 }
 
+function setHeroBackgroundStyles() {
+  const hero = document.querySelector(".hero");
+  if (!hero) {
+    return;
+  }
+
+  const backgroundImageUrl = heroValue("backgroundImageUrl", DEFAULT_HERO_CONTENT.backgroundImageUrl);
+  const overlayColor = heroValue("overlayColor", DEFAULT_HERO_CONTENT.overlayColor);
+  const overlayOpacityValue = Number(heroValue("overlayOpacity", DEFAULT_HERO_CONTENT.overlayOpacity));
+  const overlayOpacity = Number.isFinite(overlayOpacityValue)
+    ? Math.min(0.7, Math.max(0.3, overlayOpacityValue))
+    : DEFAULT_HERO_CONTENT.overlayOpacity;
+
+  hero.style.setProperty("--hero-background-image", `url("${backgroundImageUrl}")`);
+  hero.style.setProperty("--hero-overlay-color", overlayColor);
+  hero.style.setProperty("--hero-overlay-opacity", String(overlayOpacity));
+}
+
 function applyHeroContent() {
   updateTextContent("#heroHeading", heroValue("heading", DEFAULT_HERO_CONTENT.heading));
   updateTextContent("#heroSubheading", heroValue("subheading", DEFAULT_HERO_CONTENT.subheading));
@@ -214,6 +232,7 @@ function applyHeroContent() {
     text: heroValue("secondaryButtonText", DEFAULT_HERO_CONTENT.secondaryButtonText)
   });
   updateHeroImage(heroValue("imageUrl", DEFAULT_HERO_CONTENT.imageUrl));
+  setHeroBackgroundStyles();
 }
 
 function applyCmsContent() {
@@ -464,8 +483,19 @@ function renderHeroMedia(resetAutoplay = true) {
   const slider = document.getElementById("heroMediaSlider");
   const dots = document.getElementById("heroMediaDots");
   const slides = getMediaItemsBySection("hero");
+  const hasDynamicBackground = Boolean(heroValue("backgroundImageUrl", DEFAULT_HERO_CONTENT.backgroundImageUrl));
 
   if (!slider) {
+    return;
+  }
+
+  if (hasDynamicBackground) {
+    slider.innerHTML = "";
+    if (dots) {
+      dots.innerHTML = "";
+    }
+    clearHeroAutoplay();
+    motion.refresh();
     return;
   }
 

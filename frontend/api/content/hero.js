@@ -7,7 +7,10 @@ const DEFAULT_HERO_CONTENT = {
   secondaryButtonText: "Call Now",
   primaryButtonLink: "#appointment",
   secondaryButtonLink: "tel:+919732029834",
-  imageUrl: "/images/hospital-front.jpg"
+  imageUrl: "/images/hospital-front.jpg",
+  backgroundImageUrl: "/images/dignostic center front in day.jpg",
+  overlayOpacity: 0.56,
+  overlayColor: "#0f172a"
 };
 
 function json(res, status, payload) {

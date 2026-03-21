@@ -14,6 +14,9 @@ const heroSchema = z.object({
   primaryButtonLink: z.string().trim().min(1),
   secondaryButtonLink: z.string().trim().min(1),
   imageUrl: z.string().trim().min(1),
+  backgroundImageUrl: z.string().trim().min(1),
+  overlayOpacity: z.number().min(0.3).max(0.7),
+  overlayColor: z.string().trim().min(4).max(32),
 });
 
 export async function GET() {

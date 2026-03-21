@@ -53,9 +53,23 @@ body.modal-open {
 
 .hero__media-backdrop {
     background:
-        linear-gradient(135deg, rgba(21, 13, 53, 0.78) 0%, rgba(30, 19, 70, 0.72) 45%, rgba(79, 49, 183, 0.48) 100%),
+        linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--hero-overlay-color, #0f172a) calc(var(--hero-overlay-opacity, 0.56) * 100%), transparent) 0%,
+            color-mix(in srgb, var(--hero-overlay-color, #0f172a) calc((var(--hero-overlay-opacity, 0.56) - 0.08) * 100%), transparent) 45%,
+            color-mix(in srgb, var(--hero-overlay-color, #0f172a) calc((var(--hero-overlay-opacity, 0.56) - 0.18) * 100%), transparent) 100%
+        ),
         radial-gradient(circle at top right, rgba(142, 196, 255, 0.2), transparent 30%);
     z-index: 1;
+}
+
+.hero__media-track {
+    background-image: var(--hero-background-image, none);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transform: scale(1.02);
+    animation: heroBackgroundDrift 9.5s ease-in-out infinite alternate;
 }
 
 .hero-slide {
@@ -81,6 +95,15 @@ body.modal-open {
     100% {
         opacity: 1;
         transform: translate3d(0, 0, 0) scale(1);
+    }
+}
+
+@keyframes heroBackgroundDrift {
+    0% {
+        transform: scale(1.02) translate3d(0, 0, 0);
+    }
+    100% {
+        transform: scale(1.07) translate3d(0, -10px, 0);
     }
 }
 
@@ -751,27 +774,6 @@ button {
     height: 100%;
     min-height: 360px;
     object-fit: cover;
-}
-
-.hero__visual-caption {
-    position: absolute;
-    inset-inline: 1rem;
-    bottom: 1rem;
-    display: grid;
-    gap: 0.4rem;
-    padding: 1rem 1.05rem;
-    border-radius: 20px;
-    background: rgba(18, 15, 40, 0.64);
-    color: #fff;
-    backdrop-filter: blur(10px);
-}
-
-.hero__visual-kicker {
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(183, 179, 255, 0.96);
 }
 
 .hero__actions--mega {
@@ -2557,12 +2559,6 @@ button {
 
     .hero__subheading {
         font-size: 0.98rem;
-    }
-
-    .hero__visual-caption {
-        inset-inline: 0.85rem;
-        bottom: 0.85rem;
-        padding: 0.85rem 0.95rem;
     }
 
     .service-grid--diagnostic {

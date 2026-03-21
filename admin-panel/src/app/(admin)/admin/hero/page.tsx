@@ -27,6 +27,9 @@ const heroSchema = z.object({
   primaryButtonLink: z.string().trim().min(1, "Primary button link is required"),
   secondaryButtonLink: z.string().trim().min(1, "Secondary button link is required"),
   imageUrl: z.string().trim().min(1, "Hero image is required"),
+  backgroundImageUrl: z.string().trim().min(1, "Background image is required"),
+  overlayOpacity: z.number().min(0.3, "Overlay opacity must be at least 0.3").max(0.7, "Overlay opacity must be 0.7 or less"),
+  overlayColor: z.string().trim().min(4, "Overlay color is required"),
 });
 
 type HeroFormValues = z.infer<typeof heroSchema>;
@@ -49,11 +52,17 @@ export default function HeroEditorPage() {
         primaryButtonLink: content.primaryButtonLink,
         secondaryButtonLink: content.secondaryButtonLink,
         imageUrl: content.imageUrl,
+        backgroundImageUrl: content.backgroundImageUrl,
+        overlayOpacity: content.overlayOpacity,
+        overlayColor: content.overlayColor,
       });
     }
   }, [content, form]);
 
   const imageUrl = form.watch("imageUrl");
+  const backgroundImageUrl = form.watch("backgroundImageUrl");
+  const overlayOpacity = form.watch("overlayOpacity");
+  const overlayColor = form.watch("overlayColor");
 
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
@@ -72,7 +81,7 @@ export default function HeroEditorPage() {
     <div className="space-y-6">
       <PageHeader
         title="Hero Section Editor"
-        description="Control the homepage hero heading, subheading, CTA buttons, and right-side image from Firestore content/hero."
+        description="Control the homepage hero heading, buttons, right-side image, and premium background overlay from Firestore content/hero."
       />
 
       <Card>
@@ -151,6 +160,68 @@ export default function HeroEditorPage() {
                   <p className="text-xs text-muted-foreground">{isUploading ? "Uploading hero image..." : "Best results: wide landscape image under 1 MB."}</p>
                 </FormField>
 
+                <FormField label="Background image URL" error={form.formState.errors.backgroundImageUrl?.message}>
+                  <Input {...form.register("backgroundImageUrl")} disabled={!canManageCms} />
+                </FormField>
+
+                <FormField label="Upload / replace background image" hint="This image is used as the full hero background with overlay protection.">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="block w-full text-sm"
+                    disabled={!canManageCms || isUploading}
+                    onChange={async (event) => {
+                      const file = event.target.files?.[0];
+                      if (!file) {
+                        return;
+                      }
+
+                      setIsUploading(true);
+                      try {
+                        const nextUrl = await uploadImage(file, `hero/background-${Date.now()}-${file.name}`);
+                        form.setValue("backgroundImageUrl", nextUrl, { shouldDirty: true, shouldValidate: true });
+                        toast.success("Hero background uploaded");
+                      } catch (error) {
+                        toast.error(error instanceof Error ? error.message : "Background upload failed");
+                      } finally {
+                        setIsUploading(false);
+                        event.target.value = "";
+                      }
+                    }}
+                  />
+                </FormField>
+
+                <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_160px]">
+                  <FormField label="Overlay opacity" hint="Recommended range: 0.3 to 0.7" error={form.formState.errors.overlayOpacity?.message}>
+                    <div className="space-y-2">
+                      <input
+                        type="range"
+                        min="0.3"
+                        max="0.7"
+                        step="0.05"
+                        value={overlayOpacity ?? DEFAULT_HERO_CONTENT.overlayOpacity}
+                        disabled={!canManageCms}
+                        onChange={(event) => form.setValue("overlayOpacity", Number(event.target.value), { shouldDirty: true, shouldValidate: true })}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground">Current opacity: {Number(overlayOpacity ?? DEFAULT_HERO_CONTENT.overlayOpacity).toFixed(2)}</p>
+                    </div>
+                  </FormField>
+
+                  <FormField label="Overlay color" error={form.formState.errors.overlayColor?.message}>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={overlayColor || DEFAULT_HERO_CONTENT.overlayColor}
+                        disabled={!canManageCms}
+                        onChange={(event) => form.setValue("overlayColor", event.target.value, { shouldDirty: true, shouldValidate: true })}
+                        className="h-11 w-14 rounded-xl border border-border bg-transparent p-1"
+                      />
+                      <Input value={overlayColor || DEFAULT_HERO_CONTENT.overlayColor} readOnly />
+                    </div>
+                  </FormField>
+                </div>
+
                 <div className="flex justify-end">
                   <Button type="submit" disabled={isSaving || isUploading || !canManageCms}>
                     {isSaving ? "Saving..." : canManageCms ? "Save hero section" : "Admin access required"}
@@ -161,26 +232,33 @@ export default function HeroEditorPage() {
               <Card className="overflow-hidden rounded-[28px] border-border/70">
                 <div className="bg-gradient-to-br from-sky-100 via-white to-indigo-100 p-4">
                   <div className="overflow-hidden rounded-[24px] border border-border/60 bg-card shadow-soft">
-                    <div className="aspect-[4/4.4] overflow-hidden bg-muted">
+                    <div
+                      className="relative aspect-[4/4.4] overflow-hidden bg-muted"
+                      style={{
+                        backgroundImage: `linear-gradient(${overlayColor || DEFAULT_HERO_CONTENT.overlayColor}${Math.round((overlayOpacity ?? DEFAULT_HERO_CONTENT.overlayOpacity) * 255).toString(16).padStart(2, "0")}, ${overlayColor || DEFAULT_HERO_CONTENT.overlayColor}${Math.round((overlayOpacity ?? DEFAULT_HERO_CONTENT.overlayOpacity) * 255).toString(16).padStart(2, "0")}), url(${backgroundImageUrl || DEFAULT_HERO_CONTENT.backgroundImageUrl})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
+                    >
                       <img
                         src={imageUrl || DEFAULT_HERO_CONTENT.imageUrl}
                         alt="Hero preview"
-                        className="h-full w-full object-cover"
+                        className="absolute bottom-0 right-0 h-[62%] w-[72%] rounded-tl-[28px] object-cover shadow-2xl"
                         onError={(event) => {
                           event.currentTarget.src = DEFAULT_HERO_CONTENT.imageUrl;
                         }}
                       />
-                    </div>
-                    <div className="space-y-4 p-5">
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">Live preview</p>
-                        <h3 className="text-2xl font-semibold leading-tight text-foreground">
+                      <div className="absolute left-5 top-5 max-w-[72%] space-y-3 text-white">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/80">Live preview</p>
+                        <h3 className="text-2xl font-semibold leading-tight">
                           {form.watch("heading") || DEFAULT_HERO_CONTENT.heading}
                         </h3>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-white/82">
                           {form.watch("subheading") || DEFAULT_HERO_CONTENT.subheading}
                         </p>
                       </div>
+                    </div>
+                    <div className="space-y-4 p-5">
                       <div className="flex flex-wrap gap-3">
                         <span className="inline-flex rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
                           {form.watch("primaryButtonText") || DEFAULT_HERO_CONTENT.primaryButtonText}
