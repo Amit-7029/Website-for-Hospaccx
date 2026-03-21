@@ -1,7 +1,17 @@
 import cmsDefaults from "@/lib/cms-defaults.json";
-import type { CmsContent, DiagnosticService } from "@/types";
+import type { CmsContent, DiagnosticService, HeroContent } from "@/types";
 
 export const DEFAULT_CMS_CONTENT: CmsContent = cmsDefaults as CmsContent;
+
+export const DEFAULT_HERO_CONTENT: HeroContent = {
+  heading: "Advanced Diagnostic Services in Sainthia",
+  subheading: "Accurate Reports • Experienced Doctors • Trusted Care",
+  primaryButtonText: "Book Appointment",
+  secondaryButtonText: "Call Now",
+  primaryButtonLink: "#appointment",
+  secondaryButtonLink: "tel:+919732029834",
+  imageUrl: "/images/hospital-front.jpg",
+};
 
 export const DEFAULT_SERVICES: DiagnosticService[] = [
   {

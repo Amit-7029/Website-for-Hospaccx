@@ -4,7 +4,7 @@ import { doctors as fallbackDoctors } from "./data/doctors";
 import { MEDIA_IMAGE_FALLBACK, fallbackMediaItems } from "./data/media";
 import { createAppointment } from "./firebase/appointments-store";
 import { loadDoctors } from "./firebase/doctors-store";
-import { DEFAULT_CMS_CONTENT, loadCmsContent, loadDiagnosticServices } from "./firebase/content-store";
+import { DEFAULT_CMS_CONTENT, DEFAULT_HERO_CONTENT, loadCmsContent, loadDiagnosticServices, loadHeroContent } from "./firebase/content-store";
 import { loadMediaItems } from "./firebase/media-store";
 import { createReview, loadReviews } from "./firebase/reviews-store";
 import { closeAnimatedLayer, createMotionSystem, openAnimatedLayer } from "./motion";
@@ -26,7 +26,9 @@ const state = {
   doctorsSource: "local",
   cmsSource: "local",
   servicesSource: "local",
+  heroSource: "local",
   cmsContent: null,
+  heroContent: DEFAULT_HERO_CONTENT,
   services: diagnosticServices,
   mediaItems: fallbackMediaItems,
   mediaSource: "local",
@@ -170,6 +172,48 @@ function cmsValue(key, fallback = "") {
   }
 
   return state.cmsContent?.[key] ?? DEFAULT_CMS_CONTENT[key] ?? fallback;
+}
+
+function heroValue(key, fallback = "") {
+  if (!key) {
+    return fallback;
+  }
+
+  return state.heroContent?.[key] ?? DEFAULT_HERO_CONTENT[key] ?? fallback;
+}
+
+function updateHeroImage(imageUrl) {
+  const heroImage = document.getElementById("heroImage");
+  if (!heroImage) {
+    return;
+  }
+
+  const fallbackImage = DEFAULT_HERO_CONTENT.imageUrl;
+  heroImage.onerror = () => {
+    if (heroImage.dataset.fallbackApplied === "true") {
+      return;
+    }
+
+    heroImage.dataset.fallbackApplied = "true";
+    heroImage.src = fallbackImage;
+  };
+
+  heroImage.dataset.fallbackApplied = "false";
+  heroImage.src = imageUrl || fallbackImage;
+}
+
+function applyHeroContent() {
+  updateTextContent("#heroHeading", heroValue("heading", DEFAULT_HERO_CONTENT.heading));
+  updateTextContent("#heroSubheading", heroValue("subheading", DEFAULT_HERO_CONTENT.subheading));
+  updateLink("#heroPrimaryButton", {
+    href: heroValue("primaryButtonLink", DEFAULT_HERO_CONTENT.primaryButtonLink),
+    text: heroValue("primaryButtonText", DEFAULT_HERO_CONTENT.primaryButtonText)
+  });
+  updateLink("#heroSecondaryButton", {
+    href: heroValue("secondaryButtonLink", DEFAULT_HERO_CONTENT.secondaryButtonLink),
+    text: heroValue("secondaryButtonText", DEFAULT_HERO_CONTENT.secondaryButtonText)
+  });
+  updateHeroImage(heroValue("imageUrl", DEFAULT_HERO_CONTENT.imageUrl));
 }
 
 function applyCmsContent() {
@@ -986,24 +1030,31 @@ async function initializeContent() {
   state.cmsSource = "local";
   state.services = diagnosticServices;
   state.servicesSource = "local";
+  state.heroContent = DEFAULT_HERO_CONTENT;
+  state.heroSource = "local";
   applyCmsContent();
+  applyHeroContent();
   renderWhyChooseMedia();
   renderHealthcareMedia();
   renderPharmacyMedia();
   renderServices();
 
   try {
-    const [{ content, source: cmsSource }, { services, source: servicesSource }] = await Promise.all([
+    const [{ content, source: cmsSource }, { services, source: servicesSource }, { content: heroContent, source: heroSource }] = await Promise.all([
       loadCmsContent(),
-      loadDiagnosticServices()
+      loadDiagnosticServices(),
+      loadHeroContent()
     ]);
 
     state.cmsContent = content;
     state.cmsSource = cmsSource;
     state.services = services;
     state.servicesSource = servicesSource;
+    state.heroContent = heroContent;
+    state.heroSource = heroSource;
 
     applyCmsContent();
+    applyHeroContent();
     renderWhyChooseMedia();
     renderHealthcareMedia();
     renderPharmacyMedia();

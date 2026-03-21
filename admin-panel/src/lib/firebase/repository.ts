@@ -14,8 +14,18 @@ import {
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { getFirebaseServices, isFirebaseConfigured } from "@/lib/firebase/client";
-import { DEFAULT_CMS_CONTENT, DEFAULT_SERVICES } from "@/lib/constants";
-import type { ActivityLog, Appointment, CmsContent, DiagnosticService, Doctor, MediaItem, NotificationItem, Review } from "@/types";
+import { DEFAULT_CMS_CONTENT, DEFAULT_HERO_CONTENT, DEFAULT_SERVICES } from "@/lib/constants";
+import type {
+  ActivityLog,
+  Appointment,
+  CmsContent,
+  DiagnosticService,
+  Doctor,
+  HeroContent,
+  MediaItem,
+  NotificationItem,
+  Review,
+} from "@/types";
 
 type CollectionName = "doctors" | "services" | "reviews" | "appointments" | "activityLogs" | "media" | "notifications";
 
@@ -28,6 +38,7 @@ const storageKeys = {
   media: "hospaccx-admin-media",
   notifications: "hospaccx-admin-notifications",
   cms: "hospaccx-admin-cms",
+  heroContent: "hospaccx-admin-hero-content",
 };
 
 const fallbackSeed = {
@@ -39,6 +50,7 @@ const fallbackSeed = {
   media: [] as MediaItem[],
   notifications: [] as NotificationItem[],
   cms: DEFAULT_CMS_CONTENT,
+  heroContent: DEFAULT_HERO_CONTENT,
 };
 
 function readLocalCollection<T>(key: keyof typeof storageKeys, defaultValue: T): T {
@@ -233,6 +245,65 @@ export async function saveCmsContent(content: CmsContent) {
     updatedAt: new Date().toISOString(),
   });
   return content;
+}
+
+export async function loadHeroContent() {
+  if (!isFirebaseConfigured()) {
+    return {
+      ...DEFAULT_HERO_CONTENT,
+      ...readLocalCollection("heroContent", DEFAULT_HERO_CONTENT),
+    } as HeroContent;
+  }
+
+  const { db } = getFirebaseServices();
+  const snapshot = await getDoc(doc(db, "content", "hero"));
+  if (!snapshot.exists()) {
+    return DEFAULT_HERO_CONTENT;
+  }
+
+  return {
+    ...DEFAULT_HERO_CONTENT,
+    ...(snapshot.data() as Partial<HeroContent>),
+  } as HeroContent;
+}
+
+export async function saveHeroContent(content: HeroContent) {
+  const timestamp = new Date().toISOString();
+  const payload = stripUndefinedValues({
+    ...content,
+    updatedAt: timestamp,
+    createdAt: content.createdAt ?? timestamp,
+  });
+
+  if (!isFirebaseConfigured()) {
+    writeLocalCollection("heroContent", payload);
+    writeLocalCollection("cms", {
+      ...readLocalCollection("cms", DEFAULT_CMS_CONTENT),
+      heroHeading: content.heading,
+      heroDescription: content.subheading,
+      heroPrimaryCtaLabel: content.primaryButtonText,
+      heroSecondaryCtaLabel: content.secondaryButtonText,
+    });
+    return payload as HeroContent;
+  }
+
+  const { db } = getFirebaseServices();
+  const batch = writeBatch(db);
+  batch.set(doc(db, "content", "hero"), payload, { merge: true });
+  batch.set(
+    doc(db, "cms", "website"),
+    {
+      heroHeading: content.heading,
+      heroDescription: content.subheading,
+      heroPrimaryCtaLabel: content.primaryButtonText,
+      heroSecondaryCtaLabel: content.secondaryButtonText,
+      updatedAt: timestamp,
+    },
+    { merge: true },
+  );
+  await batch.commit();
+
+  return payload as HeroContent;
 }
 
 export async function uploadImage(file: File, path: string) {

@@ -4,6 +4,15 @@ import cmsDefaults from "../data/cms-defaults.json";
 import { getFirebaseServices, isFirebaseConfigured } from "./client";
 
 const DEFAULT_CMS_CONTENT = cmsDefaults;
+const DEFAULT_HERO_CONTENT = {
+  heading: "Advanced Diagnostic Services in Sainthia",
+  subheading: "Accurate Reports • Experienced Doctors • Trusted Care",
+  primaryButtonText: "Book Appointment",
+  secondaryButtonText: "Call Now",
+  primaryButtonLink: "#appointment",
+  secondaryButtonLink: "tel:+919732029834",
+  imageUrl: "/images/hospital-front.jpg"
+};
 
 function normalizeService(service, index = 0) {
   const title = String(service.title || "").trim();
@@ -56,6 +65,39 @@ export async function loadCmsContent() {
   };
 }
 
+export async function loadHeroContent() {
+  if (!isFirebaseConfigured()) {
+    return {
+      content: DEFAULT_HERO_CONTENT,
+      source: "local"
+    };
+  }
+
+  const { firestore } = getFirebaseServices();
+  if (!firestore) {
+    return {
+      content: DEFAULT_HERO_CONTENT,
+      source: "local"
+    };
+  }
+
+  const snapshot = await getDoc(doc(firestore, "content", "hero"));
+  if (!snapshot.exists()) {
+    return {
+      content: DEFAULT_HERO_CONTENT,
+      source: "local"
+    };
+  }
+
+  return {
+    content: {
+      ...DEFAULT_HERO_CONTENT,
+      ...snapshot.data()
+    },
+    source: "firestore"
+  };
+}
+
 export async function loadDiagnosticServices() {
   if (!isFirebaseConfigured()) {
     return {
@@ -81,4 +123,4 @@ export async function loadDiagnosticServices() {
   };
 }
 
-export { DEFAULT_CMS_CONTENT };
+export { DEFAULT_CMS_CONTENT, DEFAULT_HERO_CONTENT };

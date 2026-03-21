@@ -47,6 +47,18 @@ export interface MediaItem {
   updatedAt?: string;
 }
 
+export interface HeroContent {
+  heading: string;
+  subheading: string;
+  primaryButtonText: string;
+  secondaryButtonText: string;
+  primaryButtonLink: string;
+  secondaryButtonLink: string;
+  imageUrl: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Review {
   id: string;
   name?: string;

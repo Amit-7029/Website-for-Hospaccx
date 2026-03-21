@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { CalendarCheck2, ClipboardList, Globe2, Images, LayoutDashboard, MessageSquareQuote, Settings, Stethoscope, X } from "lucide-react";
+import { CalendarCheck2, ClipboardList, Globe2, Images, LayoutDashboard, MessageSquareQuote, PanelTop, Settings, Stethoscope, X } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { useUiStore } from "@/store/ui-store";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/hero", label: "Hero", icon: PanelTop },
   { href: "/admin/doctors", label: "Doctors", icon: Stethoscope },
   { href: "/admin/services", label: "Services", icon: ClipboardList },
   { href: "/admin/media", label: "Media", icon: Images },

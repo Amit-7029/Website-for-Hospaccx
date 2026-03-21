@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
 const SESSION_COOKIE = "hospaccx_admin_session";
-const ADMIN_ONLY_ROUTES = ["/admin/settings", "/admin/seo"];
+const ADMIN_ONLY_ROUTES = ["/admin/settings", "/admin/seo", "/admin/hero"];
 
 async function verify(token: string) {
   const secret = process.env.SESSION_SECRET;

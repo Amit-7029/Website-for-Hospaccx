@@ -72,6 +72,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /content/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /notifications/{document=**} {
       allow read: if isStaff();
       allow create, update: if isStaff();

@@ -691,6 +691,20 @@ button {
     line-height: 1.75;
 }
 
+.hero__subheading {
+    margin-top: 1rem;
+    max-width: 34ch;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: clamp(1.02rem, 1.6vw, 1.22rem);
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+}
+
+.hero__description {
+    margin-top: 0.9rem;
+}
+
 .hero__actions,
 .hero__stats {
     margin-top: 2rem;
@@ -707,6 +721,53 @@ button {
 .hero__actions--compact {
     gap: 1rem;
     align-items: center;
+}
+
+.hero__side {
+    display: grid;
+    gap: 1.15rem;
+}
+
+.hero__visual-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 360px;
+    border-radius: calc(var(--radius-lg) + 4px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+        rgba(255, 255, 255, 0.04);
+    box-shadow: 0 28px 58px rgba(10, 6, 31, 0.22);
+    backdrop-filter: blur(12px);
+}
+
+.hero__visual-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 360px;
+    object-fit: cover;
+}
+
+.hero__visual-caption {
+    position: absolute;
+    inset-inline: 1rem;
+    bottom: 1rem;
+    display: grid;
+    gap: 0.4rem;
+    padding: 1rem 1.05rem;
+    border-radius: 20px;
+    background: rgba(18, 15, 40, 0.64);
+    color: #fff;
+    backdrop-filter: blur(10px);
+}
+
+.hero__visual-kicker {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(183, 179, 255, 0.96);
 }
 
 .hero__actions--mega {
@@ -2375,6 +2436,15 @@ button {
         max-width: none;
     }
 
+    .hero__side {
+        order: 2;
+    }
+
+    .hero__visual-card,
+    .hero__visual-image {
+        min-height: 300px;
+    }
+
     .emergency-strip__content,
     .testimonial-slider,
     .profile-card,
@@ -2475,6 +2545,16 @@ button {
 
     .nav__actions .button {
         width: 100%;
+    }
+
+    .hero__subheading {
+        font-size: 0.98rem;
+    }
+
+    .hero__visual-caption {
+        inset-inline: 0.85rem;
+        bottom: 0.85rem;
+        padding: 0.85rem 0.95rem;
     }
 
     .service-grid--diagnostic {

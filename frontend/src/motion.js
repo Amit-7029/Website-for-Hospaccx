@@ -82,7 +82,8 @@ function decorateHero(root) {
   setMotion(root.querySelector(".hero__copy .subtitle"), "fadeUp", { delay: 240, duration: 920 });
   setMotion(root.querySelector(".hero__actions--compact"), "slideLeft", { delay: 320, duration: 900 });
   sequence(root.querySelectorAll(".hero__stats article"), "fadeUp", 420, 120);
-  setMotion(root.querySelector(".hero__panel"), "slideRight", { delay: 220, duration: 960 });
+  setMotion(root.querySelector(".hero__visual-card"), "slideRight", { delay: 200, duration: 960 });
+  setMotion(root.querySelector(".hero__panel"), "fadeUp", { delay: 300, duration: 900 });
 
   const floatingPanel = root.querySelector(".hero__panel");
   if (floatingPanel) {
