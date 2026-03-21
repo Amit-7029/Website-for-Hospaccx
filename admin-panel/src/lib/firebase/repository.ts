@@ -248,6 +248,19 @@ export async function saveCmsContent(content: CmsContent) {
 }
 
 export async function loadHeroContent() {
+  if (typeof fetch === "function") {
+    const response = await fetch("/api/content/hero", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error("Unable to load hero content");
+    }
+
+    const payload = (await response.json()) as Partial<HeroContent>;
+    return {
+      ...DEFAULT_HERO_CONTENT,
+      ...payload,
+    } as HeroContent;
+  }
+
   if (!isFirebaseConfigured()) {
     return {
       ...DEFAULT_HERO_CONTENT,
@@ -268,6 +281,27 @@ export async function loadHeroContent() {
 }
 
 export async function saveHeroContent(content: HeroContent) {
+  if (typeof fetch === "function") {
+    const response = await fetch("/api/content/hero", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(content),
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(payload?.error ?? "Unable to save hero content");
+    }
+
+    const payload = (await response.json()) as Partial<HeroContent>;
+    return {
+      ...DEFAULT_HERO_CONTENT,
+      ...payload,
+    } as HeroContent;
+  }
+
   const timestamp = new Date().toISOString();
   const payload = stripUndefinedValues({
     ...content,

@@ -66,6 +66,27 @@ export async function loadCmsContent() {
 }
 
 export async function loadHeroContent() {
+  if (typeof fetch === "function") {
+    try {
+      const response = await fetch(`/api/content/hero?t=${Date.now()}`, {
+        cache: "no-store"
+      });
+
+      if (response.ok) {
+        const payload = await response.json();
+        return {
+          content: {
+            ...DEFAULT_HERO_CONTENT,
+            ...payload
+          },
+          source: "firestore"
+        };
+      }
+    } catch (error) {
+      console.warn("Unable to load hero content through API, falling back to SDK/local content.", error);
+    }
+  }
+
   if (!isFirebaseConfigured()) {
     return {
       content: DEFAULT_HERO_CONTENT,
