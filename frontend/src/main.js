@@ -482,20 +482,16 @@ function renderDepartments() {
 function renderHeroMedia(resetAutoplay = true) {
   const slider = document.getElementById("heroMediaSlider");
   const dots = document.getElementById("heroMediaDots");
-  const slides = getMediaItemsBySection("hero");
-  const hasDynamicBackground = Boolean(heroValue("backgroundImageUrl", DEFAULT_HERO_CONTENT.backgroundImageUrl));
+  const mediaSlides = getMediaItemsBySection("hero");
+  const fallbackBackgroundSlide = {
+    id: "hero-background-fallback",
+    title: "Hero background",
+    alt: "Banerjee Diagnostic Foundation and Hospaccx hero background",
+    imageUrl: heroValue("backgroundImageUrl", DEFAULT_HERO_CONTENT.backgroundImageUrl)
+  };
+  const slides = mediaSlides.length ? mediaSlides : [fallbackBackgroundSlide];
 
   if (!slider) {
-    return;
-  }
-
-  if (hasDynamicBackground) {
-    slider.innerHTML = "";
-    if (dots) {
-      dots.innerHTML = "";
-    }
-    clearHeroAutoplay();
-    motion.refresh();
     return;
   }
 
@@ -522,7 +518,7 @@ function renderHeroMedia(resetAutoplay = true) {
     )
     .join("");
 
-  if (dots) {
+  if (dots && slides.length > 1) {
     dots.innerHTML = slides
       .map(
         (item, index) => `
@@ -541,6 +537,8 @@ function renderHeroMedia(resetAutoplay = true) {
         renderHeroMedia(true);
       });
     });
+  } else if (dots) {
+    dots.innerHTML = "";
   }
 
   if (resetAutoplay) {

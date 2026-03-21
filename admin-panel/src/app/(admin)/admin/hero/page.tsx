@@ -81,7 +81,7 @@ export default function HeroEditorPage() {
     <div className="space-y-6">
       <PageHeader
         title="Hero Section Editor"
-        description="Control the homepage hero heading, buttons, right-side image, and premium background overlay from Firestore content/hero."
+        description="Control the homepage hero heading, buttons, right-side image, and premium background overlay from Firestore content/hero. For multiple background slides, use Media Library and choose section Hero."
       />
 
       <Card>
@@ -91,6 +91,11 @@ export default function HeroEditorPage() {
             Changes here update the live hero section on the website. The editor writes to the Firestore
             <code className="mx-1 rounded bg-muted px-1.5 py-0.5 text-xs">content/hero</code>
             document.
+          </CardDescription>
+          <CardDescription>
+            Multiple rotating hero backgrounds are managed from
+            <code className="mx-1 rounded bg-muted px-1.5 py-0.5 text-xs">Media Library → Hero</code>.
+            The background image field here works as the safe fallback when no hero slides are available.
           </CardDescription>
         </CardHeader>
         <CardContent>
