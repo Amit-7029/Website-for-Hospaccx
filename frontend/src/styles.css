@@ -664,8 +664,12 @@ button {
     display: grid;
     grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
     gap: 2.2rem;
-    align-items: center;
-    padding-top: 2.7rem;
+    align-items: start;
+    padding-top: 0.75rem;
+}
+
+.hero__copy {
+    margin-top: -0.3rem;
 }
 
 .eyebrow {
@@ -785,7 +789,7 @@ button {
     position: relative;
     z-index: 6;
     margin-top: 0.65rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.8rem;
     padding: 0.95rem 1.2rem;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 22px;
@@ -2434,6 +2438,10 @@ button {
 
     .hero__copy h1 {
         max-width: none;
+    }
+
+    .hero__copy {
+        margin-top: 0;
     }
 
     .hero__side {

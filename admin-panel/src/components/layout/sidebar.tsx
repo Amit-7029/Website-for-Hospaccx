@@ -73,7 +73,7 @@ export function Sidebar() {
             initial={{ x: -24, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -24, opacity: 0 }}
-            className="absolute inset-y-0 left-0 flex h-screen w-[88vw] max-w-[320px] overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-2xl"
+            className="absolute inset-y-0 left-0 flex h-[100dvh] w-[92vw] max-w-[340px] flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-2xl"
           >
             <div className="flex shrink-0 items-start justify-between border-b border-sidebar-border px-5 py-5">
               <div>
@@ -90,7 +90,7 @@ export function Sidebar() {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <nav className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
+            <nav className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 pb-6 pt-4">
               {navItems.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href;
                 return (
