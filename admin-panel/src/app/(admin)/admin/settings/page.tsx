@@ -114,6 +114,13 @@ export default function SettingsPage() {
     }));
   };
 
+  const handleSave = async () => {
+    const sanitized = Object.fromEntries(
+      Object.entries(values).map(([key, value]) => [key, typeof value === "string" ? value.trim() : value]),
+    ) as Values;
+    await save(sanitized);
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -147,10 +154,7 @@ export default function SettingsPage() {
                 className="space-y-6"
                 onSubmit={async (event) => {
                   event.preventDefault();
-                  const sanitized = Object.fromEntries(
-                    Object.entries(values).map(([key, value]) => [key, typeof value === "string" ? value.trim() : value]),
-                  ) as Values;
-                  await save(sanitized);
+                  await handleSave();
                 }}
               >
                 <div className="grid gap-6">
@@ -160,46 +164,53 @@ export default function SettingsPage() {
                         <CardTitle>{section.title}</CardTitle>
                         <CardDescription>{section.description}</CardDescription>
                       </CardHeader>
-                      <CardContent className="grid gap-4 md:grid-cols-2">
-                        {section.fields.map((field) => {
-                          const value = values[field.key] ?? "";
+                      <CardContent className="space-y-5">
+                        <div className="grid gap-4 md:grid-cols-2">
+                          {section.fields.map((field) => {
+                            const value = values[field.key] ?? "";
 
-                          if (field.kind === "image") {
-                            return (
-                              <CmsImageField
-                                key={field.key}
-                                fieldKey={field.key}
-                                label={field.label}
-                                value={value}
-                                onChange={(nextValue) => handleValueChange(field.key, nextValue)}
-                                disabled={!canManageCms}
-                              />
-                            );
-                          }
+                            if (field.kind === "image") {
+                              return (
+                                <CmsImageField
+                                  key={field.key}
+                                  fieldKey={field.key}
+                                  label={field.label}
+                                  value={value}
+                                  onChange={(nextValue) => handleValueChange(field.key, nextValue)}
+                                  disabled={!canManageCms}
+                                />
+                              );
+                            }
 
-                          if (field.kind === "textarea") {
+                            if (field.kind === "textarea") {
+                              return (
+                                <FormField key={field.key} className="md:col-span-2" label={field.label} hint={field.hint}>
+                                  <Textarea
+                                    value={value}
+                                    onChange={(event) => handleValueChange(field.key, event.target.value)}
+                                    disabled={!canManageCms}
+                                  />
+                                </FormField>
+                              );
+                            }
+
                             return (
-                              <FormField key={field.key} className="md:col-span-2" label={field.label} hint={field.hint}>
-                                <Textarea
+                              <FormField key={field.key} label={field.label} hint={field.hint}>
+                                <Input
+                                  type={field.kind === "url" ? "url" : "text"}
                                   value={value}
                                   onChange={(event) => handleValueChange(field.key, event.target.value)}
                                   disabled={!canManageCms}
                                 />
                               </FormField>
                             );
-                          }
-
-                          return (
-                            <FormField key={field.key} label={field.label} hint={field.hint}>
-                              <Input
-                                type={field.kind === "url" ? "url" : "text"}
-                                value={value}
-                                onChange={(event) => handleValueChange(field.key, event.target.value)}
-                                disabled={!canManageCms}
-                              />
-                            </FormField>
-                          );
-                        })}
+                          })}
+                        </div>
+                        <div className="flex justify-end">
+                          <Button type="button" disabled={isSaving || !canManageCms} onClick={handleSave}>
+                            {isSaving ? "Saving..." : canManageCms ? "Save changes" : "Admin access required"}
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
