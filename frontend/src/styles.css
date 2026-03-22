@@ -2519,6 +2519,114 @@ button {
     line-height: 1.72;
 }
 
+.appointment-copy {
+    display: grid;
+    gap: 1.35rem;
+    align-content: start;
+}
+
+.appointment-copy > h2,
+.appointment-copy > p {
+    margin: 0;
+}
+
+.appointment-benefits {
+    display: grid;
+    gap: 0.95rem;
+}
+
+.appointment-benefit-card {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 0.95rem;
+    align-items: start;
+    padding: 1rem 1.05rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(103, 61, 230, 0.1);
+    box-shadow: 0 20px 42px rgba(20, 25, 55, 0.08);
+}
+
+.appointment-benefit-card__icon {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(103, 61, 230, 0.14), rgba(68, 153, 255, 0.16));
+    color: var(--primary-dark);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.appointment-benefit-card strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--text);
+    font-size: 1.02rem;
+}
+
+.appointment-benefit-card p {
+    margin: 0;
+}
+
+.appointment-trust-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+    gap: 1rem;
+    padding: 1.1rem;
+    border-radius: 26px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(244, 246, 255, 0.9));
+    border: 1px solid rgba(103, 61, 230, 0.1);
+    box-shadow: 0 22px 48px rgba(20, 25, 55, 0.1);
+    align-items: center;
+}
+
+.appointment-trust-card__copy {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.appointment-trust-card__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(103, 61, 230, 0.08);
+    color: var(--primary-dark);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.appointment-trust-card__stars {
+    color: #f4b400;
+    letter-spacing: 0.18em;
+    font-size: 1.05rem;
+}
+
+.appointment-trust-card__copy p {
+    margin: 0;
+}
+
+.appointment-trust-card__media {
+    margin: 0;
+    overflow: hidden;
+    border-radius: 20px;
+    min-height: 210px;
+    background: rgba(17, 24, 39, 0.06);
+}
+
+.appointment-trust-card__media img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
 .services__intro {
     max-width: 760px;
     margin: -0.3rem 0 1.7rem;
@@ -3049,6 +3157,14 @@ button {
         grid-template-columns: 1fr;
     }
 
+    .appointment-trust-card {
+        grid-template-columns: 1fr;
+    }
+
+    .appointment-trust-card__media {
+        min-height: 220px;
+    }
+
     .reviews-shell {
         grid-template-columns: 1fr;
     }
@@ -3237,6 +3353,11 @@ button {
     .appointment-form__row,
     .about-card__stats {
         grid-template-columns: 1fr;
+    }
+
+    .appointment-benefit-card {
+        grid-template-columns: 40px 1fr;
+        padding: 0.95rem;
     }
 
     .hero__panel,
