@@ -789,31 +789,49 @@ function renderFeatureSection() {
   const items = [
     {
       title: cmsValue("healthcareFeatureServiceOneTitle", "Trusted Diagnostics"),
-      description: cmsValue("healthcareFeatureServiceOneText", "Reliable testing and reporting designed for clear clinical decision-making.")
+      description: cmsValue("healthcareFeatureServiceOneText", "Reliable testing and reporting designed for clear clinical decision-making."),
+      fallbackImage: "/images/WhatsApp Image 2026-03-15 at 6.57.54 PM (1).jpeg",
+      fallbackAlt: "Diagnostic support environment at Banerjee Diagnostic Foundation and Hospaccx"
     },
     {
       title: cmsValue("healthcareFeatureServiceTwoTitle", "Specialist OPD"),
-      description: cmsValue("healthcareFeatureServiceTwoText", "Organized diagnostic workflows with supportive patient coordination.")
+      description: cmsValue("healthcareFeatureServiceTwoText", "Organized diagnostic workflows with supportive patient coordination."),
+      fallbackImage: "/images/reception.jpg",
+      fallbackAlt: "Patient support and OPD environment at Banerjee Diagnostic Foundation and Hospaccx"
     },
     {
       title: cmsValue("healthcareFeatureServiceThreeTitle", "Emergency & ICU"),
-      description: cmsValue("healthcareFeatureServiceThreeText", "Consultant availability across multiple departments and patient needs.")
+      description: cmsValue("healthcareFeatureServiceThreeText", "Consultant availability across multiple departments and patient needs."),
+      fallbackImage: "/images/WhatsApp Image 2026-03-15 at 6.57.54 PM (2).jpeg",
+      fallbackAlt: "Emergency and ICU support environment at Banerjee Diagnostic Foundation and Hospaccx"
     },
     {
       title: cmsValue("healthcareFeatureServiceFourTitle", "Cashless Support"),
-      description: cmsValue("healthcareFeatureServiceFourText", "Fast support pathway for urgent care, ICU, and immediate evaluation.")
+      description: cmsValue("healthcareFeatureServiceFourText", "Fast support pathway for urgent care, ICU, and immediate evaluation."),
+      fallbackImage: "/images/reception (2).jpg",
+      fallbackAlt: "Cashless support and patient helpdesk environment at Banerjee Diagnostic Foundation and Hospaccx"
     }
   ];
 
   container.innerHTML = items
-    .map(
-      (item, index) => `
+    .map((item, index) => {
+      const media = getSectionMediaItem("healthcare", index + 1);
+      const imageUrl = media?.imageUrl || item.fallbackImage;
+      const imageAlt = media?.alt || media?.title || item.fallbackAlt || item.title;
+
+      return `
           <article class="testimonial-card healthcare-restore-card" data-motion="${index % 2 === 0 ? "slideLeft" : "slideRight"}" style="--motion-delay:${index * 70}ms">
+            <div class="section-media-card__image-wrap">
+              ${imageMarkup(imageUrl, imageAlt, "section-media-card__image")}
+              <span class="section-media-card__badge">${escapeHtml(media?.category || cmsValue("healthcareEyebrow", "Complete Healthcare"))}</span>
+            </div>
+            <div class="section-media-card__content">
             <h3>${escapeHtml(item.title)}</h3>
             <p>${escapeHtml(item.description)}</p>
+            </div>
           </article>
         `
-    )
+    })
     .join("");
 
   motion.refresh();
