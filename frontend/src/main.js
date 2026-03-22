@@ -1321,10 +1321,11 @@ function getFilteredDoctorsForCards() {
 function renderDoctors() {
   const container = document.getElementById("doctorGrid");
   const filter = document.getElementById("doctorDepartmentFilter");
+  const allDepartmentsLabel = cmsValue("doctorsFilterPlaceholder", "All departments");
 
   if (filter && !filter.dataset.ready) {
     filter.innerHTML =
-      '<option value="">All departments</option>' +
+      `<option value="">${escapeHtml(allDepartmentsLabel)}</option>` +
       state.departments.map((department) => `<option value="${escapeHtml(department)}">${escapeHtml(department)}</option>`).join("");
 
     filter.dataset.ready = "true";
@@ -1961,7 +1962,10 @@ async function initializeDoctors() {
   }
 
   if (sourceBadge) {
-    sourceBadge.textContent = "Doctor information is curated and regularly updated by our clinic team.";
+    sourceBadge.textContent = cmsValue(
+      "doctorsDataSourceLocal",
+      "Doctor information is curated and regularly updated by our clinic team.",
+    );
   }
 
   try {
@@ -1984,8 +1988,8 @@ async function initializeDoctors() {
     if (sourceBadge) {
       sourceBadge.textContent =
         source === "firestore"
-          ? "Doctor information is updated from the clinic records."
-          : "Doctor information is curated and regularly updated by our clinic team.";
+          ? cmsValue("doctorsDataSourceFirestore", "Doctor information is updated from the clinic records.")
+          : cmsValue("doctorsDataSourceLocal", "Doctor information is curated and regularly updated by our clinic team.");
     }
   } catch (error) {
     console.error(error);
@@ -2003,7 +2007,10 @@ async function initializeDoctors() {
     }
 
     if (sourceBadge) {
-      sourceBadge.textContent = "Doctor information is curated and regularly updated by our clinic team.";
+      sourceBadge.textContent = cmsValue(
+        "doctorsDataSourceLocal",
+        "Doctor information is curated and regularly updated by our clinic team.",
+      );
     }
   }
 }

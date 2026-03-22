@@ -225,6 +225,21 @@ export const CMS_FIELD_SECTIONS: CmsFieldSection[] = [
     ],
   },
   {
+    title: "Doctors Information Section",
+    description: "Manage the doctors section heading, description, source note, badge, and department filter labels.",
+    fields: [
+      { key: "doctorsEyebrow", label: "Doctors eyebrow" },
+      { key: "doctorsHeading", label: "Doctors heading", kind: "textarea" },
+      { key: "doctorsOverlayDescription", label: "Doctors section description", kind: "textarea" },
+      { key: "doctorsOverlayBadge", label: "Doctors badge label" },
+      { key: "doctorsDataSourceLocal", label: "Doctors local source note", kind: "textarea" },
+      { key: "doctorsDataSourceFirestore", label: "Doctors Firestore source note", kind: "textarea" },
+      { key: "doctorsFilterLabel", label: "Doctors filter label" },
+      { key: "doctorsFilterPlaceholder", label: "Doctors filter default option" },
+      { key: "doctorsOverlayImageUrl", label: "Doctors overlay image URL", kind: "image" },
+    ],
+  },
+  {
     title: "Gallery, services, doctors, treatments and blog",
     description: "Manage the section labels and CTA copy for the main discovery areas.",
     fields: [
@@ -236,11 +251,6 @@ export const CMS_FIELD_SECTIONS: CmsFieldSection[] = [
       { key: "servicesNote", label: "Services note", kind: "textarea" },
       { key: "servicesIntro", label: "Services intro", kind: "textarea" },
       { key: "servicesPageButtonLabel", label: "Services page button label" },
-      { key: "doctorsEyebrow", label: "Doctors eyebrow" },
-      { key: "doctorsHeading", label: "Doctors heading" },
-      { key: "doctorsOverlayBadge", label: "Doctors overlay badge" },
-      { key: "doctorsOverlayDescription", label: "Doctors overlay description", kind: "textarea" },
-      { key: "doctorsOverlayImageUrl", label: "Doctors overlay image URL", kind: "image" },
       { key: "doctorGalleryEyebrow", label: "Doctors Gallery eyebrow" },
       { key: "doctorGalleryHeading", label: "Doctors Gallery heading" },
       { key: "treatmentsEyebrow", label: "Treatments eyebrow" },
