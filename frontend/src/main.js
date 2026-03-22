@@ -617,6 +617,15 @@ function renderWhyChooseMedia() {
 }
 
 function renderHealthcareMedia() {
+  const description = document.getElementById("healthcareFeatureDescription");
+
+  if (description) {
+    description.textContent = cmsValue(
+      "healthcareFeatureDescription",
+      "Integrated diagnostics, emergency support, specialist access, and patient assistance organized through one premium care system."
+    );
+  }
+
   renderSectionMediaCards("healthcareGrid", "healthcare", [
     {
       badge: cmsValue("healthcareEyebrow", "Complete Healthcare"),
@@ -1199,7 +1208,7 @@ async function initializeMedia() {
   renderHeroMedia();
   renderMediaHighlights();
   renderWhyChooseMedia();
-  renderFeatureSection();
+  renderHealthcareMedia();
   renderPharmacyMedia();
   renderServices();
   renderGallery();
@@ -1211,7 +1220,7 @@ async function initializeMedia() {
     renderHeroMedia();
     renderMediaHighlights();
     renderWhyChooseMedia();
-    renderFeatureSection();
+    renderHealthcareMedia();
     renderPharmacyMedia();
     renderServices();
     renderGallery();
@@ -1222,7 +1231,7 @@ async function initializeMedia() {
     renderHeroMedia();
     renderMediaHighlights();
     renderWhyChooseMedia();
-    renderFeatureSection();
+    renderHealthcareMedia();
     renderPharmacyMedia();
     renderServices();
     renderGallery();
@@ -1239,7 +1248,7 @@ async function initializeContent() {
   applyCmsContent();
   applyHeroContent();
   renderWhyChooseMedia();
-  renderFeatureSection();
+  renderHealthcareMedia();
   renderPharmacyMedia();
   renderServices();
 
@@ -1260,7 +1269,7 @@ async function initializeContent() {
     applyCmsContent();
     applyHeroContent();
     renderWhyChooseMedia();
-    renderFeatureSection();
+    renderHealthcareMedia();
     renderPharmacyMedia();
     renderServices();
   } catch (error) {
