@@ -750,6 +750,29 @@ button {
     align-items: center;
 }
 
+.hero__career-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.9rem;
+    padding: 0.7rem 1.05rem;
+    border-radius: 999px;
+    border: 1px solid rgba(129, 140, 248, 0.22);
+    background: rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    backdrop-filter: blur(10px);
+    transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+
+.hero__career-link:hover {
+    transform: translateY(-1px);
+    border-color: rgba(191, 219, 254, 0.4);
+    background: rgba(255, 255, 255, 0.2);
+}
+
 .hero__side {
     display: grid;
     gap: 1.15rem;
@@ -3167,6 +3190,11 @@ button {
 
     .hero__actions--top {
         margin-bottom: 1rem;
+    }
+
+    .hero__career-link {
+        align-self: flex-start;
+        margin-top: 0.75rem;
     }
 
     .hero__mega-nav {
