@@ -1523,10 +1523,11 @@ button {
 .section--doctors-overlay {
     position: relative;
     background:
-        linear-gradient(135deg, rgba(8, 15, 40, 0.84), rgba(30, 41, 59, 0.68)),
+        linear-gradient(135deg, rgba(8, 15, 40, 0.62), rgba(30, 41, 59, 0.42)),
         var(--doctors-overlay-image, url("/images/reception.jpg"));
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
 }
 
 .doctors-overlay-shell {
@@ -1555,16 +1556,16 @@ button {
     font-weight: 800;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    backdrop-filter: blur(14px);
+    backdrop-filter: none;
 }
 
 .doctors-overlay-panel {
     padding: 1.45rem;
     border-radius: 30px;
-    background: rgba(255, 255, 255, 0.84);
+    background: rgba(255, 255, 255, 0.94);
     border: 1px solid rgba(226, 232, 240, 0.82);
     box-shadow: 0 30px 56px rgba(15, 23, 42, 0.18);
-    backdrop-filter: blur(18px);
+    backdrop-filter: none;
 }
 
 .section__note--tight {
