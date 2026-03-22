@@ -216,15 +216,21 @@ export const CMS_FIELD_SECTIONS: CmsFieldSection[] = [
     ],
   },
   {
+    title: "Inside Our Center",
+    description: "Manage the lab, doctors, and reception media showcase heading shown above the image cards.",
+    fields: [
+      { key: "insideCenterEyebrow", label: "Inside our center eyebrow" },
+      { key: "insideCenterHeading", label: "Inside our center heading", kind: "textarea" },
+      { key: "insideCenterNote", label: "Inside our center note", kind: "textarea" },
+    ],
+  },
+  {
     title: "Gallery, services, doctors, treatments and blog",
     description: "Manage the section labels and CTA copy for the main discovery areas.",
     fields: [
       { key: "galleryEyebrow", label: "Gallery eyebrow" },
       { key: "galleryHeading", label: "Gallery heading" },
       { key: "galleryButtonLabel", label: "Gallery button label" },
-      { key: "insideCenterEyebrow", label: "Inside center eyebrow" },
-      { key: "insideCenterHeading", label: "Inside center heading", kind: "textarea" },
-      { key: "insideCenterNote", label: "Inside center note", kind: "textarea" },
       { key: "servicesEyebrow", label: "Services eyebrow" },
       { key: "servicesHeading", label: "Services heading" },
       { key: "servicesNote", label: "Services note", kind: "textarea" },
