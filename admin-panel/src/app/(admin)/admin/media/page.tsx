@@ -35,7 +35,7 @@ export default function MediaPage() {
     <div className="space-y-6">
       <PageHeader
         title="Media Library"
-        description="Manage hero slider images, real hospital photos, and gallery assets used across the website."
+        description="Manage hero slider images, homepage section visuals, doctors overlay images, and gallery assets used across the website."
         action={canUploadMedia ? { label: "Add media", onClick: () => setEditingItem(null) } : undefined}
       />
 
@@ -53,6 +53,7 @@ export default function MediaPage() {
                   <option value="healthcare">Complete Healthcare</option>
                   <option value="pharmacies">Pharmacies</option>
                   <option value="services">Diagnostic Services</option>
+                  <option value="doctorsOverlay">Doctors Overlay</option>
                   <option value="gallery">Gallery</option>
                 </Select>
               </div>

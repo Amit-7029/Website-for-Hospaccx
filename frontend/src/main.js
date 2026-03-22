@@ -835,7 +835,8 @@ function applyDoctorsSectionContent() {
     );
   }
 
-  const imageUrl = cmsValue("doctorsOverlayImageUrl", "/images/reception.jpg");
+  const mediaImage = getSectionMediaItem("doctorsOverlay", 1);
+  const imageUrl = mediaImage?.imageUrl || cmsValue("doctorsOverlayImageUrl", "/images/reception.jpg");
   if (section && imageUrl) {
     section.style.setProperty("--doctors-overlay-image", `url("${imageUrl}")`);
   }

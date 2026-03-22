@@ -99,7 +99,15 @@ export interface MediaItem {
   caption?: string;
   alt?: string;
   imageUrl: string;
-  section: "hero" | "highlights" | "gallery" | "whyChoose" | "healthcare" | "pharmacies" | "services";
+  section:
+    | "hero"
+    | "highlights"
+    | "gallery"
+    | "whyChoose"
+    | "healthcare"
+    | "pharmacies"
+    | "services"
+    | "doctorsOverlay";
   category: string;
   ctaLabel?: string;
   ctaLink?: string;

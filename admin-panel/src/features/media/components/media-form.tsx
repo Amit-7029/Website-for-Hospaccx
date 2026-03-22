@@ -18,7 +18,7 @@ const schema = z.object({
   caption: z.string().min(2),
   alt: z.string().min(2),
   imageUrl: z.string().optional(),
-  section: z.enum(["hero", "highlights", "gallery", "whyChoose", "healthcare", "pharmacies", "services"]),
+  section: z.enum(["hero", "highlights", "gallery", "whyChoose", "healthcare", "pharmacies", "services", "doctorsOverlay"]),
   category: z.string().min(2),
   ctaLabel: z.string().optional(),
   ctaLink: z.string().optional(),
@@ -35,6 +35,7 @@ const SECTION_OPTIONS: Array<{ value: MediaItem["section"]; label: string }> = [
   { value: "healthcare", label: "Complete Healthcare" },
   { value: "pharmacies", label: "Pharmacies" },
   { value: "services", label: "Diagnostic Services" },
+  { value: "doctorsOverlay", label: "Doctors Overlay" },
   { value: "gallery", label: "Gallery" },
 ];
 

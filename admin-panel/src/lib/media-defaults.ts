@@ -261,4 +261,13 @@ export const DEFAULT_MEDIA_ITEMS: Omit<MediaItem, "id" | "createdAt" | "updatedA
     category: "Laboratory",
     order: 7,
   },
+  {
+    title: "Doctor Information Background",
+    caption: "Professional doctor-information backdrop used behind the doctor directory section.",
+    alt: "Doctor information background at Banerjee Diagnostic Foundation and Hospaccx",
+    imageUrl: "/images/reception.jpg",
+    section: "doctorsOverlay",
+    category: "Doctors",
+    order: 1,
+  },
 ];
