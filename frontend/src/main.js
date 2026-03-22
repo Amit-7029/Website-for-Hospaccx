@@ -1,5 +1,5 @@
 import "./styles.css";
-import { blogPosts, diagnosticServices, doctorsSection, facilities, features, infoCard, services as featureServices, stats, testimonials, treatments } from "./data/content";
+import { blogPosts, diagnosticServices, facilities, testimonials, treatments } from "./data/content";
 import { doctors as fallbackDoctors } from "./data/doctors";
 import { MEDIA_IMAGE_FALLBACK, fallbackMediaItems } from "./data/media";
 import { createAppointment } from "./firebase/appointments-store";
@@ -692,7 +692,30 @@ function renderTrustIndicators() {
     return;
   }
 
-  container.innerHTML = stats
+  const indicatorItems = [
+    {
+      value: cmsValue("statsOneValue", "36+"),
+      label: cmsValue("statsOneLabel", "Years of healthcare service"),
+      progress: cmsValue("statsOneProgress", "96")
+    },
+    {
+      value: cmsValue("statsTwoValue", "10000+"),
+      label: cmsValue("statsTwoLabel", "Patients supported"),
+      progress: cmsValue("statsTwoProgress", "98")
+    },
+    {
+      value: cmsValue("statsThreeValue", "30+"),
+      label: cmsValue("statsThreeLabel", "Specialist consultants"),
+      progress: cmsValue("statsThreeProgress", "94")
+    },
+    {
+      value: cmsValue("statsFourValue", "24x7"),
+      label: cmsValue("statsFourLabel", "Emergency availability"),
+      progress: cmsValue("statsFourProgress", "100")
+    }
+  ];
+
+  container.innerHTML = indicatorItems
     .map(
       (item) => `
         <article class="stats-card" data-motion="fadeUp">
@@ -716,7 +739,26 @@ function renderFloatingInfoCard() {
     return;
   }
 
-  container.innerHTML = infoCard
+  const items = [
+    {
+      title: cmsValue("infoCardOneTitle", "Trusted Diagnostics"),
+      description: cmsValue("infoCardOneText", "Advanced pathology, ECG, imaging, and coordinated diagnostic workflows under one roof.")
+    },
+    {
+      title: cmsValue("infoCardTwoTitle", "Specialist OPD"),
+      description: cmsValue("infoCardTwoText", "Experienced doctors across key departments with structured consultation and follow-up support.")
+    },
+    {
+      title: cmsValue("infoCardThreeTitle", "Emergency & ICU"),
+      description: cmsValue("infoCardThreeText", "24x7 emergency response access with critical care readiness whenever patients need urgent attention.")
+    },
+    {
+      title: cmsValue("infoCardFourTitle", "Cashless Support"),
+      description: cmsValue("infoCardFourText", "Guided patient coordination for scheme-linked treatment pathways and supportive documentation help.")
+    }
+  ];
+
+  container.innerHTML = items
     .map(
       (item, index) => `
         <article class="floating-info-card__item" data-motion="fadeUp" style="--motion-delay:${index * 70}ms">
@@ -737,11 +779,33 @@ function renderFeatureSection() {
     return;
   }
 
-  if (description && features.length) {
-    description.textContent = features[0].description;
+  if (description) {
+    description.textContent = cmsValue(
+      "healthcareFeatureDescription",
+      "Integrated diagnostics, emergency support, specialist access, and patient assistance organized through one premium care system."
+    );
   }
 
-  container.innerHTML = featureServices
+  const items = [
+    {
+      title: cmsValue("healthcareFeatureServiceOneTitle", "Advanced Pathology"),
+      description: cmsValue("healthcareFeatureServiceOneText", "Reliable testing and reporting designed for clear clinical decision-making.")
+    },
+    {
+      title: cmsValue("healthcareFeatureServiceTwoTitle", "Imaging & Screening"),
+      description: cmsValue("healthcareFeatureServiceTwoText", "Organized diagnostic workflows with supportive patient coordination.")
+    },
+    {
+      title: cmsValue("healthcareFeatureServiceThreeTitle", "Specialist OPD Access"),
+      description: cmsValue("healthcareFeatureServiceThreeText", "Consultant availability across multiple departments and patient needs.")
+    },
+    {
+      title: cmsValue("healthcareFeatureServiceFourTitle", "Emergency Guidance"),
+      description: cmsValue("healthcareFeatureServiceFourText", "Fast support pathway for urgent care, ICU, and immediate evaluation.")
+    }
+  ];
+
+  container.innerHTML = items
     .map(
       (item, index) => `
         <article class="feature-section__item" data-motion="slideRight" style="--motion-delay:${index * 70}ms">
@@ -761,15 +825,19 @@ function applyDoctorsSectionContent() {
   const section = document.getElementById("doctors");
 
   if (badge) {
-    badge.textContent = doctorsSection.badge || "Doctor Information";
+    badge.textContent = cmsValue("doctorsOverlayBadge", "Doctor Information");
   }
 
   if (description) {
-    description.textContent = doctorsSection.description || "Explore specialist availability, view profiles, and book appointments with confidence.";
+    description.textContent = cmsValue(
+      "doctorsOverlayDescription",
+      "Explore specialist availability, view doctor profiles, and book appointments through a clearer, more guided experience."
+    );
   }
 
-  if (section && doctorsSection.imageUrl) {
-    section.style.setProperty("--doctors-overlay-image", `url("${doctorsSection.imageUrl}")`);
+  const imageUrl = cmsValue("doctorsOverlayImageUrl", "/images/reception.jpg");
+  if (section && imageUrl) {
+    section.style.setProperty("--doctors-overlay-image", `url("${imageUrl}")`);
   }
 }
 
