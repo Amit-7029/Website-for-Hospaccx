@@ -788,19 +788,19 @@ function renderFeatureSection() {
 
   const items = [
     {
-      title: cmsValue("healthcareFeatureServiceOneTitle", "Advanced Pathology"),
+      title: cmsValue("healthcareFeatureServiceOneTitle", "Trusted Diagnostics"),
       description: cmsValue("healthcareFeatureServiceOneText", "Reliable testing and reporting designed for clear clinical decision-making.")
     },
     {
-      title: cmsValue("healthcareFeatureServiceTwoTitle", "Imaging & Screening"),
+      title: cmsValue("healthcareFeatureServiceTwoTitle", "Specialist OPD"),
       description: cmsValue("healthcareFeatureServiceTwoText", "Organized diagnostic workflows with supportive patient coordination.")
     },
     {
-      title: cmsValue("healthcareFeatureServiceThreeTitle", "Specialist OPD Access"),
+      title: cmsValue("healthcareFeatureServiceThreeTitle", "Emergency & ICU"),
       description: cmsValue("healthcareFeatureServiceThreeText", "Consultant availability across multiple departments and patient needs.")
     },
     {
-      title: cmsValue("healthcareFeatureServiceFourTitle", "Emergency Guidance"),
+      title: cmsValue("healthcareFeatureServiceFourTitle", "Cashless Support"),
       description: cmsValue("healthcareFeatureServiceFourText", "Fast support pathway for urgent care, ICU, and immediate evaluation.")
     }
   ];
@@ -808,11 +808,11 @@ function renderFeatureSection() {
   container.innerHTML = items
     .map(
       (item, index) => `
-        <article class="feature-section__item" data-motion="slideRight" style="--motion-delay:${index * 70}ms">
-          <h3>${escapeHtml(item.title)}</h3>
-          <p>${escapeHtml(item.description)}</p>
-        </article>
-      `
+          <article class="testimonial-card healthcare-restore-card" data-motion="${index % 2 === 0 ? "slideLeft" : "slideRight"}" style="--motion-delay:${index * 70}ms">
+            <h3>${escapeHtml(item.title)}</h3>
+            <p>${escapeHtml(item.description)}</p>
+          </article>
+        `
     )
     .join("");
 
