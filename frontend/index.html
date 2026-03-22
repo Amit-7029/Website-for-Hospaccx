@@ -229,8 +229,9 @@
 </header>
 
 <main>
-    <section id="about" class="section">
+    <section id="about" class="section section--floating">
         <div class="container about-grid">
+            <div class="floating-info-card" id="floatingInfoCardGrid"></div>
             <div class="about-copy">
                 <p class="eyebrow" data-cms="aboutEyebrow">About Our Center</p>
                 <h2 id="aboutHeading">Committed to quality healthcare and accurate diagnostics.</h2>
@@ -282,13 +283,13 @@
         </div>
     </section>
 
-    <section class="section section--soft" id="facilities-anchor">
+    <section class="section section--soft section--stats" id="facilities-anchor">
         <div class="container">
             <div class="section__heading">
                 <p class="eyebrow" data-cms="trustEyebrow">Trust Indicators</p>
                 <h2 data-cms="trustHeading">Healthcare credibility built on trust, continuity, and accessible diagnostics</h2>
             </div>
-            <div class="trust-grid" id="trustGrid"></div>
+            <div class="stats-grid" id="trustGrid"></div>
         </div>
     </section>
 
@@ -352,25 +353,17 @@
         </div>
     </section>
 
-    <section id="healthcare" class="section">
+    <section id="healthcare" class="section section--teal-feature">
         <div class="container">
-            <div class="section__heading">
-                <p class="eyebrow" data-cms="healthcareEyebrow">Complete Healthcare</p>
-                <h2 id="healthcareHeading">Complete healthcare under one roof</h2>
-            </div>
-            <div class="testimonial-grid" id="healthcareGrid">
-                <article class="testimonial-card">
-                    <p data-cms="healthcareCardOneText">Diagnostic, ICU support, specialist doctors, and pharmacy access organized through one healthcare system.</p>
-                    <strong data-cms="healthcareCardOneTitle">Integrated Care</strong>
-                </article>
-                <article class="testimonial-card">
-                    <p data-cms="healthcareCardTwoText">24x7 emergency and ICU facility with advanced critical care support available whenever patients need it most.</p>
-                    <strong data-cms="healthcareCardTwoTitle">Emergency & ICU</strong>
-                </article>
-                <article class="testimonial-card">
-                    <p data-cms="healthcareCardThreeText">Swasthya Sathi Card accepted with cashless treatment support available for eligible patients.</p>
-                    <strong data-cms="healthcareCardThreeTitle">Cashless Support</strong>
-                </article>
+            <div class="feature-section">
+                <div class="feature-section__copy">
+                    <p class="eyebrow" data-cms="healthcareEyebrow">Complete Healthcare</p>
+                    <h2 id="healthcareHeading">Complete healthcare under one roof</h2>
+                    <p class="feature-section__description" id="healthcareFeatureDescription">
+                        Integrated diagnostics, emergency support, specialist access, and patient assistance organized through one premium care system.
+                    </p>
+                </div>
+                <div class="feature-section__list" id="healthcareGrid"></div>
             </div>
         </div>
     </section>
@@ -486,20 +479,28 @@
         </div>
     </section>
 
-    <section id="doctors" class="section section--soft">
+    <section id="doctors" class="section section--soft section--doctors-overlay">
         <div class="container">
-            <div class="section__heading">
-                <p class="eyebrow" data-cms="doctorsEyebrow">Doctors</p>
-                <h2 data-cms="doctorsHeading">Doctors information</h2>
-                <p id="doctorDataSource" class="section__note">Loading doctor information...</p>
+            <div class="doctors-overlay-shell">
+                <div class="doctors-overlay-intro">
+                    <div class="section__heading section__heading--light">
+                        <p class="eyebrow" data-cms="doctorsEyebrow">Doctors</p>
+                        <h2 data-cms="doctorsHeading">Doctors information</h2>
+                        <p class="section__note" id="doctorsOverlayDescription">Explore specialist availability, view profiles, and book appointments with confidence.</p>
+                    </div>
+                    <span class="doctors-overlay-badge" id="doctorsOverlayBadge">Doctor Information</span>
+                </div>
+                <div class="doctors-overlay-panel">
+                    <p id="doctorDataSource" class="section__note section__note--tight">Loading doctor information...</p>
+                    <div class="filter-bar">
+                        <label for="doctorDepartmentFilter" class="filter-bar__label">Filter by department</label>
+                        <select id="doctorDepartmentFilter" class="filter-bar__select">
+                            <option value="">All departments</option>
+                        </select>
+                    </div>
+                    <div class="doctor-grid" id="doctorGrid"></div>
+                </div>
             </div>
-            <div class="filter-bar">
-                <label for="doctorDepartmentFilter" class="filter-bar__label">Filter by department</label>
-                <select id="doctorDepartmentFilter" class="filter-bar__select">
-                    <option value="">All departments</option>
-                </select>
-            </div>
-            <div class="doctor-grid" id="doctorGrid"></div>
         </div>
     </section>
 

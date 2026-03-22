@@ -1,5 +1,5 @@
 import "./styles.css";
-import { blogPosts, diagnosticServices, facilities, testimonials, treatments, trustIndicators } from "./data/content";
+import { blogPosts, diagnosticServices, doctorsSection, facilities, features, infoCard, services as featureServices, stats, testimonials, treatments } from "./data/content";
 import { doctors as fallbackDoctors } from "./data/doctors";
 import { MEDIA_IMAGE_FALLBACK, fallbackMediaItems } from "./data/media";
 import { createAppointment } from "./firebase/appointments-store";
@@ -692,11 +692,15 @@ function renderTrustIndicators() {
     return;
   }
 
-  container.innerHTML = trustIndicators
+  container.innerHTML = stats
     .map(
       (item) => `
-        <article class="trust-card">
-          <strong>${escapeHtml(item.value)}</strong>
+        <article class="stats-card" data-motion="fadeUp">
+          <div class="stats-card__ring" style="--stats-progress:${Math.min(100, Math.max(0, Number(item.progress) || 0))}">
+            <div class="stats-card__ring-inner">
+              <strong>${escapeHtml(item.value)}</strong>
+            </div>
+          </div>
           <span>${escapeHtml(item.label)}</span>
         </article>
       `
@@ -704,6 +708,69 @@ function renderTrustIndicators() {
     .join("");
 
   motion.refresh();
+}
+
+function renderFloatingInfoCard() {
+  const container = document.getElementById("floatingInfoCardGrid");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = infoCard
+    .map(
+      (item, index) => `
+        <article class="floating-info-card__item" data-motion="fadeUp" style="--motion-delay:${index * 70}ms">
+          <h3>${escapeHtml(item.title)}</h3>
+          <p>${escapeHtml(item.description)}</p>
+        </article>
+      `
+    )
+    .join("");
+
+  motion.refresh();
+}
+
+function renderFeatureSection() {
+  const container = document.getElementById("healthcareGrid");
+  const description = document.getElementById("healthcareFeatureDescription");
+  if (!container) {
+    return;
+  }
+
+  if (description && features.length) {
+    description.textContent = features[0].description;
+  }
+
+  container.innerHTML = featureServices
+    .map(
+      (item, index) => `
+        <article class="feature-section__item" data-motion="slideRight" style="--motion-delay:${index * 70}ms">
+          <h3>${escapeHtml(item.title)}</h3>
+          <p>${escapeHtml(item.description)}</p>
+        </article>
+      `
+    )
+    .join("");
+
+  motion.refresh();
+}
+
+function applyDoctorsSectionContent() {
+  const badge = document.getElementById("doctorsOverlayBadge");
+  const description = document.getElementById("doctorsOverlayDescription");
+  const section = document.getElementById("doctors");
+
+  if (badge) {
+    badge.textContent = doctorsSection.badge || "Doctor Information";
+  }
+
+  if (description) {
+    description.textContent = doctorsSection.description || "Explore specialist availability, view profiles, and book appointments with confidence.";
+  }
+
+  if (section && doctorsSection.imageUrl) {
+    section.style.setProperty("--doctors-overlay-image", `url("${doctorsSection.imageUrl}")`);
+  }
 }
 
 function renderFacilities() {
@@ -1045,7 +1112,7 @@ async function initializeMedia() {
   renderHeroMedia();
   renderMediaHighlights();
   renderWhyChooseMedia();
-  renderHealthcareMedia();
+  renderFeatureSection();
   renderPharmacyMedia();
   renderServices();
   renderGallery();
@@ -1057,7 +1124,7 @@ async function initializeMedia() {
     renderHeroMedia();
     renderMediaHighlights();
     renderWhyChooseMedia();
-    renderHealthcareMedia();
+    renderFeatureSection();
     renderPharmacyMedia();
     renderServices();
     renderGallery();
@@ -1068,7 +1135,7 @@ async function initializeMedia() {
     renderHeroMedia();
     renderMediaHighlights();
     renderWhyChooseMedia();
-    renderHealthcareMedia();
+    renderFeatureSection();
     renderPharmacyMedia();
     renderServices();
     renderGallery();
@@ -1085,7 +1152,7 @@ async function initializeContent() {
   applyCmsContent();
   applyHeroContent();
   renderWhyChooseMedia();
-  renderHealthcareMedia();
+  renderFeatureSection();
   renderPharmacyMedia();
   renderServices();
 
@@ -1106,7 +1173,7 @@ async function initializeContent() {
     applyCmsContent();
     applyHeroContent();
     renderWhyChooseMedia();
-    renderHealthcareMedia();
+    renderFeatureSection();
     renderPharmacyMedia();
     renderServices();
   } catch (error) {
@@ -1842,8 +1909,10 @@ async function initializeDoctors() {
   }
 }
 
-renderTrustIndicators();
-renderFacilities();
+  renderTrustIndicators();
+  renderFloatingInfoCard();
+  renderFacilities();
+  applyDoctorsSectionContent();
 renderWhyChooseMedia();
 renderHealthcareMedia();
 renderPharmacyMedia();
