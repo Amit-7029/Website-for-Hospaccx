@@ -13,7 +13,9 @@ export default defineConfig({
         treatments: resolve(__dirname, "treatments.html"),
         doctorProfile: resolve(__dirname, "doctor-profile.html"),
         insurance: resolve(__dirname, "insurance.html"),
-        adminDoctors: resolve(__dirname, "admin-doctors.html")
+        adminDoctors: resolve(__dirname, "admin-doctors.html"),
+        career: resolve(__dirname, "career.html"),
+        careerDetail: resolve(__dirname, "career-detail.html")
       }
     }
   },

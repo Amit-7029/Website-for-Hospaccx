@@ -11,6 +11,7 @@ import { useNotifications } from "@/features/notifications/hooks/use-notificatio
 
 const typeHrefMap = {
   appointment: "/admin/appointments",
+  career: "/admin/careers",
   review: "/admin/reviews",
   system: "/admin",
 } as const;

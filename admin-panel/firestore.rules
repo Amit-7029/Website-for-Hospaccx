@@ -33,6 +33,13 @@ service cloud.firestore {
         permission == "doctors_add" ? ["doctors_add"] :
         permission == "doctors_edit" ? ["doctors_edit", "edit_doctors"] :
         permission == "doctors_delete" ? ["doctors_delete", "delete_doctors"] :
+        permission == "careers_view" ? ["careers_view", "view_careers"] :
+        permission == "careers_add" ? ["careers_add"] :
+        permission == "careers_edit" ? ["careers_edit", "edit_careers"] :
+        permission == "careers_delete" ? ["careers_delete", "delete_careers"] :
+        permission == "applications_view" ? ["applications_view", "view_applications"] :
+        permission == "applications_update" ? ["applications_update", "update_applications"] :
+        permission == "applications_delete" ? ["applications_delete", "delete_applications"] :
         permission == "services_view" ? ["services_view", "view_services"] :
         permission == "services_add" ? ["services_add"] :
         permission == "services_edit" ? ["services_edit", "edit_services"] :
@@ -172,6 +179,20 @@ service cloud.firestore {
       allow create: if hasPermission("doctors_add");
       allow update: if hasPermission("doctors_edit");
       allow delete: if hasPermission("doctors_delete");
+    }
+
+    match /jobs/{document=**} {
+      allow read: if true;
+      allow create: if hasPermission("careers_add");
+      allow update: if hasPermission("careers_edit");
+      allow delete: if hasPermission("careers_delete");
+    }
+
+    match /applications/{document=**} {
+      allow read: if hasPermission("applications_view");
+      allow create: if hasPermission("applications_update");
+      allow update: if hasPermission("applications_update");
+      allow delete: if hasPermission("applications_delete");
     }
 
     match /services/{document=**} {

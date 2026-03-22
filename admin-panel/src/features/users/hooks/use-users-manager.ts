@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useSession } from "@/components/providers/app-providers";
 import { usePermissions } from "@/hooks/use-permissions";
 import { addActivityLog, listCollection } from "@/lib/firebase/repository";
-import { DEFAULT_ROLE_RECORDS } from "@/lib/rbac";
+import { DEFAULT_ROLE_RECORDS, mergeWithSystemRole } from "@/lib/rbac";
 import type { RoleRecord, UserRecord, UserStatus } from "@/types";
 
 interface CreateUserValues {
@@ -45,7 +45,7 @@ export function useUsersManager() {
         listCollection<UserRecord>("users", { includeSystem: true }),
         listCollection<RoleRecord>("roles", { includeSystem: true }),
       ]);
-      const mergedRoles = [...roleItems];
+      const mergedRoles = roleItems.map((roleRecord) => mergeWithSystemRole(roleRecord));
       DEFAULT_ROLE_RECORDS.forEach((defaultRole) => {
         if (!mergedRoles.some((item) => item.id === defaultRole.id)) {
           mergedRoles.push(defaultRole);

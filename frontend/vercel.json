@@ -35,5 +35,15 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/career",
+      "destination": "/career.html"
+    },
+    {
+      "source": "/career/:id",
+      "destination": "/career-detail.html?id=:id"
+    }
   ]
 }

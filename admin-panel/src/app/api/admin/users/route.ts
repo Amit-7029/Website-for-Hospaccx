@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getFirebaseAdminServices } from "@/lib/firebase/admin";
-import { DEFAULT_ROLE_RECORDS, getDefaultRoleId, getLegacyPermissions, inferRoleFromPermissions } from "@/lib/rbac";
+import { DEFAULT_ROLE_RECORDS, getDefaultRoleId, getLegacyPermissions, inferRoleFromPermissions, mergeWithSystemRole } from "@/lib/rbac";
 import { sessionHasPermission } from "@/lib/rbac";
 import { getSessionUser } from "@/lib/session";
 import type { RoleRecord } from "@/types";
@@ -39,7 +39,8 @@ export async function POST(request: Request) {
     const roleData = roleSnapshot.exists
       ? ({ id: roleSnapshot.id, ...roleSnapshot.data() } as RoleRecord)
       : fallbackRole;
-    const permissions = roleData?.permissions?.length ? roleData.permissions : getLegacyPermissions("staff");
+    const resolvedRoleData = roleData ? mergeWithSystemRole(roleData) : null;
+    const permissions = resolvedRoleData?.permissions?.length ? resolvedRoleData.permissions : getLegacyPermissions("staff");
     const role = inferRoleFromPermissions(permissions);
     const createdUser = await auth.createUser({
       email: payload.email,
@@ -53,8 +54,8 @@ export async function POST(request: Request) {
       email: payload.email,
       name: payload.name,
       role,
-      roleId: roleData?.id ?? getDefaultRoleId("staff"),
-      roleName: roleData?.name ?? "Staff",
+      roleId: resolvedRoleData?.id ?? getDefaultRoleId("staff"),
+      roleName: resolvedRoleData?.name ?? "Staff",
       permissions,
       status: payload.status,
       updatedAt: timestamp,
@@ -115,12 +116,13 @@ export async function PATCH(request: Request) {
       const roleData = roleSnapshot.exists
         ? ({ id: roleSnapshot.id, ...roleSnapshot.data() } as RoleRecord)
         : fallbackRole;
-      if (!roleData) {
+      const resolvedRoleData = roleData ? mergeWithSystemRole(roleData) : null;
+      if (!resolvedRoleData) {
         return NextResponse.json({ error: "Role not found" }, { status: 404 });
       }
-      roleId = roleData.id;
-      roleName = roleData.name;
-      permissions = roleData.permissions;
+      roleId = resolvedRoleData.id;
+      roleName = resolvedRoleData.name;
+      permissions = resolvedRoleData.permissions;
     }
 
     const role = inferRoleFromPermissions(permissions);

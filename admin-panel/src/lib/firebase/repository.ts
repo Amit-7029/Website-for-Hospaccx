@@ -17,6 +17,8 @@ import { DEFAULT_CMS_CONTENT, DEFAULT_HERO_CONTENT, DEFAULT_SERVICES } from "@/l
 import type {
   ActivityLog,
   Appointment,
+  CareerApplication,
+  CareerJob,
   CmsContent,
   DiagnosticService,
   Doctor,
@@ -30,6 +32,8 @@ import type {
 
 type CollectionName =
   | "doctors"
+  | "jobs"
+  | "applications"
   | "services"
   | "reviews"
   | "appointments"
@@ -41,6 +45,8 @@ type CollectionName =
 
 const storageKeys = {
   doctors: "hospaccx-admin-doctors",
+  jobs: "hospaccx-admin-jobs",
+  applications: "hospaccx-admin-applications",
   services: "hospaccx-admin-services",
   reviews: "hospaccx-admin-reviews",
   appointments: "hospaccx-admin-appointments",
@@ -55,6 +61,8 @@ const storageKeys = {
 
 const fallbackSeed = {
   doctors: [] as Doctor[],
+  jobs: [] as CareerJob[],
+  applications: [] as CareerApplication[],
   services: DEFAULT_SERVICES,
   reviews: [] as Review[],
   appointments: [] as Appointment[],

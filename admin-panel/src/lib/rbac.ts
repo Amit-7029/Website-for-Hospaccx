@@ -6,6 +6,13 @@ export const ALL_PERMISSIONS: UserPermission[] = [
   "doctors_add",
   "doctors_edit",
   "doctors_delete",
+  "careers_view",
+  "careers_add",
+  "careers_edit",
+  "careers_delete",
+  "applications_view",
+  "applications_update",
+  "applications_delete",
   "services_view",
   "services_add",
   "services_edit",
@@ -46,6 +53,12 @@ const LEGACY_PERMISSION_ALIASES: Record<string, UserPermission> = {
   view_doctors: "doctors_view",
   edit_doctors: "doctors_edit",
   delete_doctors: "doctors_delete",
+  view_careers: "careers_view",
+  edit_careers: "careers_edit",
+  delete_careers: "careers_delete",
+  view_applications: "applications_view",
+  update_applications: "applications_update",
+  delete_applications: "applications_delete",
   view_services: "services_view",
   edit_services: "services_edit",
   delete_services: "services_delete",
@@ -79,6 +92,24 @@ export const DEFAULT_ROLE_RECORDS: RoleRecord[] = [
   },
 ];
 
+export function mergeWithSystemRole(roleRecord: Pick<RoleRecord, "id" | "name" | "description" | "permissions"> & Partial<RoleRecord>) {
+  const systemRole = DEFAULT_ROLE_RECORDS.find((item) => item.id === roleRecord.id);
+  if (!systemRole) {
+    return {
+      ...roleRecord,
+      permissions: sanitizePermissions(roleRecord.permissions),
+    } as RoleRecord;
+  }
+
+  return {
+    ...roleRecord,
+    name: roleRecord.name || systemRole.name,
+    description: roleRecord.description || systemRole.description,
+    system: true,
+    permissions: [...new Set([...systemRole.permissions, ...sanitizePermissions(roleRecord.permissions)])],
+  } as RoleRecord;
+}
+
 export const PERMISSION_GROUPS: Array<{
   title: string;
   permissions: Array<{ key: UserPermission; label: string; description: string }>;
@@ -96,6 +127,18 @@ export const PERMISSION_GROUPS: Array<{
       { key: "doctors_add", label: "Add doctors", description: "Create new doctor profiles." },
       { key: "doctors_edit", label: "Edit doctors", description: "Update doctor profiles." },
       { key: "doctors_delete", label: "Delete doctors", description: "Remove doctor profiles permanently." },
+    ],
+  },
+  {
+    title: "Careers",
+    permissions: [
+      { key: "careers_view", label: "View careers", description: "Open job listings and careers dashboard." },
+      { key: "careers_add", label: "Add jobs", description: "Create new job openings." },
+      { key: "careers_edit", label: "Edit jobs", description: "Update existing job openings." },
+      { key: "careers_delete", label: "Delete jobs", description: "Remove job openings permanently." },
+      { key: "applications_view", label: "View applications", description: "Open submitted career applications." },
+      { key: "applications_update", label: "Update applications", description: "Change application status for shortlisted candidates." },
+      { key: "applications_delete", label: "Delete applications", description: "Delete application records and resume links." },
     ],
   },
   {

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Opportunity | Hospaccx</title>
+    <meta name="description" content="Review the full job description and apply online for career opportunities at Hospaccx in Sainthia.">
+    <link rel="icon" type="image/png" href="/images/logo-hospaccx.png">
+    <link rel="apple-touch-icon" href="/images/logo-hospaccx.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<main class="subpage">
+    <section class="page-hero">
+        <div class="container">
+            <a href="/career" class="page-hero__back">&#8592; Back to Careers</a>
+            <p class="eyebrow">Career Details</p>
+            <h1 id="careerDetailTitle">Loading job details...</h1>
+            <p class="subtitle" id="careerDetailSubtitle">Please wait while we load the opportunity details.</p>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container career-detail-layout">
+            <article class="career-detail-card" data-motion="fadeUp">
+                <div class="career-meta career-meta--detail" id="careerDetailMeta"></div>
+                <div class="career-detail-copy">
+                    <h2>Role overview</h2>
+                    <p id="careerDetailDescription"></p>
+                </div>
+                <div class="career-detail-copy">
+                    <h2>Requirements</h2>
+                    <ul class="career-requirements" id="careerRequirements"></ul>
+                </div>
+            </article>
+
+            <aside class="career-apply-card" data-motion="slideLeft">
+                <div class="section__heading section__heading--compact">
+                    <p class="eyebrow">Apply Now</p>
+                    <h2>Submit your application</h2>
+                    <p class="section__note">Share your details and attach your resume in PDF format.</p>
+                </div>
+                <form id="careerApplicationForm" class="career-apply-form">
+                    <input type="text" name="name" placeholder="Your full name" required>
+                    <input type="email" name="email" placeholder="Your email address" required>
+                    <input type="tel" name="phone" placeholder="Your phone number" required>
+                    <input type="file" name="resume" accept="application/pdf" required>
+                    <textarea name="message" rows="5" placeholder="Short cover note (optional)"></textarea>
+                    <button type="submit" class="button" id="careerApplySubmit">Submit Application</button>
+                </form>
+                <p class="career-apply-message" id="careerApplyMessage" data-state="neutral"></p>
+            </aside>
+        </div>
+    </section>
+</main>
+
+<script type="module" src="/src/career-detail.js"></script>
+</body>
+</html>

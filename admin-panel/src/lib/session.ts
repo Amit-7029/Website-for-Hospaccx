@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { getFirebaseAdminServices } from "@/lib/firebase/admin";
-import { DEFAULT_ROLE_RECORDS, getDefaultRoleId, getLegacyPermissions, normalizeLegacyRole, normalizeUserStatus, sanitizePermissions } from "@/lib/rbac";
+import { DEFAULT_ROLE_RECORDS, getDefaultRoleId, getLegacyPermissions, mergeWithSystemRole, normalizeLegacyRole, normalizeUserStatus, sanitizePermissions } from "@/lib/rbac";
 import type { AdminUser } from "@/types";
 
 export const SESSION_COOKIE = "hospaccx_admin_session";
@@ -81,17 +81,20 @@ async function hydrateSessionUser(user: AdminUser) {
       ? {
           id: roleDoc.id,
           name: String(roleDoc.data()?.name ?? fallbackRole.name),
+          description: String(roleDoc.data()?.description ?? fallbackRole.description),
           permissions: sanitizePermissions(roleDoc.data()?.permissions ?? fallbackRole.permissions),
         }
       : {
           id: fallbackRole.id,
           name: fallbackRole.name,
+          description: fallbackRole.description,
           permissions: fallbackRole.permissions,
         };
+    const mergedRoleRecord = mergeWithSystemRole(roleRecord);
 
     const explicitPermissions = sanitizePermissions(userData?.["permissions"]);
-    const permissions = roleRecord.permissions.length
-      ? roleRecord.permissions
+    const permissions = mergedRoleRecord.permissions.length
+      ? mergedRoleRecord.permissions
       : explicitPermissions.length
         ? explicitPermissions
         : getLegacyPermissions(normalizedRole);
@@ -101,8 +104,8 @@ async function hydrateSessionUser(user: AdminUser) {
       email: userData?.email ?? user.email,
       name: userData?.name ?? user.name,
       role: normalizedRole,
-      roleId: roleRecord.id,
-      roleName: userData?.roleName ?? roleRecord.name,
+      roleId: mergedRoleRecord.id,
+      roleName: userData?.roleName ?? mergedRoleRecord.name,
       permissions,
       status: resolvedStatus,
       isActive: resolvedStatus === "active",

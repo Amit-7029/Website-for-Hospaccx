@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useSession } from "@/components/providers/app-providers";
 import { usePermissions } from "@/hooks/use-permissions";
 import { addActivityLog, deleteDocument, listCollection, saveDocument } from "@/lib/firebase/repository";
-import { DEFAULT_ROLE_RECORDS, inferRoleFromPermissions } from "@/lib/rbac";
+import { DEFAULT_ROLE_RECORDS, inferRoleFromPermissions, mergeWithSystemRole } from "@/lib/rbac";
 import type { RoleRecord, UserRecord } from "@/types";
 
 export function useRolesManager() {
@@ -21,7 +21,7 @@ export function useRolesManager() {
     setIsLoading(true);
     try {
       const roles = await listCollection<RoleRecord>("roles", { includeSystem: true });
-      const nextRoles = [...roles];
+      const nextRoles = roles.map((roleRecord) => mergeWithSystemRole(roleRecord));
       DEFAULT_ROLE_RECORDS.forEach((defaultRole) => {
         if (!nextRoles.some((item) => item.id === defaultRole.id)) {
           nextRoles.push(defaultRole);

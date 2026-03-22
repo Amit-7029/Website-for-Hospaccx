@@ -6,6 +6,13 @@ export type UserPermission =
   | "doctors_add"
   | "doctors_edit"
   | "doctors_delete"
+  | "careers_view"
+  | "careers_add"
+  | "careers_edit"
+  | "careers_delete"
+  | "applications_view"
+  | "applications_update"
+  | "applications_delete"
   | "services_view"
   | "services_add"
   | "services_edit"
@@ -93,6 +100,37 @@ export interface DiagnosticService {
   updatedAt?: string;
 }
 
+export interface CareerJob {
+  id: string;
+  title: string;
+  department: string;
+  location: string;
+  experience: string;
+  jobType: "full-time" | "part-time" | "contract" | "internship";
+  shortDescription: string;
+  description: string;
+  requirements: string[];
+  status: "active" | "inactive";
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CareerApplication {
+  id: string;
+  jobId: string;
+  jobTitle: string;
+  name: string;
+  email: string;
+  phone: string;
+  resumeUrl: string;
+  resumeName: string;
+  resumeStorageMode?: "storage" | "inline";
+  message?: string;
+  status: "pending" | "selected" | "rejected";
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface MediaItem {
   id: string;
   title: string;
@@ -156,9 +194,9 @@ export interface NotificationItem {
   id: string;
   title: string;
   message: string;
-  type: "appointment" | "review" | "system";
+  type: "appointment" | "review" | "career" | "system";
   entityId?: string;
-  entityType?: "appointment" | "review" | "doctor" | "service" | "cms" | "media";
+  entityType?: "appointment" | "review" | "doctor" | "service" | "career" | "application" | "cms" | "media";
   read: boolean;
   createdAt?: string;
   updatedAt?: string;

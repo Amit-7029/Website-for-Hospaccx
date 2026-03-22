@@ -34,6 +34,7 @@ service firebase.storage {
         permission == "doctors_add" ? ["doctors_add"] :
         permission == "doctors_edit" ? ["doctors_edit", "edit_doctors"] :
         permission == "media_upload" ? ["media_upload", "access_media"] :
+        permission == "applications_view" ? ["applications_view", "view_applications"] :
         permission == "settings_edit" ? ["settings_edit", "access_settings"] :
         [permission];
     }
@@ -105,6 +106,11 @@ service firebase.storage {
     match /services/{allPaths=**} {
       allow read: if true;
       allow write: if hasPermission("media_upload");
+    }
+
+    match /resumes/{allPaths=**} {
+      allow read: if hasPermission("applications_view");
+      allow write: if false;
     }
   }
 }

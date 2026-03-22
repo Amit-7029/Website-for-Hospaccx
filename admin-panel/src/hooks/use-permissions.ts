@@ -16,6 +16,13 @@ export function usePermissions() {
     const canAddDoctors = hasPermission("doctors_add");
     const canEditDoctors = hasPermission("doctors_edit");
     const canDeleteDoctors = hasPermission("doctors_delete");
+    const canViewCareers = hasPermission("careers_view");
+    const canAddCareers = hasPermission("careers_add");
+    const canEditCareers = hasPermission("careers_edit");
+    const canDeleteCareers = hasPermission("careers_delete");
+    const canViewApplications = hasPermission("applications_view");
+    const canUpdateApplications = hasPermission("applications_update");
+    const canDeleteApplications = hasPermission("applications_delete");
     const canViewServices = hasPermission("services_view");
     const canAddServices = hasPermission("services_add");
     const canEditServices = hasPermission("services_edit");
@@ -54,6 +61,15 @@ export function usePermissions() {
       canEditDoctors,
       canDeleteDoctors,
       canManageDoctors: canAddDoctors || canEditDoctors,
+      canViewCareers,
+      canAddCareers,
+      canEditCareers,
+      canDeleteCareers,
+      canManageCareers: canAddCareers || canEditCareers,
+      canViewApplications,
+      canUpdateApplications,
+      canDeleteApplications,
+      canManageApplications: canUpdateApplications || canDeleteApplications,
       canViewServices,
       canAddServices,
       canEditServices,

@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { startTransition } from "react";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { CalendarCheck2, ClipboardList, Eye, Globe2, Images, LayoutDashboard, MessageSquareQuote, PanelTop, Settings, ShieldCheck, Stethoscope, Users, X } from "lucide-react";
+import { BriefcaseBusiness, CalendarCheck2, ClipboardList, Eye, Globe2, Images, LayoutDashboard, MessageSquareQuote, PanelTop, Settings, ShieldCheck, Stethoscope, Users, X } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { usePermissions } from "@/hooks/use-permissions";
 import { cn } from "@/lib/utils";
@@ -15,6 +13,7 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, permission: "dashboard_view" },
   { href: "/admin/hero", label: "Hero", icon: PanelTop, permission: "settings_view" },
   { href: "/admin/doctors", label: "Doctors", icon: Stethoscope, permission: "doctors_view" },
+  { href: "/admin/careers", label: "Careers", icon: BriefcaseBusiness, permission: ["careers_view", "applications_view"] },
   { href: "/admin/services", label: "Services", icon: ClipboardList, permission: "services_view" },
   { href: "/admin/media", label: "Media", icon: Images, permission: "media_view" },
   { href: "/admin/reviews", label: "Reviews", icon: MessageSquareQuote, permission: "reviews_view" },
@@ -28,23 +27,30 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { sidebarOpen, mobileSidebarOpen, closeMobileSidebar } = useUiStore();
   const { hasPermission } = usePermissions();
-  const visibleItems = navItems.filter((item) => hasPermission(item.permission as UserPermission));
+  const visibleItems = navItems.filter((item) => {
+    const requiredPermissions = Array.isArray(item.permission) ? item.permission : [item.permission];
+    return requiredPermissions.some((permission) => hasPermission(permission as UserPermission));
+  });
 
-  const handleMobileNavigate = (href: string) => {
-    closeMobileSidebar();
-    startTransition(() => {
-      router.push(href);
-    });
+  const navigateTo = (href: string, closeDrawer = false) => {
+    if (closeDrawer) {
+      closeMobileSidebar();
+      window.setTimeout(() => {
+        window.location.assign(href);
+      }, 80);
+      return;
+    }
+
+    window.location.assign(href);
   };
 
   return (
     <>
       <motion.aside
         animate={{ width: sidebarOpen ? 280 : 88 }}
-        className="sticky top-0 hidden h-screen overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex lg:flex-col"
+        className="sticky top-0 z-40 hidden h-screen shrink-0 overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex lg:flex-col"
       >
         <div className="shrink-0 border-b border-sidebar-border px-6 py-6">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Hospaccx Admin</p>
@@ -59,11 +65,12 @@ export function Sidebar() {
           {visibleItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href;
             return (
-              <Link
+              <button
+                type="button"
                 key={href}
-                href={href}
+                onClick={() => navigateTo(href)}
                 className={cn(
-                  "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all",
+                  "flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all",
                   active
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "text-slate-300 hover:bg-sidebar-accent/70 hover:text-white",
@@ -71,7 +78,7 @@ export function Sidebar() {
               >
                 <Icon className="h-5 w-5 shrink-0" />
                 {sidebarOpen ? <span>{label}</span> : null}
-              </Link>
+              </button>
             );
           })}
         </nav>
@@ -113,7 +120,7 @@ export function Sidebar() {
                   <button
                     type="button"
                     key={href}
-                    onClick={() => handleMobileNavigate(href)}
+                    onClick={() => navigateTo(href, true)}
                     className={cn(
                       "flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all",
                       active
