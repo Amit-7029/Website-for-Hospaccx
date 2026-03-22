@@ -1237,8 +1237,9 @@ button {
 }
 
 .section__heading {
-    max-width: 780px;
-    margin-bottom: 1.7rem;
+    max-width: 980px;
+    margin: 0 auto 1.9rem;
+    text-align: center;
 }
 
 .section__actions {
@@ -1252,8 +1253,14 @@ button {
 }
 
 .section__heading h2 {
-    font-size: clamp(2.2rem, 4.2vw, 3.4rem);
-    line-height: 1.04;
+    font-size: clamp(2.45rem, 4.8vw, 3.9rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+}
+
+.section__heading .eyebrow {
+    justify-content: center;
 }
 
 .section__heading--light h2,
@@ -1425,12 +1432,20 @@ button {
 }
 
 .section--healthcare-restored .section__heading {
+    max-width: 980px;
+}
+
+.section--healthcare-restored .section__note {
     max-width: 760px;
+    margin-inline: auto;
+    font-size: 1.08rem;
+    line-height: 1.82;
 }
 
 .healthcare-restore-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(280px, 1fr));
+    gap: 1.3rem;
+    justify-content: center;
 }
 
 .healthcare-restore-card {
