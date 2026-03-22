@@ -1212,6 +1212,7 @@ async function initializeMedia() {
   renderPharmacyMedia();
   renderServices();
   renderGallery();
+  applyDoctorsSectionContent();
 
   try {
     const { items, source } = await loadMediaItems();
@@ -1224,6 +1225,7 @@ async function initializeMedia() {
     renderPharmacyMedia();
     renderServices();
     renderGallery();
+    applyDoctorsSectionContent();
   } catch (error) {
     console.error(error);
     state.mediaItems = fallbackMediaItems;
@@ -1235,6 +1237,7 @@ async function initializeMedia() {
     renderPharmacyMedia();
     renderServices();
     renderGallery();
+    applyDoctorsSectionContent();
   }
 }
 
