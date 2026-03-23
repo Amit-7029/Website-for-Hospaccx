@@ -1833,7 +1833,10 @@ function renderSelectedDateStatus() {
 
   const entry = getControlledDateEntry(dateSelect.value);
   if (!entry) {
-    setAppointmentSlotStatus(state.appointmentBooking.bookingOpen ? "Select an available date to continue." : "Booking is currently closed for this doctor.");
+    setAppointmentSlotStatus(
+      state.appointmentBooking.bookingOpen ? "Select an available date to continue." : "Booking is currently closed for this doctor.",
+      state.appointmentBooking.bookingOpen ? "" : "error",
+    );
     return;
   }
 
