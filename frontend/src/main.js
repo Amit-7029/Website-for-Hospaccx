@@ -896,6 +896,24 @@ function applyDoctorsSectionContent() {
   }
 }
 
+function updateDoctorSourceBadge() {
+  const sourceBadge = document.getElementById("doctorDataSource");
+  if (!sourceBadge) {
+    return;
+  }
+
+  sourceBadge.textContent =
+    state.doctorsSource === "firestore"
+      ? cmsValue("doctorsDataSourceFirestore", "Doctor information is updated from the clinic records.")
+      : cmsValue("doctorsDataSourceLocal", "Doctor information is curated and regularly updated by our clinic team.");
+}
+
+function refreshDoctorsSectionUi() {
+  applyDoctorsSectionContent();
+  updateDoctorSourceBadge();
+  renderDoctors();
+}
+
 function renderFacilities() {
   const container = document.getElementById("facilityGrid");
   if (!container) {
@@ -1277,6 +1295,7 @@ async function initializeContent() {
   state.heroSource = "local";
   applyCmsContent();
   applyHeroContent();
+  refreshDoctorsSectionUi();
   renderWhyChooseMedia();
   renderHealthcareMedia();
   renderPharmacyMedia();
@@ -1298,6 +1317,7 @@ async function initializeContent() {
 
     applyCmsContent();
     applyHeroContent();
+    refreshDoctorsSectionUi();
     renderWhyChooseMedia();
     renderHealthcareMedia();
     renderPharmacyMedia();
@@ -2434,7 +2454,6 @@ async function saveAppointmentWithTimeout(payload, timeoutMs = 1800) {
 }
 
 async function initializeDoctors() {
-  const sourceBadge = document.getElementById("doctorDataSource");
   const hasDoctorQuery = new URLSearchParams(window.location.search).has("doctor");
 
   state.doctors = [];
@@ -2452,12 +2471,7 @@ async function initializeDoctors() {
     resetAppointmentSelections();
   }
 
-  if (sourceBadge) {
-    sourceBadge.textContent = cmsValue(
-      "doctorsDataSourceLocal",
-      "Doctor information is curated and regularly updated by our clinic team.",
-    );
-  }
+  updateDoctorSourceBadge();
 
   try {
     const { doctors, source } = await loadDoctors();
@@ -2476,12 +2490,7 @@ async function initializeDoctors() {
       resetAppointmentSelections();
     }
 
-    if (sourceBadge) {
-      sourceBadge.textContent =
-        source === "firestore"
-          ? cmsValue("doctorsDataSourceFirestore", "Doctor information is updated from the clinic records.")
-          : cmsValue("doctorsDataSourceLocal", "Doctor information is curated and regularly updated by our clinic team.");
-    }
+    updateDoctorSourceBadge();
   } catch (error) {
     console.error(error);
     state.doctors = fallbackDoctors;
@@ -2497,12 +2506,7 @@ async function initializeDoctors() {
       resetAppointmentSelections();
     }
 
-    if (sourceBadge) {
-      sourceBadge.textContent = cmsValue(
-        "doctorsDataSourceLocal",
-        "Doctor information is curated and regularly updated by our clinic team.",
-      );
-    }
+    updateDoctorSourceBadge();
   }
 }
 
