@@ -1765,6 +1765,9 @@ function setAppointmentSlotStatus(message, tone = "") {
 function updateAppointmentOtpPanel() {
   const panel = document.getElementById("appointmentOtpPanel");
   const sendButton = document.getElementById("appointmentSendOtp");
+  const verifyButton = document.getElementById("appointmentVerifyOtp");
+  const otpInputWrap = document.getElementById("appointmentOtpInputWrap");
+  const otpCountdown = document.getElementById("appointmentOtpCountdown");
 
   if (!panel || !sendButton) {
     return;
@@ -1780,9 +1783,24 @@ function updateAppointmentOtpPanel() {
   sendButton.disabled = false;
 
   if (!state.appointmentBooking.otpRequired) {
+    if (otpInputWrap) {
+      otpInputWrap.hidden = true;
+    }
+    if (verifyButton) {
+      verifyButton.hidden = true;
+    }
+    if (otpCountdown) {
+      otpCountdown.textContent = "";
+    }
     sendButton.textContent = "Send OTP (Optional)";
-    sendButton.disabled = !state.appointmentBooking.otpConfigured;
-    setAppointmentOtpStatus("OTP verification is disabled for this doctor. You can complete booking directly.", "success");
+
+    if (!state.appointmentBooking.otpConfigured) {
+      sendButton.hidden = true;
+      setAppointmentOtpStatus("OTP is optional for this doctor. You can continue booking directly.", "success");
+      return;
+    }
+
+    setAppointmentOtpStatus("OTP is optional for this doctor. You can send one if you want extra verification.", "success");
     return;
   }
 
