@@ -2239,8 +2239,8 @@ function setupAppointmentForm() {
     const canAccept = termsContent.scrollTop + termsContent.clientHeight >= termsContent.scrollHeight - 12;
     termsAccept.disabled = !canAccept;
     termsHint.textContent = canAccept
-      ? "You can now accept the terms and continue."
-      : "Scroll to the bottom to enable acceptance.";
+      ? "এখন আপনি শর্তগুলি গ্রহণ করে এগোতে পারেন। / You can now accept the terms and continue."
+      : "গ্রহণ করার জন্য নিচ পর্যন্ত স্ক্রল করুন। / Scroll to the bottom to enable acceptance.";
   };
 
   const openTermsModal = () => {
