@@ -1776,15 +1776,20 @@ function updateAppointmentOtpPanel() {
   }
 
   panel.hidden = false;
+  sendButton.hidden = false;
+  sendButton.disabled = false;
+
   if (!state.appointmentBooking.otpRequired) {
-    sendButton.hidden = true;
+    sendButton.textContent = "Send OTP (Optional)";
+    sendButton.disabled = !state.appointmentBooking.otpConfigured;
     setAppointmentOtpStatus("OTP verification is disabled for this doctor. You can complete booking directly.", "success");
     return;
   }
 
-  sendButton.hidden = false;
+  sendButton.textContent = "Send OTP";
 
   if (!state.appointmentBooking.otpConfigured) {
+    sendButton.disabled = true;
     setAppointmentOtpStatus("OTP service is not configured yet. Please contact reception or disable OTP for this doctor in admin.", "error");
   }
 }
@@ -1822,6 +1827,33 @@ function startAppointmentOtpCountdown(expiresAt) {
 
 function getControlledDateEntry(dateValue) {
   return state.appointmentBooking.dates.find((entry) => entry.date === dateValue) || null;
+}
+
+function defaultControlledTimeSlots() {
+  return ["09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM"];
+}
+
+function controlledTimeSlotsForDoctor(doctor, entry) {
+  if (Array.isArray(entry?.timeSlots) && entry.timeSlots.length) {
+    return entry.timeSlots;
+  }
+
+  const ranges = extractTimeRanges(doctor.timing);
+  if (doctor.timing.toUpperCase().includes("BY APPOINTMENT") || ranges.length === 0) {
+    return defaultControlledTimeSlots();
+  }
+
+  const slots = [];
+  ranges.forEach((range) => {
+    for (let minutes = range.start; minutes <= range.end; minutes += 30) {
+      const formatted = formatMinutes(minutes);
+      if (!slots.includes(formatted)) {
+        slots.push(formatted);
+      }
+    }
+  });
+
+  return slots.length ? slots : defaultControlledTimeSlots();
 }
 
 function renderSelectedDateStatus() {
@@ -1866,6 +1898,7 @@ function buildLocalControlledAvailability(doctor) {
       booked: 0,
       slotsLeft: Number(entry.limit || 0),
       isFull: Number(entry.limit || 0) <= 0,
+      timeSlots: Array.isArray(entry.timeSlots) ? entry.timeSlots : defaultControlledTimeSlots(),
     })),
   };
 }
@@ -2091,6 +2124,20 @@ function populateTimeSelect(doctor) {
     return;
   }
 
+  if (state.appointmentBooking.controlled && state.appointmentBooking.activeDoctorId === doctor.id) {
+    const dateSelect = document.getElementById("date");
+    const selectedEntry = getControlledDateEntry(dateSelect?.value || "") || state.appointmentBooking.dates[0] || null;
+    const controlledSlots = controlledTimeSlotsForDoctor(doctor, selectedEntry);
+
+    timeSelect.innerHTML = controlledSlots.length
+      ? `<option value="">${escapeHtml(cmsValue("appointmentTimePlaceholder", "Select a time slot"))}</option>` +
+        controlledSlots.map((slot) => `<option value="${escapeHtml(slot)}">${escapeHtml(slot)}</option>`).join("")
+      : '<option value="">No configured time slots available</option>';
+    timeSelect.disabled = controlledSlots.length === 0;
+    helper.textContent = `${doctor.name} | Availability: ${formatAvailability(doctor.availability)} | OPD Days: ${doctor.opdDays}`;
+    return;
+  }
+
   const ranges = extractTimeRanges(doctor.timing);
 
   if (doctor.timing.toUpperCase().includes("BY APPOINTMENT") || ranges.length === 0) {
@@ -2179,6 +2226,10 @@ function setupAppointmentForm() {
   dateSelect?.addEventListener("change", () => {
     renderSelectedDateStatus();
     if (state.appointmentBooking.controlled) {
+      const doctor = state.doctors.find((entry) => entry.name === doctorSelect?.value);
+      if (doctor) {
+        populateTimeSelect(doctor);
+      }
       resetAppointmentOtpState();
     }
   });

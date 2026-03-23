@@ -241,16 +241,36 @@ export default function DoctorsPage() {
                             {
                               date: values.bookingDateOne,
                               limit: Number(values.bookingLimitOne || 0),
+                              timeSlots: String(values.bookingSlotsOne || "")
+                                .split(/[\n,]/)
+                                .map((slot) => slot.trim())
+                                .filter(Boolean),
                             },
                             {
                               date: values.bookingDateTwo,
                               limit: Number(values.bookingLimitTwo || 0),
+                              timeSlots: String(values.bookingSlotsTwo || "")
+                                .split(/[\n,]/)
+                                .map((slot) => slot.trim())
+                                .filter(Boolean),
                             },
                             {
                               date: values.bookingDateThree,
                               limit: Number(values.bookingLimitThree || 0),
+                              timeSlots: String(values.bookingSlotsThree || "")
+                                .split(/[\n,]/)
+                                .map((slot) => slot.trim())
+                                .filter(Boolean),
                             },
-                          ].filter((entry): entry is { date: string; limit: number } => Boolean(entry.date && entry.limit > 0)),
+                          ].filter(
+                            (
+                              entry,
+                            ): entry is {
+                              date: string;
+                              limit: number;
+                              timeSlots: string[];
+                            } => Boolean(entry.date && entry.limit > 0),
+                          ),
                         }
                       : {
                           enabled: false,

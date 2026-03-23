@@ -2650,6 +2650,23 @@ button {
 
 .appointment-otp-panel__button {
     min-width: 140px;
+    border-color: rgba(103, 61, 230, 0.18);
+    color: var(--primary-dark);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 12px 26px rgba(103, 61, 230, 0.12);
+}
+
+.appointment-otp-panel__button:hover {
+    background: rgba(245, 241, 255, 1);
+}
+
+.appointment-otp-panel__button:disabled {
+    opacity: 1;
+    color: rgba(42, 27, 92, 0.58);
+    background: rgba(239, 233, 255, 0.94);
+    border-color: rgba(103, 61, 230, 0.1);
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 .appointment-otp-panel__status,

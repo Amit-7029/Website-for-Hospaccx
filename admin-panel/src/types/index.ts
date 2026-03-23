@@ -93,6 +93,7 @@ export interface Doctor {
     dates: Array<{
       date: string;
       limit: number;
+      timeSlots?: string[];
     }>;
   };
   createdAt?: string;

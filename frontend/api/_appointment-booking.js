@@ -116,6 +116,9 @@ export async function getControlledAvailability(doctorId) {
         booked,
         slotsLeft,
         isFull: slotsLeft <= 0,
+        timeSlots: Array.isArray(entry?.timeSlots)
+          ? entry.timeSlots.map((slot) => cleanText(slot)).filter(Boolean)
+          : [],
       };
     })
     .filter(Boolean);

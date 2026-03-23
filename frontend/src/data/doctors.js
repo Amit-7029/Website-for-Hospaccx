@@ -380,11 +380,15 @@ function normalizeServices(doctor) {
 
 function normalizeBookingSettings(doctor) {
   const rawSettings = doctor.bookingSettings && typeof doctor.bookingSettings === "object" ? doctor.bookingSettings : null;
+  const defaultTimeSlots = ["09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM"];
   const normalizedDates = Array.isArray(rawSettings?.dates)
     ? rawSettings.dates
         .map((entry) => ({
           date: String(entry?.date || "").trim(),
-          limit: Number(entry?.limit || 0)
+          limit: Number(entry?.limit || 0),
+          timeSlots: Array.isArray(entry?.timeSlots)
+            ? entry.timeSlots.map((slot) => String(slot || "").trim()).filter(Boolean)
+            : []
         }))
         .filter((entry) => entry.date && entry.limit > 0)
         .slice(0, 3)
@@ -395,7 +399,10 @@ function normalizeBookingSettings(doctor) {
       enabled: Boolean(rawSettings.enabled),
       bookingOpen: rawSettings.bookingOpen !== false,
       otpRequired: rawSettings.otpRequired !== false,
-      dates: normalizedDates
+      dates: normalizedDates.map((entry) => ({
+        ...entry,
+        timeSlots: entry.timeSlots.length ? entry.timeSlots : defaultTimeSlots
+      }))
     };
   }
 
@@ -406,9 +413,9 @@ function normalizeBookingSettings(doctor) {
       bookingOpen: true,
       otpRequired: false,
       dates: [
-        { date: defaultDates[0], limit: 80 },
-        { date: defaultDates[1], limit: 120 },
-        { date: defaultDates[2], limit: 100 }
+        { date: defaultDates[0], limit: 80, timeSlots: defaultTimeSlots },
+        { date: defaultDates[1], limit: 120, timeSlots: defaultTimeSlots },
+        { date: defaultDates[2], limit: 100, timeSlots: defaultTimeSlots }
       ]
     };
   }

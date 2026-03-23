@@ -35,6 +35,7 @@ function getInitialBookingSettings(doctor: Doctor | null) {
   const doctorName = doctor?.name?.toLowerCase().replace(/\s+/g, " ").trim() ?? "";
   const shouldPrefillBiswajit = doctorName.includes("biswajit majumdar");
   const dates = doctor?.bookingSettings?.dates?.slice(0, 3) ?? [];
+  const defaultTimeSlots = "09:00 AM, 09:30 AM, 10:00 AM, 10:30 AM, 11:00 AM, 11:30 AM, 12:00 PM";
 
   return {
     bookingEnabled: doctor?.bookingSettings?.enabled ?? shouldPrefillBiswajit,
@@ -42,10 +43,13 @@ function getInitialBookingSettings(doctor: Doctor | null) {
     otpRequired: doctor?.bookingSettings?.otpRequired ?? false,
     bookingDateOne: dates[0]?.date ?? (shouldPrefillBiswajit ? fallbackDates[0] : ""),
     bookingLimitOne: String(dates[0]?.limit ?? (shouldPrefillBiswajit ? 80 : 0)),
+    bookingSlotsOne: Array.isArray(dates[0]?.timeSlots) && dates[0]?.timeSlots?.length ? dates[0].timeSlots.join(", ") : (shouldPrefillBiswajit ? defaultTimeSlots : ""),
     bookingDateTwo: dates[1]?.date ?? (shouldPrefillBiswajit ? fallbackDates[1] : ""),
     bookingLimitTwo: String(dates[1]?.limit ?? (shouldPrefillBiswajit ? 120 : 0)),
+    bookingSlotsTwo: Array.isArray(dates[1]?.timeSlots) && dates[1]?.timeSlots?.length ? dates[1].timeSlots.join(", ") : (shouldPrefillBiswajit ? defaultTimeSlots : ""),
     bookingDateThree: dates[2]?.date ?? (shouldPrefillBiswajit ? fallbackDates[2] : ""),
     bookingLimitThree: String(dates[2]?.limit ?? (shouldPrefillBiswajit ? 100 : 0)),
+    bookingSlotsThree: Array.isArray(dates[2]?.timeSlots) && dates[2]?.timeSlots?.length ? dates[2].timeSlots.join(", ") : (shouldPrefillBiswajit ? defaultTimeSlots : ""),
   };
 }
 
@@ -62,10 +66,13 @@ const schema = z.object({
   otpRequired: z.enum(["required", "optional"]),
   bookingDateOne: z.string().optional(),
   bookingLimitOne: z.string().optional(),
+  bookingSlotsOne: z.string().optional(),
   bookingDateTwo: z.string().optional(),
   bookingLimitTwo: z.string().optional(),
+  bookingSlotsTwo: z.string().optional(),
   bookingDateThree: z.string().optional(),
   bookingLimitThree: z.string().optional(),
+  bookingSlotsThree: z.string().optional(),
 });
 
 type Values = z.infer<typeof schema>;
@@ -115,10 +122,13 @@ export function DoctorForm({
       otpRequired: initialBookingSettings.otpRequired ? "required" : "optional",
       bookingDateOne: initialBookingSettings.bookingDateOne,
       bookingLimitOne: initialBookingSettings.bookingLimitOne,
+      bookingSlotsOne: initialBookingSettings.bookingSlotsOne,
       bookingDateTwo: initialBookingSettings.bookingDateTwo,
       bookingLimitTwo: initialBookingSettings.bookingLimitTwo,
+      bookingSlotsTwo: initialBookingSettings.bookingSlotsTwo,
       bookingDateThree: initialBookingSettings.bookingDateThree,
       bookingLimitThree: initialBookingSettings.bookingLimitThree,
+      bookingSlotsThree: initialBookingSettings.bookingSlotsThree,
     },
   });
 
@@ -137,10 +147,13 @@ export function DoctorForm({
       otpRequired: bookingSettings.otpRequired ? "required" : "optional",
       bookingDateOne: bookingSettings.bookingDateOne,
       bookingLimitOne: bookingSettings.bookingLimitOne,
+      bookingSlotsOne: bookingSettings.bookingSlotsOne,
       bookingDateTwo: bookingSettings.bookingDateTwo,
       bookingLimitTwo: bookingSettings.bookingLimitTwo,
+      bookingSlotsTwo: bookingSettings.bookingSlotsTwo,
       bookingDateThree: bookingSettings.bookingDateThree,
       bookingLimitThree: bookingSettings.bookingLimitThree,
+      bookingSlotsThree: bookingSettings.bookingSlotsThree,
     });
     setImageFile(null);
     setPreviewImageUrl(doctor?.imageUrl);
@@ -172,9 +185,9 @@ export function DoctorForm({
       }
 
       const datePairs = [
-        { date: values.bookingDateOne, limit: values.bookingLimitOne },
-        { date: values.bookingDateTwo, limit: values.bookingLimitTwo },
-        { date: values.bookingDateThree, limit: values.bookingLimitThree },
+        { date: values.bookingDateOne, limit: values.bookingLimitOne, slots: values.bookingSlotsOne },
+        { date: values.bookingDateTwo, limit: values.bookingLimitTwo, slots: values.bookingSlotsTwo },
+        { date: values.bookingDateThree, limit: values.bookingLimitThree, slots: values.bookingSlotsThree },
       ];
 
       return {
@@ -185,6 +198,10 @@ export function DoctorForm({
           .map((entry) => ({
             date: String(entry.date ?? "").trim(),
             limit: Number(entry.limit ?? 0),
+            timeSlots: String(entry.slots ?? "")
+              .split(/[\n,]/)
+              .map((slot) => slot.trim())
+              .filter(Boolean),
           }))
           .filter((entry) => entry.date && entry.limit > 0),
       };
@@ -306,16 +323,19 @@ export function DoctorForm({
                     key: "One",
                     dateField: "bookingDateOne",
                     limitField: "bookingLimitOne",
+                    slotsField: "bookingSlotsOne",
                   },
                   {
                     key: "Two",
                     dateField: "bookingDateTwo",
                     limitField: "bookingLimitTwo",
+                    slotsField: "bookingSlotsTwo",
                   },
                   {
                     key: "Three",
                     dateField: "bookingDateThree",
                     limitField: "bookingLimitThree",
+                    slotsField: "bookingSlotsThree",
                   },
                 ].map((item, index) => {
                   const dateValue = form.watch(item.dateField as keyof Values);
@@ -330,6 +350,9 @@ export function DoctorForm({
                         </FormField>
                         <FormField label="Limit">
                           <Input type="number" min="0" placeholder="0" {...form.register(item.limitField as keyof Values)} />
+                        </FormField>
+                        <FormField label="Time slots" hint="Comma separated. Example: 09:00 AM, 09:30 AM, 10:00 AM">
+                          <Textarea rows={3} {...form.register(item.slotsField as keyof Values)} placeholder="09:00 AM, 09:30 AM, 10:00 AM" />
                         </FormField>
                         <div className="rounded-2xl bg-muted/60 px-3 py-2 text-sm text-muted-foreground">
                           Booked count: <span className="font-semibold text-foreground">{bookedCount}</span>
@@ -363,10 +386,13 @@ export function DoctorForm({
                   otpRequired: initialBookingSettings.otpRequired ? "required" : "optional",
                   bookingDateOne: initialBookingSettings.bookingDateOne,
                   bookingLimitOne: initialBookingSettings.bookingLimitOne,
+                  bookingSlotsOne: initialBookingSettings.bookingSlotsOne,
                   bookingDateTwo: initialBookingSettings.bookingDateTwo,
                   bookingLimitTwo: initialBookingSettings.bookingLimitTwo,
+                  bookingSlotsTwo: initialBookingSettings.bookingSlotsTwo,
                   bookingDateThree: initialBookingSettings.bookingDateThree,
                   bookingLimitThree: initialBookingSettings.bookingLimitThree,
+                  bookingSlotsThree: initialBookingSettings.bookingSlotsThree,
                 });
                 setImageFile(null);
                 setPreviewImageUrl(doctor?.imageUrl);
