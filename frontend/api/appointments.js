@@ -12,6 +12,10 @@ function sanitizeText(value) {
     .trim();
 }
 
+function isTermsAccepted(value) {
+  return value === true || value === "true" || value === "on" || value === 1 || value === "1";
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return json(res, 405, { error: "Method not allowed" });
@@ -28,9 +32,14 @@ export default async function handler(req, res) {
     const selectedDate = sanitizeText(payload?.selectedDate);
     const selectedTime = sanitizeText(payload?.selectedTime);
     const message = sanitizeText(payload?.message);
+    const termsAccepted = isTermsAccepted(payload?.termsAccepted);
 
     if (name.length < 2 || phone.length < 8 || date.length < 10) {
       return json(res, 400, { error: "Invalid appointment payload" });
+    }
+
+    if (!termsAccepted) {
+      return json(res, 400, { error: "Please accept Terms & Conditions to continue" });
     }
 
     const db = getFirebaseAdminDb();
@@ -45,6 +54,7 @@ export default async function handler(req, res) {
       selectedDate,
       selectedTime,
       message,
+      termsAccepted: true,
       bookingMode: "standard",
       verified: false,
       status: "pending",

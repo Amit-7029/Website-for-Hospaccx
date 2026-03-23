@@ -11,6 +11,10 @@ function cleanText(value) {
     .trim();
 }
 
+function asBoolean(value) {
+  return value === true || value === "true" || value === "on" || value === 1 || value === "1";
+}
+
 export function json(res, status, payload) {
   res.status(status).setHeader("Content-Type", "application/json");
   res.setHeader("Cache-Control", "no-store");
@@ -463,6 +467,7 @@ export async function createControlledAppointment({ name, phone, doctorId, selec
     selectedTime: cleanText(selectedTime),
     date: appointmentDate.toISOString(),
     message: cleanText(message),
+    termsAccepted: true,
     verified: true,
     bookingMode: "controlled",
     status: "confirmed",
@@ -511,5 +516,6 @@ export function sanitizeAppointmentPayload(payload) {
     message: cleanText(payload?.message),
     requestId: cleanText(payload?.requestId),
     otp: cleanText(payload?.otp),
+    termsAccepted: asBoolean(payload?.termsAccepted),
   };
 }

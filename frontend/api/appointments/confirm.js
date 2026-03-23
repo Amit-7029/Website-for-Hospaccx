@@ -13,10 +13,14 @@ export default async function handler(req, res) {
 
   try {
     const payload = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const { doctorId, selectedDate, selectedTime, phone, name, message, requestId } = sanitizeAppointmentPayload(payload);
+    const { doctorId, selectedDate, selectedTime, phone, name, message, requestId, termsAccepted } = sanitizeAppointmentPayload(payload);
 
     if (!doctorId || !selectedDate || phone.length < 10 || name.length < 2) {
       return json(res, 400, { error: "Incomplete booking request" });
+    }
+
+    if (!termsAccepted) {
+      return json(res, 400, { error: "Please accept Terms & Conditions to continue" });
     }
 
     const availability = await getControlledAvailability(doctorId);

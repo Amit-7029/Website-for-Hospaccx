@@ -1762,6 +1762,16 @@ function setAppointmentSlotStatus(message, tone = "") {
   element.hidden = !message;
 }
 
+function setAppointmentTermsError(message = "") {
+  const element = document.getElementById("appointmentTermsError");
+  if (!element) {
+    return;
+  }
+
+  element.textContent = message;
+  element.hidden = !message;
+}
+
 function updateAppointmentOtpPanel() {
   const panel = document.getElementById("appointmentOtpPanel");
   const sendButton = document.getElementById("appointmentSendOtp");
@@ -2253,6 +2263,74 @@ function setupAppointmentForm() {
   const verifyOtpButton = document.getElementById("appointmentVerifyOtp");
   const otpInputWrap = document.getElementById("appointmentOtpInputWrap");
   const otpInput = document.getElementById("appointmentOtp");
+  const termsCheckbox = document.getElementById("appointmentTermsCheckbox");
+  const termsTrigger = document.getElementById("appointmentTermsTrigger");
+  const termsLink = document.getElementById("appointmentTermsLink");
+  const termsModal = document.getElementById("appointmentTermsModal");
+  const termsBackdrop = document.getElementById("appointmentTermsBackdrop");
+  const termsClose = document.getElementById("appointmentTermsClose");
+  const termsContent = document.getElementById("appointmentTermsContent");
+  const termsAccept = document.getElementById("appointmentTermsAccept");
+  const termsHint = document.getElementById("appointmentTermsHint");
+
+  const closeTermsModal = () => {
+    if (termsModal) {
+      termsModal.hidden = true;
+    }
+  };
+
+  const syncTermsAcceptState = () => {
+    if (!termsContent || !termsAccept || !termsHint) {
+      return;
+    }
+
+    const canAccept = termsContent.scrollTop + termsContent.clientHeight >= termsContent.scrollHeight - 12;
+    termsAccept.disabled = !canAccept;
+    termsHint.textContent = canAccept
+      ? "You can now accept the terms and continue."
+      : "Scroll to the bottom to enable acceptance.";
+  };
+
+  const openTermsModal = () => {
+    if (!termsModal || !termsContent || !termsAccept) {
+      return;
+    }
+
+    termsModal.hidden = false;
+    termsContent.scrollTop = 0;
+    termsAccept.disabled = true;
+    syncTermsAcceptState();
+  };
+
+  termsCheckbox?.addEventListener("click", (event) => {
+    event.preventDefault();
+    openTermsModal();
+  });
+
+  termsTrigger?.addEventListener("click", (event) => {
+    if (event.target instanceof HTMLElement && event.target.id === "appointmentTermsLink") {
+      return;
+    }
+    event.preventDefault();
+    openTermsModal();
+  });
+
+  termsLink?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    openTermsModal();
+  });
+
+  termsBackdrop?.addEventListener("click", closeTermsModal);
+  termsClose?.addEventListener("click", closeTermsModal);
+  termsContent?.addEventListener("scroll", syncTermsAcceptState);
+  termsAccept?.addEventListener("click", () => {
+    if (termsCheckbox instanceof HTMLInputElement) {
+      termsCheckbox.checked = true;
+    }
+    setAppointmentTermsError("");
+    closeTermsModal();
+  });
 
   departmentSelect?.addEventListener("change", (event) => {
     populateDoctorSelect(event.target.value);
@@ -2368,6 +2446,15 @@ function setupAppointmentForm() {
       return;
     }
 
+    const hasAcceptedTerms = termsCheckbox instanceof HTMLInputElement ? termsCheckbox.checked : false;
+    if (!hasAcceptedTerms) {
+      setAppointmentTermsError("Please accept Terms & Conditions to continue");
+      openTermsModal();
+      return;
+    }
+
+    setAppointmentTermsError("");
+
     const formData = new FormData(form);
     const selectedDate = String(formData.get("date") || "");
     const selectedTime = String(formData.get("time") || "");
@@ -2397,6 +2484,7 @@ function setupAppointmentForm() {
           selectedTime,
           name: String(formData.get("name") || "").trim(),
           phone: String(formData.get("phone") || "").trim(),
+          termsAccepted: true,
           message: `Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
           requestId: state.appointmentBooking.otpRequestId,
         });
@@ -2414,6 +2502,7 @@ function setupAppointmentForm() {
         department: selectedDepartment,
         selectedDate,
         selectedTime,
+        termsAccepted: true,
         message: `Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
         status: "pending",
         createdAt: new Date().toISOString(),

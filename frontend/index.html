@@ -714,10 +714,47 @@
                     </label>
                 </div>
 
+                <div class="appointment-terms" id="appointmentTermsBlock">
+                    <label class="appointment-terms__label" for="appointmentTermsCheckbox" id="appointmentTermsTrigger">
+                        <input type="checkbox" id="appointmentTermsCheckbox" name="termsAccepted">
+                        <span>I agree to <button type="button" class="appointment-terms__link" id="appointmentTermsLink">Terms &amp; Conditions</button></span>
+                    </label>
+                    <p class="appointment-terms__error" id="appointmentTermsError" hidden>Please accept Terms &amp; Conditions to continue</p>
+                </div>
+
                 <button type="submit" class="button button--secondary" data-cms="appointmentButtonLabel">Submit Appointment</button>
             </form>
         </div>
     </section>
+
+    <div class="terms-modal" id="appointmentTermsModal" hidden>
+        <div class="terms-modal__backdrop" id="appointmentTermsBackdrop"></div>
+        <div class="terms-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="appointmentTermsTitle">
+            <button type="button" class="terms-modal__close" id="appointmentTermsClose" aria-label="Close terms">&times;</button>
+            <p class="terms-modal__eyebrow">Terms &amp; Conditions</p>
+            <h3 id="appointmentTermsTitle">Please read before booking</h3>
+            <div class="terms-modal__content" id="appointmentTermsContent">
+                <section class="terms-modal__section">
+                    <h4>বাংলা</h4>
+                    <p>প্রতিটি রোগীর জন্য শুধুমাত্র একটি অ্যাপয়েন্টমেন্ট অনুমোদিত।</p>
+                    <p>অনুগ্রহ করে রোগীর সঠিক নাম এবং জন্ম তারিখ প্রদান করুন।</p>
+                    <p>ভুল তথ্য প্রদান করলে হাসপাতালে পৌঁছানোর পর অ্যাপয়েন্টমেন্ট বাতিল করা হবে।</p>
+                    <p>বুকিং করার পর কোনো পরিবর্তন গ্রহণযোগ্য নয়।</p>
+                </section>
+                <section class="terms-modal__section">
+                    <h4>English</h4>
+                    <p>Each patient is allowed only one appointment.</p>
+                    <p>Please provide correct Patient Name and Date of Birth.</p>
+                    <p>If incorrect details are provided, the appointment will be rejected at the hospital.</p>
+                    <p>No changes will be accepted after booking.</p>
+                </section>
+            </div>
+            <div class="terms-modal__actions">
+                <p class="terms-modal__hint" id="appointmentTermsHint">Scroll to the bottom to enable acceptance.</p>
+                <button type="button" class="button button--secondary" id="appointmentTermsAccept" disabled>Accept</button>
+            </div>
+        </div>
+    </div>
 
     <section id="contact" class="section">
         <div class="container contact-layout">
