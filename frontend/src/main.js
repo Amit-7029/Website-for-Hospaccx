@@ -440,7 +440,18 @@ function getDepartmentDescription(department) {
 
 function renderDepartments() {
   const container = document.getElementById("departmentGrid");
+  const section = document.getElementById("departments");
   if (!container) {
+    return;
+  }
+
+  if (section) {
+    section.hidden = state.departments.length === 0;
+  }
+
+  if (!state.departments.length) {
+    container.innerHTML = "";
+    motion.refresh();
     return;
   }
 
@@ -1584,7 +1595,7 @@ function populateDepartmentSelect() {
     return;
   }
 
-  const departments = state.departments.length ? state.departments : deriveDepartments(state.doctors.length ? state.doctors : fallbackDoctors);
+  const departments = state.departments;
   select.innerHTML =
     `<option value="">${escapeHtml(cmsValue("appointmentDepartmentPlaceholder", "Select a department"))}</option>` +
     departments.map((department) => `<option value="${escapeHtml(department)}">${escapeHtml(department)}</option>`).join("");
@@ -1946,11 +1957,11 @@ async function initializeDoctors() {
   const sourceBadge = document.getElementById("doctorDataSource");
   const hasDoctorQuery = new URLSearchParams(window.location.search).has("doctor");
 
-  state.doctors = fallbackDoctors;
-  state.departments = deriveDepartments(fallbackDoctors);
-  state.doctorsSource = "local";
+  state.doctors = [];
+  state.departments = [];
+  state.doctorsSource = "loading";
 
-  updateDoctorCount(fallbackDoctors.length);
+  updateDoctorCount(0);
   renderDepartments();
   renderDoctors();
   populateDepartmentSelect();
