@@ -1,6 +1,8 @@
 "use client";
 
-import { CalendarCheck2, Search } from "lucide-react";
+import { useState } from "react";
+import { CalendarCheck2, Search, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -12,10 +14,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAppointmentsManager } from "@/features/appointments/hooks/use-appointments-manager";
 import { usePermissions } from "@/hooks/use-permissions";
 import { formatDateTime } from "@/lib/utils";
+import type { Appointment } from "@/types";
 
 export default function AppointmentsPage() {
-  const { canUpdateAppointments, canViewAppointments } = usePermissions();
-  const { items, filter, setFilter, search, setSearch, isLoading, updateStatus, exportCsv } = useAppointmentsManager();
+  const { canDeleteAppointments, canUpdateAppointments, canViewAppointments } = usePermissions();
+  const { items, filter, setFilter, search, setSearch, isLoading, updateStatus, removeAppointment, exportCsv } = useAppointmentsManager();
+  const [appointmentToDelete, setAppointmentToDelete] = useState<Appointment | null>(null);
 
   return (
     <div className="space-y-6">
@@ -82,6 +86,12 @@ export default function AppointmentsPage() {
                       Confirm
                     </Button>
                     <Button onClick={() => void updateStatus(appointment, "completed")} disabled={!canUpdateAppointments}>Complete</Button>
+                    {canDeleteAppointments ? (
+                      <Button variant="destructive" onClick={() => setAppointmentToDelete(appointment)}>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </Button>
+                    ) : null}
                   </div>
                 </CardContent>
               </Card>
@@ -95,6 +105,23 @@ export default function AppointmentsPage() {
           )}
         </CardContent>
       </Card>
+      {canDeleteAppointments ? (
+        <ConfirmDialog
+          open={Boolean(appointmentToDelete)}
+          title="Delete appointment?"
+          description="This will permanently remove the appointment record from the admin system."
+          destructive
+          confirmLabel="Delete appointment"
+          onClose={() => setAppointmentToDelete(null)}
+          onConfirm={() => {
+            if (!appointmentToDelete) {
+              return;
+            }
+            void removeAppointment(appointmentToDelete);
+            setAppointmentToDelete(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/components/providers/app-providers";
 import { usePermissions } from "@/hooks/use-permissions";
-import { addActivityLog, listCollection, saveDocument } from "@/lib/firebase/repository";
+import { addActivityLog, deleteDocument, listCollection, saveDocument } from "@/lib/firebase/repository";
 import type { Appointment } from "@/types";
 
 export function useAppointmentsManager() {
@@ -69,6 +69,28 @@ export function useAppointmentsManager() {
     }
   };
 
+  const removeAppointment = async (appointment: Appointment) => {
+    if (!canDeleteAppointments) {
+      toast.error("You do not have permission to delete appointments");
+      return;
+    }
+
+    try {
+      await deleteDocument("appointments", appointment.id);
+      await addActivityLog({
+        action: "Deleted appointment",
+        entity: "appointment",
+        entityId: appointment.id,
+        actorName: sessionUser?.name ?? "Current user",
+        actorRole: role,
+      });
+      toast.success("Appointment deleted");
+      await load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to delete appointment");
+    }
+  };
+
   const exportCsv = () => {
     const csv = unparse(
       filteredItems.map((item) => ({
@@ -97,6 +119,7 @@ export function useAppointmentsManager() {
     setSearch,
     isLoading,
     updateStatus,
+    removeAppointment,
     exportCsv,
     canUpdateAppointments,
     canDeleteAppointments,
