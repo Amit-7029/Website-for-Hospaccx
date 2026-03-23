@@ -11,6 +11,44 @@ import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/shared/form-field";
 import type { Doctor } from "@/types";
 
+function formatIsoDate(date: Date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function getDefaultBookingDates() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return [1, 2, 3].map((offset) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() + offset);
+    return formatIsoDate(date);
+  });
+}
+
+function getInitialBookingSettings(doctor: Doctor | null) {
+  const fallbackDates = getDefaultBookingDates();
+  const doctorName = doctor?.name?.toLowerCase().replace(/\s+/g, " ").trim() ?? "";
+  const shouldPrefillBiswajit = doctorName.includes("biswajit majumdar");
+  const dates = doctor?.bookingSettings?.dates?.slice(0, 3) ?? [];
+
+  return {
+    bookingEnabled: doctor?.bookingSettings?.enabled ?? shouldPrefillBiswajit,
+    bookingOpen: doctor?.bookingSettings?.bookingOpen ?? true,
+    otpRequired: doctor?.bookingSettings?.otpRequired ?? shouldPrefillBiswajit,
+    bookingDateOne: dates[0]?.date ?? (shouldPrefillBiswajit ? fallbackDates[0] : ""),
+    bookingLimitOne: String(dates[0]?.limit ?? (shouldPrefillBiswajit ? 80 : 0)),
+    bookingDateTwo: dates[1]?.date ?? (shouldPrefillBiswajit ? fallbackDates[1] : ""),
+    bookingLimitTwo: String(dates[1]?.limit ?? (shouldPrefillBiswajit ? 120 : 0)),
+    bookingDateThree: dates[2]?.date ?? (shouldPrefillBiswajit ? fallbackDates[2] : ""),
+    bookingLimitThree: String(dates[2]?.limit ?? (shouldPrefillBiswajit ? 100 : 0)),
+  };
+}
+
 const schema = z.object({
   name: z.string().min(2),
   qualification: z.string().min(2),
@@ -19,6 +57,15 @@ const schema = z.object({
   availability: z.string().min(2),
   description: z.string().min(10),
   services: z.string().min(5),
+  bookingEnabled: z.enum(["enabled", "disabled"]),
+  bookingOpen: z.enum(["open", "closed"]),
+  otpRequired: z.enum(["required", "optional"]),
+  bookingDateOne: z.string().optional(),
+  bookingLimitOne: z.string().optional(),
+  bookingDateTwo: z.string().optional(),
+  bookingLimitTwo: z.string().optional(),
+  bookingDateThree: z.string().optional(),
+  bookingLimitThree: z.string().optional(),
 });
 
 type Values = z.infer<typeof schema>;
@@ -30,6 +77,7 @@ export function DoctorForm({
   onPreviewChange,
   onReset,
   isSaving,
+  bookingCounts,
 }: {
   doctor: Doctor | null;
   onCancel: () => void;
@@ -43,12 +91,15 @@ export function DoctorForm({
     description: string;
     services: string[];
     imageUrl?: string;
+    bookingSettings?: Doctor["bookingSettings"];
   }) => void;
   onReset?: () => void;
   isSaving: boolean;
+  bookingCounts?: Record<string, number>;
 }) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | undefined>(doctor?.imageUrl);
+  const initialBookingSettings = getInitialBookingSettings(doctor);
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -59,10 +110,20 @@ export function DoctorForm({
       availability: doctor?.availability.join("\n") ?? "",
       description: doctor?.description ?? "",
       services: doctor?.services.join("\n") ?? "",
+      bookingEnabled: initialBookingSettings.bookingEnabled ? "enabled" : "disabled",
+      bookingOpen: initialBookingSettings.bookingOpen ? "open" : "closed",
+      otpRequired: initialBookingSettings.otpRequired ? "required" : "optional",
+      bookingDateOne: initialBookingSettings.bookingDateOne,
+      bookingLimitOne: initialBookingSettings.bookingLimitOne,
+      bookingDateTwo: initialBookingSettings.bookingDateTwo,
+      bookingLimitTwo: initialBookingSettings.bookingLimitTwo,
+      bookingDateThree: initialBookingSettings.bookingDateThree,
+      bookingLimitThree: initialBookingSettings.bookingLimitThree,
     },
   });
 
   useEffect(() => {
+    const bookingSettings = getInitialBookingSettings(doctor);
     form.reset({
       name: doctor?.name ?? "",
       qualification: doctor?.qualification ?? "",
@@ -71,6 +132,15 @@ export function DoctorForm({
       availability: doctor?.availability.join("\n") ?? "",
       description: doctor?.description ?? "",
       services: doctor?.services.join("\n") ?? "",
+      bookingEnabled: bookingSettings.bookingEnabled ? "enabled" : "disabled",
+      bookingOpen: bookingSettings.bookingOpen ? "open" : "closed",
+      otpRequired: bookingSettings.otpRequired ? "required" : "optional",
+      bookingDateOne: bookingSettings.bookingDateOne,
+      bookingLimitOne: bookingSettings.bookingLimitOne,
+      bookingDateTwo: bookingSettings.bookingDateTwo,
+      bookingLimitTwo: bookingSettings.bookingLimitTwo,
+      bookingDateThree: bookingSettings.bookingDateThree,
+      bookingLimitThree: bookingSettings.bookingLimitThree,
     });
     setImageFile(null);
     setPreviewImageUrl(doctor?.imageUrl);
@@ -91,6 +161,35 @@ export function DoctorForm({
   }, [doctor?.imageUrl, imageFile]);
 
   useEffect(() => {
+    const buildPreviewBookingSettings = (values: Values) => {
+      if (values.bookingEnabled !== "enabled") {
+        return {
+          enabled: false,
+          bookingOpen: values.bookingOpen === "open",
+          otpRequired: values.otpRequired === "required",
+          dates: [],
+        };
+      }
+
+      const datePairs = [
+        { date: values.bookingDateOne, limit: values.bookingLimitOne },
+        { date: values.bookingDateTwo, limit: values.bookingLimitTwo },
+        { date: values.bookingDateThree, limit: values.bookingLimitThree },
+      ];
+
+      return {
+        enabled: true,
+        bookingOpen: values.bookingOpen === "open",
+        otpRequired: values.otpRequired === "required",
+        dates: datePairs
+          .map((entry) => ({
+            date: String(entry.date ?? "").trim(),
+            limit: Number(entry.limit ?? 0),
+          }))
+          .filter((entry) => entry.date && entry.limit > 0),
+      };
+    };
+
     const pushPreview = (values: Values) => {
       onPreviewChange?.({
         name: values.name?.trim() ?? "",
@@ -107,6 +206,7 @@ export function DoctorForm({
           .map((item) => item.trim())
           .filter(Boolean) ?? [],
         imageUrl: previewImageUrl,
+        bookingSettings: buildPreviewBookingSettings(values),
       });
     };
 
@@ -170,6 +270,78 @@ export function DoctorForm({
             <Input type="file" accept="image/*" onChange={(event) => setImageFile(event.target.files?.[0] ?? null)} />
           </FormField>
 
+          <Card className="border-dashed bg-muted/30">
+            <CardContent className="grid gap-4 p-5">
+              <div>
+                <h3 className="text-base font-semibold">Controlled booking settings</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Use this only when a doctor needs limited booking dates, per-day caps, and OTP verification.
+                </p>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                <FormField label="Booking control">
+                  <select className="h-11 rounded-2xl border border-input bg-background px-3 text-sm" {...form.register("bookingEnabled")}>
+                    <option value="disabled">Disabled</option>
+                    <option value="enabled">Enabled</option>
+                  </select>
+                </FormField>
+                <FormField label="Booking status">
+                  <select className="h-11 rounded-2xl border border-input bg-background px-3 text-sm" {...form.register("bookingOpen")}>
+                    <option value="open">Open</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </FormField>
+                <FormField label="OTP verification">
+                  <select className="h-11 rounded-2xl border border-input bg-background px-3 text-sm" {...form.register("otpRequired")}>
+                    <option value="required">Required</option>
+                    <option value="optional">Optional</option>
+                  </select>
+                </FormField>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                {[
+                  {
+                    key: "One",
+                    dateField: "bookingDateOne",
+                    limitField: "bookingLimitOne",
+                  },
+                  {
+                    key: "Two",
+                    dateField: "bookingDateTwo",
+                    limitField: "bookingLimitTwo",
+                  },
+                  {
+                    key: "Three",
+                    dateField: "bookingDateThree",
+                    limitField: "bookingLimitThree",
+                  },
+                ].map((item, index) => {
+                  const dateValue = form.watch(item.dateField as keyof Values);
+                  const bookedCount = dateValue ? bookingCounts?.[String(dateValue)] ?? 0 : 0;
+
+                  return (
+                    <div key={item.key} className="rounded-3xl border border-border/70 bg-background p-4">
+                      <p className="text-sm font-semibold text-foreground">Booking day {index + 1}</p>
+                      <div className="mt-3 grid gap-3">
+                        <FormField label="Date">
+                          <Input type="date" {...form.register(item.dateField as keyof Values)} />
+                        </FormField>
+                        <FormField label="Limit">
+                          <Input type="number" min="0" placeholder="0" {...form.register(item.limitField as keyof Values)} />
+                        </FormField>
+                        <div className="rounded-2xl bg-muted/60 px-3 py-2 text-sm text-muted-foreground">
+                          Booked count: <span className="font-semibold text-foreground">{bookedCount}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
@@ -186,6 +358,15 @@ export function DoctorForm({
                   availability: doctor?.availability.join("\n") ?? "",
                   description: doctor?.description ?? "",
                   services: doctor?.services.join("\n") ?? "",
+                  bookingEnabled: initialBookingSettings.bookingEnabled ? "enabled" : "disabled",
+                  bookingOpen: initialBookingSettings.bookingOpen ? "open" : "closed",
+                  otpRequired: initialBookingSettings.otpRequired ? "required" : "optional",
+                  bookingDateOne: initialBookingSettings.bookingDateOne,
+                  bookingLimitOne: initialBookingSettings.bookingLimitOne,
+                  bookingDateTwo: initialBookingSettings.bookingDateTwo,
+                  bookingLimitTwo: initialBookingSettings.bookingLimitTwo,
+                  bookingDateThree: initialBookingSettings.bookingDateThree,
+                  bookingLimitThree: initialBookingSettings.bookingLimitThree,
                 });
                 setImageFile(null);
                 setPreviewImageUrl(doctor?.imageUrl);

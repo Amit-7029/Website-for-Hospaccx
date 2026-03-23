@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/components/providers/app-providers";
 import { usePermissions } from "@/hooks/use-permissions";
 import { addActivityLog, deleteDocument, listCollection, saveDocument, uploadImage } from "@/lib/firebase/repository";
-import type { Doctor } from "@/types";
+import type { Appointment, Doctor } from "@/types";
 
 const PAGE_SIZE = 6;
 
@@ -20,22 +20,44 @@ export function useDoctorsManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [doctorToDelete, setDoctorToDelete] = useState<Doctor | null>(null);
+  const [bookingCountsByDoctor, setBookingCountsByDoctor] = useState<Record<string, Record<string, number>>>({});
 
-  const load = async () => {
+  const buildBookingCounts = (appointments: Appointment[]) => {
+    return appointments.reduce<Record<string, Record<string, number>>>((accumulator, appointment) => {
+      if (!appointment.doctorId || !appointment.selectedDate) {
+        return accumulator;
+      }
+
+      if (!accumulator[appointment.doctorId]) {
+        accumulator[appointment.doctorId] = {};
+      }
+
+      accumulator[appointment.doctorId][appointment.selectedDate] =
+        (accumulator[appointment.doctorId][appointment.selectedDate] ?? 0) + 1;
+
+      return accumulator;
+    }, {});
+  };
+
+  const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      const doctors = await listCollection<Doctor>("doctors");
+      const [doctors, appointments] = await Promise.all([
+        listCollection<Doctor>("doctors"),
+        listCollection<Appointment>("appointments"),
+      ]);
       setItems(doctors);
+      setBookingCountsByDoctor(buildBookingCounts(appointments));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to load doctors");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
   const departments = useMemo(
     () =>
@@ -88,6 +110,7 @@ export function useDoctorsManager() {
         description: doctor.description,
         services: doctor.services,
         imageUrl,
+        bookingSettings: doctor.bookingSettings,
         createdAt: editingDoctor?.createdAt,
       });
 
@@ -160,5 +183,6 @@ export function useDoctorsManager() {
     canDeleteDoctors,
     canAddDoctors,
     canEditDoctors,
+    bookingCountsByDoctor,
   };
 }

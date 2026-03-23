@@ -2627,6 +2627,59 @@ button {
     object-fit: cover;
 }
 
+.appointment-otp-panel {
+    display: grid;
+    gap: 0.85rem;
+    padding: 1rem 1.05rem;
+    border-radius: 22px;
+    background: rgba(245, 245, 255, 0.9);
+    border: 1px solid rgba(103, 61, 230, 0.12);
+}
+
+.appointment-otp-panel label {
+    margin: 0;
+}
+
+.appointment-otp-panel__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.appointment-otp-panel__button {
+    min-width: 140px;
+}
+
+.appointment-otp-panel__status,
+.appointment-otp-panel__countdown,
+.appointment-form__status {
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+.appointment-otp-panel__status[data-tone="error"],
+.appointment-form__status[data-tone="error"] {
+    color: #c0392b;
+}
+
+.appointment-otp-panel__status[data-tone="success"],
+.appointment-form__status[data-tone="success"] {
+    color: #1f7a47;
+}
+
+.appointment-otp-panel__status[data-tone="warning"],
+.appointment-form__status[data-tone="warning"] {
+    color: #b26b00;
+}
+
+.appointment-form__status {
+    margin: -0.2rem 0 0;
+    font-weight: 600;
+}
+
 .services__intro {
     max-width: 760px;
     margin: -0.3rem 0 1.7rem;

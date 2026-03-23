@@ -2,7 +2,13 @@ import "./styles.css";
 import { blogPosts, diagnosticServices, facilities, testimonials, treatments } from "./data/content";
 import { doctors as fallbackDoctors } from "./data/doctors";
 import { MEDIA_IMAGE_FALLBACK, fallbackMediaItems } from "./data/media";
-import { createAppointment } from "./firebase/appointments-store";
+import {
+  confirmControlledAppointment,
+  createAppointment,
+  fetchControlledBookingAvailability,
+  sendAppointmentOtp,
+  verifyAppointmentOtp
+} from "./firebase/appointments-store";
 import { loadDoctors } from "./firebase/doctors-store";
 import { DEFAULT_CMS_CONTENT, DEFAULT_HERO_CONTENT, loadCmsContent, loadDiagnosticServices, loadHeroContent } from "./firebase/content-store";
 import { loadMediaItems } from "./firebase/media-store";
@@ -35,7 +41,20 @@ const state = {
   reviews: [],
   reviewsSource: "local",
   visibleReviewCount: 6,
-  activeHeroSlide: 0
+  activeHeroSlide: 0,
+  appointmentBooking: {
+    activeDoctorId: "",
+    controlled: false,
+    bookingOpen: true,
+    otpRequired: false,
+    otpConfigured: false,
+    dates: [],
+    otpRequestId: "",
+    otpVerified: false,
+    otpExpiresAt: "",
+    otpTimerId: null,
+    requestToken: 0
+  }
 };
 
 let motion = {
@@ -307,7 +326,7 @@ function renderStarString(rating) {
   return `${"&#9733;".repeat(normalized)}${"&#9734;".repeat(5 - normalized)}`;
 }
 
-function selectAppointmentDoctorById(doctorId) {
+async function selectAppointmentDoctorById(doctorId) {
   const doctor = state.doctors.find((entry) => entry.id === doctorId);
   const departmentSelect = document.getElementById("department");
   const doctorSelect = document.getElementById("doctor");
@@ -318,8 +337,7 @@ function selectAppointmentDoctorById(doctorId) {
 
   departmentSelect.value = doctor.department;
   populateDoctorSelect(doctor.department, doctor.name);
-  populateDateSelect(doctor);
-  populateTimeSelect(doctor);
+  await applySelectedDoctor(doctor);
   scrollToSection("appointment");
 }
 
@@ -1632,6 +1650,8 @@ function populateDoctorSelect(department, selectedDoctor = "") {
   timeSelect.innerHTML = `<option value="">${escapeHtml(cmsValue("appointmentTimePlaceholder", "Select a doctor first"))}</option>`;
   dateSelect.innerHTML = `<option value="">${escapeHtml(cmsValue("appointmentDatePlaceholder", "Select a doctor first"))}</option>`;
   timeSelect.disabled = true;
+  resetAppointmentOtpState();
+  setAppointmentSlotStatus("");
   helper.textContent = matchingDoctors.length
     ? cmsValue("appointmentDoctorHelper", "Select a doctor to view available timing and OPD days.")
     : cmsValue("appointmentDoctorPlaceholder", "Select a department first");
@@ -1656,7 +1676,253 @@ function resetAppointmentSelections() {
     helper.textContent = cmsValue("appointmentDoctorHelper", "Select a doctor to view available timing and OPD days.");
   }
 
+  resetControlledBookingState();
   setupInitialFormState();
+}
+
+function resetControlledBookingState() {
+  if (state.appointmentBooking.otpTimerId) {
+    window.clearInterval(state.appointmentBooking.otpTimerId);
+  }
+
+  state.appointmentBooking = {
+    ...state.appointmentBooking,
+    activeDoctorId: "",
+    controlled: false,
+    bookingOpen: true,
+    otpRequired: false,
+    otpConfigured: false,
+    dates: [],
+    otpRequestId: "",
+    otpVerified: false,
+    otpExpiresAt: "",
+    otpTimerId: null,
+  };
+
+  resetAppointmentOtpState();
+  setAppointmentSlotStatus("");
+}
+
+function resetAppointmentOtpState() {
+  if (state.appointmentBooking.otpTimerId) {
+    window.clearInterval(state.appointmentBooking.otpTimerId);
+    state.appointmentBooking.otpTimerId = null;
+  }
+
+  state.appointmentBooking.otpRequestId = "";
+  state.appointmentBooking.otpVerified = false;
+  state.appointmentBooking.otpExpiresAt = "";
+
+  const otpInput = document.getElementById("appointmentOtp");
+  const otpInputWrap = document.getElementById("appointmentOtpInputWrap");
+  const verifyButton = document.getElementById("appointmentVerifyOtp");
+  const countdown = document.getElementById("appointmentOtpCountdown");
+
+  if (otpInput) {
+    otpInput.value = "";
+    otpInput.disabled = false;
+  }
+
+  if (otpInputWrap) {
+    otpInputWrap.hidden = true;
+  }
+
+  if (verifyButton) {
+    verifyButton.hidden = true;
+    verifyButton.disabled = false;
+    verifyButton.textContent = "Verify OTP";
+  }
+
+  if (countdown) {
+    countdown.textContent = "";
+  }
+
+  updateAppointmentOtpPanel();
+  setAppointmentOtpStatus("");
+}
+
+function setAppointmentOtpStatus(message, tone = "") {
+  const element = document.getElementById("appointmentOtpStatus");
+  if (!element) {
+    return;
+  }
+
+  element.textContent = message || "";
+  element.dataset.tone = tone || "";
+}
+
+function setAppointmentSlotStatus(message, tone = "") {
+  const element = document.getElementById("appointmentSlotStatus");
+  if (!element) {
+    return;
+  }
+
+  element.textContent = message || "";
+  element.dataset.tone = tone || "";
+  element.hidden = !message;
+}
+
+function updateAppointmentOtpPanel() {
+  const panel = document.getElementById("appointmentOtpPanel");
+  const sendButton = document.getElementById("appointmentSendOtp");
+
+  if (!panel || !sendButton) {
+    return;
+  }
+
+  if (!state.appointmentBooking.controlled) {
+    panel.hidden = true;
+    return;
+  }
+
+  panel.hidden = false;
+  if (!state.appointmentBooking.otpRequired) {
+    sendButton.hidden = true;
+    setAppointmentOtpStatus("OTP verification is disabled for this doctor. You can complete booking directly.", "success");
+    return;
+  }
+
+  sendButton.hidden = false;
+
+  if (!state.appointmentBooking.otpConfigured) {
+    setAppointmentOtpStatus("OTP service is not configured yet. Please contact reception or disable OTP for this doctor in admin.", "error");
+  }
+}
+
+function startAppointmentOtpCountdown(expiresAt) {
+  if (state.appointmentBooking.otpTimerId) {
+    window.clearInterval(state.appointmentBooking.otpTimerId);
+  }
+
+  const countdown = document.getElementById("appointmentOtpCountdown");
+  if (!countdown) {
+    return;
+  }
+
+  const tick = () => {
+    const remainingMs = new Date(expiresAt).getTime() - Date.now();
+    if (remainingMs <= 0) {
+      countdown.textContent = "OTP expired";
+      if (state.appointmentBooking.otpTimerId) {
+        window.clearInterval(state.appointmentBooking.otpTimerId);
+        state.appointmentBooking.otpTimerId = null;
+      }
+      return;
+    }
+
+    const remainingSeconds = Math.ceil(remainingMs / 1000);
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = remainingSeconds % 60;
+    countdown.textContent = `OTP expires in ${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  };
+
+  tick();
+  state.appointmentBooking.otpTimerId = window.setInterval(tick, 1000);
+}
+
+function getControlledDateEntry(dateValue) {
+  return state.appointmentBooking.dates.find((entry) => entry.date === dateValue) || null;
+}
+
+function renderSelectedDateStatus() {
+  const dateSelect = document.getElementById("date");
+  if (!dateSelect || !state.appointmentBooking.controlled) {
+    setAppointmentSlotStatus("");
+    return;
+  }
+
+  const entry = getControlledDateEntry(dateSelect.value);
+  if (!entry) {
+    setAppointmentSlotStatus(state.appointmentBooking.bookingOpen ? "Select an available date to continue." : "Booking is currently closed for this doctor.");
+    return;
+  }
+
+  if (entry.isFull) {
+    setAppointmentSlotStatus("Fully booked", "error");
+    return;
+  }
+
+  setAppointmentSlotStatus(`Slots Left: ${entry.slotsLeft} / ${entry.limit}`, "success");
+}
+
+function buildLocalControlledAvailability(doctor) {
+  const bookingSettings = doctor?.bookingSettings;
+  if (!bookingSettings?.enabled) {
+    return null;
+  }
+
+  return {
+    controlled: true,
+    bookingOpen: bookingSettings.bookingOpen !== false,
+    otpRequired: bookingSettings.otpRequired !== false,
+    otpConfigured: false,
+    dates: (bookingSettings.dates || []).map((entry) => ({
+      date: entry.date,
+      label: entry.date,
+      limit: Number(entry.limit || 0),
+      booked: 0,
+      slotsLeft: Number(entry.limit || 0),
+      isFull: Number(entry.limit || 0) <= 0,
+    })),
+  };
+}
+
+async function loadControlledAvailabilityForDoctor(doctor) {
+  const nextToken = state.appointmentBooking.requestToken + 1;
+  state.appointmentBooking.requestToken = nextToken;
+
+  if (!doctor?.bookingSettings?.enabled) {
+    resetControlledBookingState();
+    return null;
+  }
+
+  try {
+    const availability = await fetchControlledBookingAvailability(doctor.id);
+    if (state.appointmentBooking.requestToken !== nextToken) {
+      return null;
+    }
+
+    state.appointmentBooking = {
+      ...state.appointmentBooking,
+      activeDoctorId: doctor.id,
+      controlled: Boolean(availability.controlled),
+      bookingOpen: availability.bookingOpen !== false,
+      otpRequired: availability.otpRequired !== false,
+      otpConfigured: Boolean(availability.otpConfigured),
+      dates: Array.isArray(availability.dates) ? availability.dates : [],
+      otpRequestId: "",
+      otpVerified: false,
+      otpExpiresAt: "",
+      otpTimerId: null,
+    };
+    updateAppointmentOtpPanel();
+    return availability;
+  } catch (error) {
+    console.error("Unable to load controlled booking availability:", error);
+    const fallbackAvailability = buildLocalControlledAvailability(doctor);
+
+    if (!fallbackAvailability) {
+      resetControlledBookingState();
+      return null;
+    }
+
+    state.appointmentBooking = {
+      ...state.appointmentBooking,
+      activeDoctorId: doctor.id,
+      controlled: true,
+      bookingOpen: fallbackAvailability.bookingOpen,
+      otpRequired: fallbackAvailability.otpRequired,
+      otpConfigured: fallbackAvailability.otpConfigured,
+      dates: fallbackAvailability.dates,
+      otpRequestId: "",
+      otpVerified: false,
+      otpExpiresAt: "",
+      otpTimerId: null,
+    };
+    updateAppointmentOtpPanel();
+    setAppointmentOtpStatus("Live booking counters are unavailable right now. Showing saved doctor settings only.", "warning");
+    return fallbackAvailability;
+  }
 }
 
 function formatDateValue(date) {
@@ -1729,12 +1995,28 @@ function populateDateSelect(doctor) {
     return;
   }
 
+  if (state.appointmentBooking.controlled && state.appointmentBooking.activeDoctorId === doctor.id) {
+    const controlledDates = state.appointmentBooking.dates;
+    dateSelect.innerHTML = controlledDates.length
+      ? `<option value="">${escapeHtml(cmsValue("appointmentDatePlaceholder", "Select an appointment date"))}</option>` +
+        controlledDates
+          .map((entry) => `<option value="${escapeHtml(entry.date)}" ${entry.isFull ? "disabled" : ""}>${escapeHtml(
+            entry.isFull ? `${entry.label} • Fully Booked` : `${entry.label} • Slots Left: ${entry.slotsLeft} / ${entry.limit}`,
+          )}</option>`)
+          .join("")
+      : '<option value="">No configured booking dates available</option>';
+    dateSelect.disabled = !controlledDates.length || !state.appointmentBooking.bookingOpen;
+    renderSelectedDateStatus();
+    return;
+  }
+
   const dates = allowedDatesForDoctor(doctor);
   dateSelect.innerHTML = dates.length
     ? `<option value="">${escapeHtml(cmsValue("appointmentDatePlaceholder", "Select an appointment date"))}</option>` +
       dates.map((date) => `<option value="${formatDateValue(date)}">${formatDateLabel(date)}</option>`).join("")
     : '<option value="">No valid dates available</option>';
   dateSelect.disabled = dates.length === 0;
+  setAppointmentSlotStatus("");
 }
 
 function toMinutes(timeLabel) {
@@ -1833,7 +2115,13 @@ function populateTimeSelect(doctor) {
   helper.textContent = `${doctor.name} | Availability: ${formatAvailability(doctor.availability)} | OPD Days: ${doctor.opdDays}`;
 }
 
-function prefillDoctorFromQuery() {
+async function applySelectedDoctor(doctor) {
+  await loadControlledAvailabilityForDoctor(doctor);
+  populateDateSelect(doctor);
+  populateTimeSelect(doctor);
+}
+
+async function prefillDoctorFromQuery() {
   const params = new URLSearchParams(window.location.search);
   const doctorName = params.get("doctor");
   if (!doctorName) {
@@ -1851,8 +2139,7 @@ function prefillDoctorFromQuery() {
 
   departmentSelect.value = doctor.department;
   populateDoctorSelect(doctor.department, doctor.name);
-  populateDateSelect(doctor);
-  populateTimeSelect(doctor);
+  await applySelectedDoctor(doctor);
 
   const cleanedUrl = `${window.location.pathname}${window.location.hash || ""}`;
   window.history.replaceState({}, document.title, cleanedUrl);
@@ -1867,18 +2154,114 @@ function setupAppointmentForm() {
 
   const departmentSelect = document.getElementById("department");
   const doctorSelect = document.getElementById("doctor");
+  const dateSelect = document.getElementById("date");
+  const sendOtpButton = document.getElementById("appointmentSendOtp");
+  const verifyOtpButton = document.getElementById("appointmentVerifyOtp");
+  const otpInputWrap = document.getElementById("appointmentOtpInputWrap");
+  const otpInput = document.getElementById("appointmentOtp");
 
   departmentSelect?.addEventListener("change", (event) => {
     populateDoctorSelect(event.target.value);
   });
 
-  doctorSelect?.addEventListener("change", (event) => {
+  doctorSelect?.addEventListener("change", async (event) => {
     const doctor = state.doctors.find((entry) => entry.name === event.target.value);
     if (!doctor) {
+      resetControlledBookingState();
       return;
     }
-    populateDateSelect(doctor);
-    populateTimeSelect(doctor);
+    await applySelectedDoctor(doctor);
+  });
+
+  dateSelect?.addEventListener("change", () => {
+    renderSelectedDateStatus();
+    if (state.appointmentBooking.controlled) {
+      resetAppointmentOtpState();
+    }
+  });
+
+  sendOtpButton?.addEventListener("click", async () => {
+    const doctor = state.doctors.find((entry) => entry.name === doctorSelect?.value);
+    if (!doctor || !state.appointmentBooking.controlled) {
+      return;
+    }
+
+    const name = String(document.getElementById("name")?.value || "").trim();
+    const phone = String(document.getElementById("phone")?.value || "").trim();
+    const selectedDate = String(dateSelect?.value || "").trim();
+
+    if (name.length < 2 || phone.length < 10 || !selectedDate) {
+      setAppointmentOtpStatus("Enter name, mobile number, and select a date before sending OTP.", "error");
+      return;
+    }
+
+    sendOtpButton.disabled = true;
+    sendOtpButton.textContent = "Sending OTP...";
+    setAppointmentOtpStatus("");
+
+    try {
+      const result = await sendAppointmentOtp({
+        doctorId: doctor.id,
+        name,
+        phone,
+        selectedDate,
+      });
+
+      if (result.skipped) {
+        state.appointmentBooking.otpVerified = true;
+        setAppointmentOtpStatus("OTP is not required for this doctor. You can submit booking now.", "success");
+        return;
+      }
+
+      state.appointmentBooking.otpRequestId = result.requestId;
+      state.appointmentBooking.otpVerified = false;
+      state.appointmentBooking.otpExpiresAt = result.expiresAt;
+      if (otpInputWrap) {
+        otpInputWrap.hidden = false;
+      }
+      if (verifyOtpButton) {
+        verifyOtpButton.hidden = false;
+      }
+      startAppointmentOtpCountdown(result.expiresAt);
+      setAppointmentOtpStatus("OTP sent successfully.", "success");
+    } catch (error) {
+      setAppointmentOtpStatus(error instanceof Error ? error.message : "Unable to send OTP.", "error");
+    } finally {
+      sendOtpButton.disabled = false;
+      sendOtpButton.textContent = "Send OTP";
+    }
+  });
+
+  verifyOtpButton?.addEventListener("click", async () => {
+    const phone = String(document.getElementById("phone")?.value || "").trim();
+    const otp = String(otpInput?.value || "").trim();
+    if (!state.appointmentBooking.otpRequestId || otp.length < 4 || phone.length < 10) {
+      setAppointmentOtpStatus("Enter the OTP sent to your mobile number.", "error");
+      return;
+    }
+
+    verifyOtpButton.disabled = true;
+    verifyOtpButton.textContent = "Verifying...";
+    setAppointmentOtpStatus("");
+
+    try {
+      await verifyAppointmentOtp({
+        requestId: state.appointmentBooking.otpRequestId,
+        otp,
+        phone,
+      });
+      state.appointmentBooking.otpVerified = true;
+      if (otpInput) {
+        otpInput.disabled = true;
+      }
+      setAppointmentOtpStatus("OTP verified successfully. You can complete booking now.", "success");
+    } catch (error) {
+      state.appointmentBooking.otpVerified = false;
+      setAppointmentOtpStatus(error instanceof Error ? error.message : "Unable to verify OTP.", "error");
+    } finally {
+      verifyOtpButton.disabled = false;
+      verifyOtpButton.textContent = "Verify OTP";
+    }
   });
 
   form.addEventListener("submit", async (event) => {
@@ -1892,14 +2275,47 @@ function setupAppointmentForm() {
     const selectedTime = String(formData.get("time") || "");
     const selectedDepartment = String(formData.get("department") || "");
     const selectedDoctor = String(formData.get("doctor") || "");
+    const doctor = state.doctors.find((entry) => entry.name === selectedDoctor);
     setAppointmentSubmitState(true);
 
     try {
+      if (doctor && state.appointmentBooking.controlled && state.appointmentBooking.activeDoctorId === doctor.id) {
+        if (!state.appointmentBooking.bookingOpen) {
+          throw new Error("Booking is currently closed for this doctor.");
+        }
+
+        const selectedEntry = getControlledDateEntry(selectedDate);
+        if (!selectedEntry || selectedEntry.isFull) {
+          throw new Error("No slots available for the selected date.");
+        }
+
+        if (state.appointmentBooking.otpRequired && !state.appointmentBooking.otpVerified) {
+          throw new Error("Please verify OTP before submitting the booking.");
+        }
+
+        const result = await confirmControlledAppointment({
+          doctorId: doctor.id,
+          selectedDate,
+          selectedTime,
+          name: String(formData.get("name") || "").trim(),
+          phone: String(formData.get("phone") || "").trim(),
+          message: `Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
+          requestId: state.appointmentBooking.otpRequestId,
+        });
+
+        window.location.href = result.clinicWhatsappUrl;
+        return;
+      }
+
       await saveAppointmentWithTimeout({
         name: String(formData.get("name") || "").trim(),
         phone: String(formData.get("phone") || "").trim(),
         date: buildAppointmentDateTime(selectedDate, selectedTime),
         doctor: selectedDoctor,
+        doctorId: doctor?.id || "",
+        department: selectedDepartment,
+        selectedDate,
+        selectedTime,
         message: `Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
         status: "pending",
         createdAt: new Date().toISOString(),
@@ -1907,6 +2323,9 @@ function setupAppointmentForm() {
       });
     } catch (error) {
       console.error("Unable to save appointment to Firestore:", error);
+      setAppointmentOtpStatus(error instanceof Error ? error.message : "Unable to save appointment.", "error");
+      setAppointmentSubmitState(false);
+      return;
     } finally {
       setAppointmentSubmitState(false);
     }
@@ -1937,6 +2356,8 @@ function setupInitialFormState() {
     timeSelect.innerHTML = `<option value="">${escapeHtml(cmsValue("appointmentTimePlaceholder", "Select a doctor first"))}</option>`;
     timeSelect.disabled = true;
   }
+  setAppointmentSlotStatus("");
+  updateAppointmentOtpPanel();
 }
 
 function setAppointmentSubmitState(isSubmitting) {
@@ -1973,7 +2394,7 @@ async function initializeDoctors() {
   populateDepartmentSelect();
   setupAppointmentForm();
   if (hasDoctorQuery) {
-    prefillDoctorFromQuery();
+    await prefillDoctorFromQuery();
   } else {
     resetAppointmentSelections();
   }
@@ -1997,7 +2418,7 @@ async function initializeDoctors() {
     renderDoctors();
     populateDepartmentSelect();
     if (hasDoctorQuery) {
-      prefillDoctorFromQuery();
+      await prefillDoctorFromQuery();
     } else {
       resetAppointmentSelections();
     }
@@ -2018,7 +2439,7 @@ async function initializeDoctors() {
     renderDoctors();
     populateDepartmentSelect();
     if (hasDoctorQuery) {
-      prefillDoctorFromQuery();
+      await prefillDoctorFromQuery();
     } else {
       resetAppointmentSelections();
     }

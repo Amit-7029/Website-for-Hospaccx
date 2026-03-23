@@ -86,6 +86,15 @@ export interface Doctor {
   description: string;
   services: string[];
   imageUrl?: string;
+  bookingSettings?: {
+    enabled: boolean;
+    bookingOpen: boolean;
+    otpRequired: boolean;
+    dates: Array<{
+      date: string;
+      limit: number;
+    }>;
+  };
   createdAt?: string;
   updatedAt?: string;
 }
@@ -184,10 +193,19 @@ export interface Appointment {
   name: string;
   phone: string;
   date: string;
+  selectedDate?: string;
+  selectedTime?: string;
   message?: string;
   doctor?: string;
+  doctorId?: string;
+  department?: string;
+  verified?: boolean;
+  bookingMode?: "standard" | "controlled";
+  otpVerifiedAt?: string;
+  whatsappConfirmationSent?: boolean;
   status: "pending" | "confirmed" | "completed";
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface NotificationItem {

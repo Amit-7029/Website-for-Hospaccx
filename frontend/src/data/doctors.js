@@ -288,6 +288,25 @@ function slugify(value) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
+function formatIsoDate(date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function getDefaultControlledDates() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return [1, 2, 3].map((offset) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() + offset);
+    return formatIsoDate(date);
+  });
+}
+
 const posterImageMap = {
   "dr-jayanta-pal": "/images/jayanta pal.jpeg",
   "dr-soumitra-mondal": "/images/soumitra mondal.jpeg",
@@ -359,6 +378,49 @@ function normalizeServices(doctor) {
   ];
 }
 
+function normalizeBookingSettings(doctor) {
+  const rawSettings = doctor.bookingSettings && typeof doctor.bookingSettings === "object" ? doctor.bookingSettings : null;
+  const normalizedDates = Array.isArray(rawSettings?.dates)
+    ? rawSettings.dates
+        .map((entry) => ({
+          date: String(entry?.date || "").trim(),
+          limit: Number(entry?.limit || 0)
+        }))
+        .filter((entry) => entry.date && entry.limit > 0)
+        .slice(0, 3)
+    : [];
+
+  if (rawSettings) {
+    return {
+      enabled: Boolean(rawSettings.enabled),
+      bookingOpen: rawSettings.bookingOpen !== false,
+      otpRequired: rawSettings.otpRequired !== false,
+      dates: normalizedDates
+    };
+  }
+
+  if (slugify(doctor.name) === "dr-biswajit-majumdar") {
+    const defaultDates = getDefaultControlledDates();
+    return {
+      enabled: true,
+      bookingOpen: true,
+      otpRequired: true,
+      dates: [
+        { date: defaultDates[0], limit: 80 },
+        { date: defaultDates[1], limit: 120 },
+        { date: defaultDates[2], limit: 100 }
+      ]
+    };
+  }
+
+  return {
+    enabled: false,
+    bookingOpen: true,
+    otpRequired: false,
+    dates: []
+  };
+}
+
 function normalizeDoctor(doctor) {
   const gender = doctor.gender === "female" ? "female" : "male";
   const availability = normalizeAvailability(doctor);
@@ -383,7 +445,8 @@ function normalizeDoctor(doctor) {
     image: doctor.image ?? doctor.imageUrl ?? (gender === "female" ? "/images/doctor-female.jpeg" : "/images/doctor-male.jpeg"),
     posterImage: doctor.posterImage ?? doctor.imageUrl ?? null,
     availability,
-    services: normalizeServices(doctor)
+    services: normalizeServices(doctor),
+    bookingSettings: normalizeBookingSettings(doctor)
   };
 }
 

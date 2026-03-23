@@ -59,6 +59,7 @@ export default function DoctorsPage() {
     setDoctorToDelete,
     saveDoctor,
     removeDoctor,
+    bookingCountsByDoctor,
   } = useDoctorsManager();
   const [previewDoctor, setPreviewDoctor] = useState<Doctor | null>(null);
 
@@ -199,6 +200,7 @@ export default function DoctorsPage() {
           {canManageDoctors ? (
             <DoctorForm
               doctor={editingDoctor}
+              bookingCounts={editingDoctor ? bookingCountsByDoctor[editingDoctor.id] : undefined}
               onCancel={() => {
                 setEditingDoctor(null);
                 setDoctorDraft(null);
@@ -220,9 +222,42 @@ export default function DoctorsPage() {
               isSaving={isSaving}
               onSave={async (values) => {
                 const saved = await saveDoctor({
-                  ...values,
+                  name: values.name,
+                  qualification: values.qualification,
+                  specialization: values.specialization,
+                  department: values.department,
                   availability: values.availability.split("\n").map((item) => item.trim()).filter(Boolean),
+                  description: values.description,
                   services: values.services.split("\n").map((item) => item.trim()).filter(Boolean),
+                  imageFile: values.imageFile,
+                  imageUrl: values.imageUrl,
+                  bookingSettings:
+                    values.bookingEnabled === "enabled"
+                      ? {
+                          enabled: true,
+                          bookingOpen: values.bookingOpen === "open",
+                          otpRequired: values.otpRequired === "required",
+                          dates: [
+                            {
+                              date: values.bookingDateOne,
+                              limit: Number(values.bookingLimitOne || 0),
+                            },
+                            {
+                              date: values.bookingDateTwo,
+                              limit: Number(values.bookingLimitTwo || 0),
+                            },
+                            {
+                              date: values.bookingDateThree,
+                              limit: Number(values.bookingLimitThree || 0),
+                            },
+                          ].filter((entry): entry is { date: string; limit: number } => Boolean(entry.date && entry.limit > 0)),
+                        }
+                      : {
+                          enabled: false,
+                          bookingOpen: false,
+                          otpRequired: false,
+                          dates: [],
+                        },
                 });
 
                 if (saved) {

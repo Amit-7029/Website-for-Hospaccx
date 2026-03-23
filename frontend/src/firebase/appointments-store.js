@@ -8,26 +8,40 @@ function appointmentsCollection() {
   return firestore ? collection(firestore, COLLECTION_NAME) : null;
 }
 
+async function requestJson(url, options = {}) {
+  const response = await fetch(url, {
+    cache: "no-store",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(payload?.error || "Request failed");
+  }
+
+  return payload;
+}
+
 export async function createAppointment(payload) {
   try {
-    const response = await fetch("/api/appointments", {
+    const result = await requestJson("/api/appointments", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload),
-      cache: "no-store"
+      body: JSON.stringify(payload)
     });
 
-    if (response.ok) {
-      const result = await response.json();
-      return {
-        id: result.id ?? `api-${Date.now()}`,
-        ...payload
-      };
-    }
+    return {
+      id: result.id ?? `api-${Date.now()}`,
+      ...payload
+    };
   } catch (error) {
-    console.error("Appointment API fallback triggered:", error);
+    console.error("Appointment API request failed:", error);
+    if (isFirebaseConfigured()) {
+      throw error;
+    }
   }
 
   if (!isFirebaseConfigured()) {
@@ -47,4 +61,29 @@ export async function createAppointment(payload) {
     id: created.id,
     ...payload
   };
+}
+
+export async function fetchControlledBookingAvailability(doctorId) {
+  return requestJson(`/api/appointments/availability?doctorId=${encodeURIComponent(doctorId)}`);
+}
+
+export async function sendAppointmentOtp(payload) {
+  return requestJson("/api/appointments/send-otp", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
+export async function verifyAppointmentOtp(payload) {
+  return requestJson("/api/appointments/verify-otp", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
+export async function confirmControlledAppointment(payload) {
+  return requestJson("/api/appointments/confirm", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
 }

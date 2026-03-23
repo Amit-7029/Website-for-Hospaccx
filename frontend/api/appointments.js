@@ -23,6 +23,10 @@ export default async function handler(req, res) {
     const phone = sanitizeText(payload?.phone);
     const date = sanitizeText(payload?.date);
     const doctor = sanitizeText(payload?.doctor);
+    const doctorId = sanitizeText(payload?.doctorId);
+    const department = sanitizeText(payload?.department);
+    const selectedDate = sanitizeText(payload?.selectedDate);
+    const selectedTime = sanitizeText(payload?.selectedTime);
     const message = sanitizeText(payload?.message);
 
     if (name.length < 2 || phone.length < 8 || date.length < 10) {
@@ -36,7 +40,13 @@ export default async function handler(req, res) {
       phone,
       date,
       doctor,
+      doctorId,
+      department,
+      selectedDate,
+      selectedTime,
       message,
+      bookingMode: "standard",
+      verified: false,
       status: "pending",
       createdAt: timestamp,
       updatedAt: timestamp
