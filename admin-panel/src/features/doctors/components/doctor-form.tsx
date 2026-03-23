@@ -39,7 +39,7 @@ function getInitialBookingSettings(doctor: Doctor | null) {
   return {
     bookingEnabled: doctor?.bookingSettings?.enabled ?? shouldPrefillBiswajit,
     bookingOpen: doctor?.bookingSettings?.bookingOpen ?? true,
-    otpRequired: doctor?.bookingSettings?.otpRequired ?? shouldPrefillBiswajit,
+    otpRequired: doctor?.bookingSettings?.otpRequired ?? false,
     bookingDateOne: dates[0]?.date ?? (shouldPrefillBiswajit ? fallbackDates[0] : ""),
     bookingLimitOne: String(dates[0]?.limit ?? (shouldPrefillBiswajit ? 80 : 0)),
     bookingDateTwo: dates[1]?.date ?? (shouldPrefillBiswajit ? fallbackDates[1] : ""),

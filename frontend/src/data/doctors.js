@@ -404,7 +404,7 @@ function normalizeBookingSettings(doctor) {
     return {
       enabled: true,
       bookingOpen: true,
-      otpRequired: true,
+      otpRequired: false,
       dates: [
         { date: defaultDates[0], limit: 80 },
         { date: defaultDates[1], limit: 120 },
