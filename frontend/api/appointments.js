@@ -24,6 +24,7 @@ export default async function handler(req, res) {
   try {
     const payload = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     const name = sanitizeText(payload?.name);
+    const dateOfBirth = sanitizeText(payload?.dateOfBirth);
     const phone = sanitizeText(payload?.phone);
     const date = sanitizeText(payload?.date);
     const doctor = sanitizeText(payload?.doctor);
@@ -34,7 +35,7 @@ export default async function handler(req, res) {
     const message = sanitizeText(payload?.message);
     const termsAccepted = isTermsAccepted(payload?.termsAccepted);
 
-    if (name.length < 2 || phone.length < 8 || date.length < 10) {
+    if (name.length < 2 || dateOfBirth.length < 8 || phone.length < 8 || date.length < 10) {
       return json(res, 400, { error: "Invalid appointment payload" });
     }
 
@@ -46,6 +47,7 @@ export default async function handler(req, res) {
     const timestamp = new Date().toISOString();
     const created = await db.collection("appointments").add({
       name,
+      dateOfBirth,
       phone,
       date,
       doctor,

@@ -430,7 +430,7 @@ async function sendWhatsAppConfirmation(phone, body) {
   return response.ok;
 }
 
-export async function createControlledAppointment({ name, phone, doctorId, selectedDate, selectedTime, message }) {
+export async function createControlledAppointment({ name, dateOfBirth, phone, doctorId, selectedDate, selectedTime, message }) {
   const db = getFirebaseAdminDb();
   const { availability, selectedSlot } = await validateControlledBookingRequest({
     doctorId,
@@ -459,6 +459,7 @@ export async function createControlledAppointment({ name, phone, doctorId, selec
 
   const created = await db.collection("appointments").add({
     name: cleanText(name),
+    dateOfBirth: cleanText(dateOfBirth),
     phone: normalizePhone(phone),
     doctor: doctor.name,
     doctorId: doctor.id,
@@ -509,6 +510,7 @@ export async function createControlledAppointment({ name, phone, doctorId, selec
 export function sanitizeAppointmentPayload(payload) {
   return {
     name: cleanText(payload?.name),
+    dateOfBirth: cleanText(payload?.dateOfBirth),
     phone: normalizePhone(payload?.phone),
     doctorId: cleanText(payload?.doctorId),
     selectedDate: cleanText(payload?.selectedDate),

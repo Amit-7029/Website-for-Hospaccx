@@ -13,9 +13,9 @@ export default async function handler(req, res) {
 
   try {
     const payload = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const { doctorId, selectedDate, selectedTime, phone, name, message, requestId, termsAccepted } = sanitizeAppointmentPayload(payload);
+    const { doctorId, selectedDate, selectedTime, phone, name, dateOfBirth, message, requestId, termsAccepted } = sanitizeAppointmentPayload(payload);
 
-    if (!doctorId || !selectedDate || phone.length < 10 || name.length < 2) {
+    if (!doctorId || !selectedDate || phone.length < 10 || name.length < 2 || dateOfBirth.length < 8) {
       return json(res, 400, { error: "Incomplete booking request" });
     }
 
@@ -37,6 +37,7 @@ export default async function handler(req, res) {
 
     const created = await createControlledAppointment({
       name,
+      dateOfBirth,
       phone,
       doctorId,
       selectedDate,

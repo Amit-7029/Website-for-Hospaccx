@@ -2347,9 +2347,10 @@ function setupAppointmentForm() {
           selectedDate,
           selectedTime,
           name: String(formData.get("name") || "").trim(),
+          dateOfBirth: String(formData.get("dateOfBirth") || "").trim(),
           phone: String(formData.get("phone") || "").trim(),
           termsAccepted: true,
-          message: `Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
+          message: `Date of Birth: ${String(formData.get("dateOfBirth") || "").trim()} | Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
         });
 
         window.location.href = result.clinicWhatsappUrl;
@@ -2358,6 +2359,7 @@ function setupAppointmentForm() {
 
       await saveAppointmentWithTimeout({
         name: String(formData.get("name") || "").trim(),
+        dateOfBirth: String(formData.get("dateOfBirth") || "").trim(),
         phone: String(formData.get("phone") || "").trim(),
         date: buildAppointmentDateTime(selectedDate, selectedTime),
         doctor: selectedDoctor,
@@ -2366,7 +2368,7 @@ function setupAppointmentForm() {
         selectedDate,
         selectedTime,
         termsAccepted: true,
-        message: `Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
+        message: `Date of Birth: ${String(formData.get("dateOfBirth") || "").trim()} | Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
         status: "pending",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -2384,6 +2386,7 @@ function setupAppointmentForm() {
       "Hello, I want to book an appointment.",
       "",
       `Name: ${formData.get("name")}`,
+      `Date of Birth: ${formData.get("dateOfBirth")}`,
       `Phone: ${formData.get("phone")}`,
       `Department: ${selectedDepartment}`,
       `Doctor: ${selectedDoctor}`,
