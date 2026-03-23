@@ -1334,16 +1334,22 @@ function renderDoctors() {
   const filter = document.getElementById("doctorDepartmentFilter");
   const allDepartmentsLabel = cmsValue("doctorsFilterPlaceholder", "All departments");
 
-  if (filter && !filter.dataset.ready) {
+  if (filter) {
     filter.innerHTML =
       `<option value="">${escapeHtml(allDepartmentsLabel)}</option>` +
       state.departments.map((department) => `<option value="${escapeHtml(department)}">${escapeHtml(department)}</option>`).join("");
 
-    filter.dataset.ready = "true";
-    filter.addEventListener("change", (event) => {
-      state.selectedDepartment = event.target.value;
-      renderDoctors();
-    });
+    if (state.selectedDepartment && !state.departments.includes(state.selectedDepartment)) {
+      state.selectedDepartment = "";
+    }
+
+    if (!filter.dataset.ready) {
+      filter.dataset.ready = "true";
+      filter.addEventListener("change", (event) => {
+        state.selectedDepartment = event.target.value;
+        renderDoctors();
+      });
+    }
   }
 
   if (filter) {
