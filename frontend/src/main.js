@@ -5,9 +5,7 @@ import { MEDIA_IMAGE_FALLBACK, fallbackMediaItems } from "./data/media";
 import {
   confirmControlledAppointment,
   createAppointment,
-  fetchControlledBookingAvailability,
-  sendAppointmentOtp,
-  verifyAppointmentOtp
+  fetchControlledBookingAvailability
 } from "./firebase/appointments-store";
 import { loadDoctors } from "./firebase/doctors-store";
 import { DEFAULT_CMS_CONTENT, DEFAULT_HERO_CONTENT, loadCmsContent, loadDiagnosticServices, loadHeroContent } from "./firebase/content-store";
@@ -1774,52 +1772,10 @@ function setAppointmentTermsError(message = "") {
 
 function updateAppointmentOtpPanel() {
   const panel = document.getElementById("appointmentOtpPanel");
-  const sendButton = document.getElementById("appointmentSendOtp");
-  const verifyButton = document.getElementById("appointmentVerifyOtp");
-  const otpInputWrap = document.getElementById("appointmentOtpInputWrap");
-  const otpCountdown = document.getElementById("appointmentOtpCountdown");
-
-  if (!panel || !sendButton) {
+  if (!panel) {
     return;
   }
-
-  if (!state.appointmentBooking.controlled) {
-    panel.hidden = true;
-    return;
-  }
-
-  panel.hidden = false;
-  sendButton.hidden = false;
-  sendButton.disabled = false;
-
-  if (!state.appointmentBooking.otpRequired) {
-    if (otpInputWrap) {
-      otpInputWrap.hidden = true;
-    }
-    if (verifyButton) {
-      verifyButton.hidden = true;
-    }
-    if (otpCountdown) {
-      otpCountdown.textContent = "";
-    }
-    sendButton.textContent = "Send OTP (Optional)";
-
-    if (!state.appointmentBooking.otpConfigured) {
-      sendButton.hidden = true;
-      setAppointmentOtpStatus("OTP is optional for this doctor. You can continue booking directly.", "success");
-      return;
-    }
-
-    setAppointmentOtpStatus("OTP is optional for this doctor. You can send one if you want extra verification.", "success");
-    return;
-  }
-
-  sendButton.textContent = "Send OTP";
-
-  if (!state.appointmentBooking.otpConfigured) {
-    sendButton.disabled = true;
-    setAppointmentOtpStatus("OTP service is not configured yet. Please contact reception or disable OTP for this doctor in admin.", "error");
-  }
+  panel.hidden = true;
 }
 
 function startAppointmentOtpCountdown(expiresAt) {
@@ -2259,10 +2215,6 @@ function setupAppointmentForm() {
   const departmentSelect = document.getElementById("department");
   const doctorSelect = document.getElementById("doctor");
   const dateSelect = document.getElementById("date");
-  const sendOtpButton = document.getElementById("appointmentSendOtp");
-  const verifyOtpButton = document.getElementById("appointmentVerifyOtp");
-  const otpInputWrap = document.getElementById("appointmentOtpInputWrap");
-  const otpInput = document.getElementById("appointmentOtp");
   const termsCheckbox = document.getElementById("appointmentTermsCheckbox");
   const termsTrigger = document.getElementById("appointmentTermsTrigger");
   const termsLink = document.getElementById("appointmentTermsLink");
@@ -2356,90 +2308,6 @@ function setupAppointmentForm() {
     }
   });
 
-  sendOtpButton?.addEventListener("click", async () => {
-    const doctor = state.doctors.find((entry) => entry.name === doctorSelect?.value);
-    if (!doctor || !state.appointmentBooking.controlled) {
-      return;
-    }
-
-    const name = String(document.getElementById("name")?.value || "").trim();
-    const phone = String(document.getElementById("phone")?.value || "").trim();
-    const selectedDate = String(dateSelect?.value || "").trim();
-
-    if (name.length < 2 || phone.length < 10 || !selectedDate) {
-      setAppointmentOtpStatus("Enter name, mobile number, and select a date before sending OTP.", "error");
-      return;
-    }
-
-    sendOtpButton.disabled = true;
-    sendOtpButton.textContent = "Sending OTP...";
-    setAppointmentOtpStatus("");
-
-    try {
-      const result = await sendAppointmentOtp({
-        doctorId: doctor.id,
-        name,
-        phone,
-        selectedDate,
-      });
-
-      if (result.skipped) {
-        state.appointmentBooking.otpVerified = true;
-        setAppointmentOtpStatus("OTP is not required for this doctor. You can submit booking now.", "success");
-        return;
-      }
-
-      state.appointmentBooking.otpRequestId = result.requestId;
-      state.appointmentBooking.otpVerified = false;
-      state.appointmentBooking.otpExpiresAt = result.expiresAt;
-      if (otpInputWrap) {
-        otpInputWrap.hidden = false;
-      }
-      if (verifyOtpButton) {
-        verifyOtpButton.hidden = false;
-      }
-      startAppointmentOtpCountdown(result.expiresAt);
-      setAppointmentOtpStatus("OTP sent successfully.", "success");
-    } catch (error) {
-      setAppointmentOtpStatus(error instanceof Error ? error.message : "Unable to send OTP.", "error");
-    } finally {
-      sendOtpButton.disabled = false;
-      sendOtpButton.textContent = "Send OTP";
-    }
-  });
-
-  verifyOtpButton?.addEventListener("click", async () => {
-    const phone = String(document.getElementById("phone")?.value || "").trim();
-    const otp = String(otpInput?.value || "").trim();
-    if (!state.appointmentBooking.otpRequestId || otp.length < 4 || phone.length < 10) {
-      setAppointmentOtpStatus("Enter the OTP sent to your mobile number.", "error");
-      return;
-    }
-
-    verifyOtpButton.disabled = true;
-    verifyOtpButton.textContent = "Verifying...";
-    setAppointmentOtpStatus("");
-
-    try {
-      await verifyAppointmentOtp({
-        requestId: state.appointmentBooking.otpRequestId,
-        otp,
-        phone,
-      });
-      state.appointmentBooking.otpVerified = true;
-      if (otpInput) {
-        otpInput.disabled = true;
-      }
-      setAppointmentOtpStatus("OTP verified successfully. You can complete booking now.", "success");
-    } catch (error) {
-      state.appointmentBooking.otpVerified = false;
-      setAppointmentOtpStatus(error instanceof Error ? error.message : "Unable to verify OTP.", "error");
-    } finally {
-      verifyOtpButton.disabled = false;
-      verifyOtpButton.textContent = "Verify OTP";
-    }
-  });
-
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!form.reportValidity()) {
@@ -2474,10 +2342,6 @@ function setupAppointmentForm() {
           throw new Error("No slots available for the selected date.");
         }
 
-        if (state.appointmentBooking.otpRequired && !state.appointmentBooking.otpVerified) {
-          throw new Error("Please verify OTP before submitting the booking.");
-        }
-
         const result = await confirmControlledAppointment({
           doctorId: doctor.id,
           selectedDate,
@@ -2486,7 +2350,6 @@ function setupAppointmentForm() {
           phone: String(formData.get("phone") || "").trim(),
           termsAccepted: true,
           message: `Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
-          requestId: state.appointmentBooking.otpRequestId,
         });
 
         window.location.href = result.clinicWhatsappUrl;

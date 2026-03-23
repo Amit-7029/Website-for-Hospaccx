@@ -23,18 +23,16 @@ export default async function handler(req, res) {
       return json(res, 400, { error: "Please accept Terms & Conditions to continue" });
     }
 
-    const availability = await getControlledAvailability(doctorId);
-    if (availability.otpRequired) {
-      if (!requestId) {
-        return json(res, 400, { error: "OTP verification is required before booking" });
-      }
-
+    if (requestId) {
+      const availability = await getControlledAvailability(doctorId);
+      if (availability.otpRequired) {
       await consumeVerifiedOtp({
         requestId,
         phone,
         doctorId,
         selectedDate,
       });
+      }
     }
 
     const created = await createControlledAppointment({
