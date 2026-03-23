@@ -380,6 +380,7 @@ function normalizeServices(doctor) {
 
 function normalizeBookingSettings(doctor) {
   const rawSettings = doctor.bookingSettings && typeof doctor.bookingSettings === "object" ? doctor.bookingSettings : null;
+  const isBiswajitControlledDoctor = slugify(doctor.name) === "dr-biswajit-majumdar";
   const defaultTimeSlots = ["09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM"];
   const normalizedDates = Array.isArray(rawSettings?.dates)
     ? rawSettings.dates
@@ -401,21 +402,21 @@ function normalizeBookingSettings(doctor) {
       otpRequired: rawSettings.otpRequired !== false,
       dates: normalizedDates.map((entry) => ({
         ...entry,
-        timeSlots: entry.timeSlots.length ? entry.timeSlots : defaultTimeSlots
+        timeSlots: isBiswajitControlledDoctor ? [] : (entry.timeSlots.length ? entry.timeSlots : defaultTimeSlots)
       }))
     };
   }
 
-  if (slugify(doctor.name) === "dr-biswajit-majumdar") {
+  if (isBiswajitControlledDoctor) {
     const defaultDates = getDefaultControlledDates();
     return {
       enabled: true,
       bookingOpen: true,
       otpRequired: false,
       dates: [
-        { date: defaultDates[0], limit: 80, timeSlots: defaultTimeSlots },
-        { date: defaultDates[1], limit: 120, timeSlots: defaultTimeSlots },
-        { date: defaultDates[2], limit: 100, timeSlots: defaultTimeSlots }
+        { date: defaultDates[0], limit: 80, timeSlots: [] },
+        { date: defaultDates[1], limit: 120, timeSlots: [] },
+        { date: defaultDates[2], limit: 100, timeSlots: [] }
       ]
     };
   }

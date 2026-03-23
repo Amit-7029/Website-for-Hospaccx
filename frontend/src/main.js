@@ -1833,9 +1833,34 @@ function defaultControlledTimeSlots() {
   return ["09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM"];
 }
 
+function isBiswajitControlledDoctor(doctor) {
+  const normalizedName = String(doctor?.name || "").trim().toLowerCase().replace(/\s+/g, " ");
+  return normalizedName === "dr. biswajit majumdar" || normalizedName === "dr biswajit majumdar";
+}
+
+function buildSerialSlots(limit, bookedSlots = []) {
+  const normalizedLimit = Number(limit || 0);
+  const blocked = new Set(
+    (Array.isArray(bookedSlots) ? bookedSlots : [])
+      .map((slot) => String(slot || "").trim())
+      .filter(Boolean),
+  );
+
+  return Array.from({ length: normalizedLimit }, (_, index) => `Slot ${index + 1}`).filter((slot) => !blocked.has(slot));
+}
+
 function controlledTimeSlotsForDoctor(doctor, entry) {
+  if (isBiswajitControlledDoctor(doctor)) {
+    return buildSerialSlots(entry?.limit || 0, entry?.bookedSlots || []);
+  }
+
   if (Array.isArray(entry?.timeSlots) && entry.timeSlots.length) {
-    return entry.timeSlots;
+    const blocked = new Set(
+      (Array.isArray(entry?.bookedSlots) ? entry.bookedSlots : [])
+        .map((slot) => String(slot || "").trim())
+        .filter(Boolean),
+    );
+    return entry.timeSlots.filter((slot) => !blocked.has(slot));
   }
 
   const ranges = extractTimeRanges(doctor.timing);
@@ -1898,6 +1923,7 @@ function buildLocalControlledAvailability(doctor) {
       booked: 0,
       slotsLeft: Number(entry.limit || 0),
       isFull: Number(entry.limit || 0) <= 0,
+      bookedSlots: [],
       timeSlots: Array.isArray(entry.timeSlots) ? entry.timeSlots : defaultControlledTimeSlots(),
     })),
   };

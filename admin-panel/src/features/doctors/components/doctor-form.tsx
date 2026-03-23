@@ -36,6 +36,13 @@ function getInitialBookingSettings(doctor: Doctor | null) {
   const shouldPrefillBiswajit = doctorName.includes("biswajit majumdar");
   const dates = doctor?.bookingSettings?.dates?.slice(0, 3) ?? [];
   const defaultTimeSlots = "09:00 AM, 09:30 AM, 10:00 AM, 10:30 AM, 11:00 AM, 11:30 AM, 12:00 PM";
+  const readSlots = (entry?: { timeSlots?: string[] }) => {
+    if (shouldPrefillBiswajit) {
+      return "";
+    }
+
+    return Array.isArray(entry?.timeSlots) && entry.timeSlots?.length ? entry.timeSlots.join(", ") : defaultTimeSlots;
+  };
 
   return {
     bookingEnabled: doctor?.bookingSettings?.enabled ?? shouldPrefillBiswajit,
@@ -43,13 +50,13 @@ function getInitialBookingSettings(doctor: Doctor | null) {
     otpRequired: doctor?.bookingSettings?.otpRequired ?? false,
     bookingDateOne: dates[0]?.date ?? (shouldPrefillBiswajit ? fallbackDates[0] : ""),
     bookingLimitOne: String(dates[0]?.limit ?? (shouldPrefillBiswajit ? 80 : 0)),
-    bookingSlotsOne: Array.isArray(dates[0]?.timeSlots) && dates[0]?.timeSlots?.length ? dates[0].timeSlots.join(", ") : (shouldPrefillBiswajit ? defaultTimeSlots : ""),
+    bookingSlotsOne: readSlots(dates[0]),
     bookingDateTwo: dates[1]?.date ?? (shouldPrefillBiswajit ? fallbackDates[1] : ""),
     bookingLimitTwo: String(dates[1]?.limit ?? (shouldPrefillBiswajit ? 120 : 0)),
-    bookingSlotsTwo: Array.isArray(dates[1]?.timeSlots) && dates[1]?.timeSlots?.length ? dates[1].timeSlots.join(", ") : (shouldPrefillBiswajit ? defaultTimeSlots : ""),
+    bookingSlotsTwo: readSlots(dates[1]),
     bookingDateThree: dates[2]?.date ?? (shouldPrefillBiswajit ? fallbackDates[2] : ""),
     bookingLimitThree: String(dates[2]?.limit ?? (shouldPrefillBiswajit ? 100 : 0)),
-    bookingSlotsThree: Array.isArray(dates[2]?.timeSlots) && dates[2]?.timeSlots?.length ? dates[2].timeSlots.join(", ") : (shouldPrefillBiswajit ? defaultTimeSlots : ""),
+    bookingSlotsThree: readSlots(dates[2]),
   };
 }
 
@@ -106,6 +113,7 @@ export function DoctorForm({
 }) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | undefined>(doctor?.imageUrl);
+  const isBiswajitControlledDoctor = doctor?.name?.toLowerCase().replace(/\s+/g, " ").includes("biswajit majumdar");
   const initialBookingSettings = getInitialBookingSettings(doctor);
   const form = useForm<Values>({
     resolver: zodResolver(schema),
@@ -351,8 +359,19 @@ export function DoctorForm({
                         <FormField label="Limit">
                           <Input type="number" min="0" placeholder="0" {...form.register(item.limitField as keyof Values)} />
                         </FormField>
-                        <FormField label="Time slots" hint="Comma separated. Example: 09:00 AM, 09:30 AM, 10:00 AM">
-                          <Textarea rows={3} {...form.register(item.slotsField as keyof Values)} placeholder="09:00 AM, 09:30 AM, 10:00 AM" />
+                        <FormField
+                          label="Time slots"
+                          hint={
+                            isBiswajitControlledDoctor
+                              ? "For Dr. Biswajit, leave this empty. Slot 1 to the daily limit will be generated automatically."
+                              : "Comma separated. Example: 09:00 AM, 09:30 AM, 10:00 AM"
+                          }
+                        >
+                          <Textarea
+                            rows={3}
+                            {...form.register(item.slotsField as keyof Values)}
+                            placeholder={isBiswajitControlledDoctor ? "Auto-generated: Slot 1, Slot 2, Slot 3..." : "09:00 AM, 09:30 AM, 10:00 AM"}
+                          />
                         </FormField>
                         <div className="rounded-2xl bg-muted/60 px-3 py-2 text-sm text-muted-foreground">
                           Booked count: <span className="font-semibold text-foreground">{bookedCount}</span>

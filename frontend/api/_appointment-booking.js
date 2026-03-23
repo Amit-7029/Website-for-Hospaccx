@@ -97,6 +97,20 @@ export async function getControlledAvailability(doctorId) {
     accumulator[selectedDate] = (accumulator[selectedDate] || 0) + 1;
     return accumulator;
   }, {});
+  const bookedSlotsByDate = appointmentsSnapshot.docs.reduce((accumulator, entry) => {
+    const data = entry.data();
+    const selectedDate = cleanText(data.selectedDate || "");
+    const selectedTime = cleanText(data.selectedTime || "");
+    if (!selectedDate || !selectedTime) {
+      return accumulator;
+    }
+
+    accumulator[selectedDate] = accumulator[selectedDate] || [];
+    if (!accumulator[selectedDate].includes(selectedTime)) {
+      accumulator[selectedDate].push(selectedTime);
+    }
+    return accumulator;
+  }, {});
 
   const dates = (bookingSettings.dates || [])
     .map((entry) => {
@@ -116,6 +130,7 @@ export async function getControlledAvailability(doctorId) {
         booked,
         slotsLeft,
         isFull: slotsLeft <= 0,
+        bookedSlots: bookedSlotsByDate[dateValue] || [],
         timeSlots: Array.isArray(entry?.timeSlots)
           ? entry.timeSlots.map((slot) => cleanText(slot)).filter(Boolean)
           : [],
@@ -142,7 +157,7 @@ async function getDuplicateAppointments({ doctorId, phone }) {
     .filter((entry) => normalizePhone(entry.phone) === normalizedPhone);
 }
 
-export async function validateControlledBookingRequest({ doctorId, name, phone, selectedDate }) {
+export async function validateControlledBookingRequest({ doctorId, name, phone, selectedDate, selectedTime = "" }) {
   const availability = await getControlledAvailability(doctorId);
   if (!availability.controlled) {
     throw new Error("This doctor is not configured for controlled booking");
@@ -159,6 +174,14 @@ export async function validateControlledBookingRequest({ doctorId, name, phone, 
 
   if (selectedSlot.isFull) {
     throw new Error("No slots available for this date");
+  }
+
+  if (
+    selectedTime &&
+    Array.isArray(selectedSlot.bookedSlots) &&
+    selectedSlot.bookedSlots.includes(cleanText(selectedTime))
+  ) {
+    throw new Error("This slot has already been booked");
   }
 
   const duplicates = await getDuplicateAppointments({ doctorId, phone });
@@ -410,6 +433,7 @@ export async function createControlledAppointment({ name, phone, doctorId, selec
     name,
     phone,
     selectedDate,
+    selectedTime,
   });
 
   const doctor = availability.doctor;
