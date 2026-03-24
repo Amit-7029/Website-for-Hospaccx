@@ -1,11 +1,11 @@
 import { getRuntimePerformanceProfile } from "./utils/runtime-performance";
 
 export const motionVariants = {
-  fadeUp: { x: 0, y: 18, scale: 0.995, duration: 420 },
-  fadeIn: { x: 0, y: 0, scale: 0.998, duration: 360 },
-  slideLeft: { x: -20, y: 0, scale: 0.997, duration: 480 },
-  slideRight: { x: 20, y: 0, scale: 0.997, duration: 480 },
-  staggerContainer: { x: 0, y: 0, scale: 1, duration: 420 }
+  fadeUp: { x: 0, y: 26, scale: 0.988, duration: 880 },
+  fadeIn: { x: 0, y: 0, scale: 0.992, duration: 720 },
+  slideLeft: { x: -34, y: 0, scale: 0.99, duration: 900 },
+  slideRight: { x: 34, y: 0, scale: 0.99, duration: 900 },
+  staggerContainer: { x: 0, y: 0, scale: 1, duration: 760 }
 };
 
 const layerTimers = new WeakMap();
@@ -44,13 +44,13 @@ function setMotion(el, variant = "fadeUp", options = {}) {
   }
 }
 
-function sequence(elements, variant = "fadeUp", baseDelay = 0, step = 70) {
+function sequence(elements, variant = "fadeUp", baseDelay = 0, step = 95) {
   Array.from(elements).forEach((element, index) => {
     setMotion(element, variant, { delay: baseDelay + index * step });
   });
 }
 
-function sequenceAlternating(elements, baseDelay = 0, step = 80) {
+function sequenceAlternating(elements, baseDelay = 0, step = 110) {
   Array.from(elements).forEach((element, index) => {
     setMotion(element, index % 2 === 0 ? "slideLeft" : "slideRight", {
       delay: baseDelay + index * step
@@ -59,12 +59,23 @@ function sequenceAlternating(elements, baseDelay = 0, step = 80) {
 }
 
 function splitHeroHeading(root) {
+  const runtime = getRuntimePerformanceProfile();
   const heading = root.querySelector(".hero__copy h1");
-  if (!heading) {
+  if (!heading || heading.dataset.motionSplit === "true" || runtime.lowDataMode) {
     return;
   }
 
-  heading.classList.remove("motion-heading");
+  const text = heading.textContent.trim().replace(/\s+/g, " ");
+  heading.dataset.motionSplit = "true";
+  heading.setAttribute("aria-label", text);
+  heading.classList.add("motion-heading");
+  heading.innerHTML = text
+    .split(" ")
+    .map(
+      (word, index, array) =>
+        `<span class="hero-title-word" style="--word-delay:${index * 70}ms">${word}${index < array.length - 1 ? "&nbsp;" : ""}</span>`
+    )
+    .join("");
 }
 
 function decorateHero(root) {
@@ -72,12 +83,12 @@ function decorateHero(root) {
   splitHeroHeading(root);
 
   setMotion(root.querySelector(".hero__copy .eyebrow"), "fadeIn", { delay: 50 });
-  setMotion(root.querySelector(".hero__copy h1"), "fadeUp", { delay: 110, duration: 520 });
-  setMotion(root.querySelector(".hero__copy .subtitle"), "fadeUp", { delay: 180, duration: 460 });
-  setMotion(root.querySelector(".hero__actions--compact"), "fadeUp", { delay: 240, duration: 420 });
-  sequence(root.querySelectorAll(".hero__stats article"), "fadeUp", 280, 70);
-  setMotion(root.querySelector(".hero__visual-card"), "slideRight", { delay: 170, duration: 500 });
-  setMotion(root.querySelector(".hero__panel"), "fadeUp", { delay: 220, duration: 440 });
+  setMotion(root.querySelector(".hero__copy h1"), "fadeIn", { delay: 110, duration: 940 });
+  setMotion(root.querySelector(".hero__copy .subtitle"), "fadeUp", { delay: 240, duration: 920 });
+  setMotion(root.querySelector(".hero__actions--compact"), "slideLeft", { delay: 320, duration: 900 });
+  sequence(root.querySelectorAll(".hero__stats article"), "fadeUp", 420, 120);
+  setMotion(root.querySelector(".hero__visual-card"), "slideRight", { delay: 200, duration: 960 });
+  setMotion(root.querySelector(".hero__panel"), "fadeUp", { delay: 300, duration: 900 });
 
   const floatingPanel = root.querySelector(".hero__panel");
   if (floatingPanel && !runtime.lowDataMode) {
@@ -87,23 +98,57 @@ function decorateHero(root) {
 
 function decorateStaticSections(root) {
   root.querySelectorAll(".section__heading, .page-hero .container").forEach((element, index) => {
-    setMotion(element, "fadeUp", { delay: Math.min(index * 24, 120), duration: 420 });
+    setMotion(element, "fadeUp", { delay: Math.min(index * 35, 180), duration: 860 });
+  });
+
+  root.querySelectorAll(".about-grid, .appointment-layout, .contact-layout, .emergency-strip__content").forEach((grid) => {
+    const children = Array.from(grid.children);
+    if (children[0]) {
+      setMotion(children[0], "slideLeft", { delay: 80 });
+    }
+    if (children[1]) {
+      setMotion(children[1], "slideRight", { delay: 160 });
+    }
   });
 
   [
+    [".department-grid", ".department-card", "fadeUp"],
     [".service-grid", ".service-card", "fadeUp"],
-    [".doctor-grid", ".doctor-card", "fadeUp"],
-    [".doctor-poster-grid", ".doctor-poster", "fadeUp"],
     [".gallery-grid", ".gallery-card", "fadeUp"],
-    [".media-showcase-grid", ".media-feature-card", "fadeUp"],
+    [".facility-grid", ".facility-card", "fadeUp"],
+    [".resource-grid", ".resource-card", "fadeUp"],
+    [".detail-stack", ".detail-card", "fadeUp"],
+    [".trust-grid", ".trust-card", "fadeUp"],
     [".testimonial-grid", ".testimonial-card", "fadeUp"],
-    [".card-actions", "a, button", "fadeIn"],
-    [".hero__actions", "a, button", "fadeIn"]
+    [".testimonial-slider__track", ".testimonial-slide", "fadeUp"],
+    [".about-card__stats", "article", "fadeUp"],
+    [".contact-actions", "a, .contact-timings", "fadeIn"],
+    [".card-actions", "a, button", "fadeIn"]
   ].forEach(([containerSelector, childSelector, variant]) => {
     root.querySelectorAll(containerSelector).forEach((container) => {
-      sequence(container.querySelectorAll(childSelector), variant, 100, 70);
+      sequence(container.querySelectorAll(childSelector), variant, 120, 95);
     });
   });
+
+  root.querySelectorAll(".doctor-grid").forEach((container) => {
+    sequenceAlternating(container.querySelectorAll(".doctor-card"), 140, 115);
+  });
+
+  root.querySelectorAll(".doctor-poster-grid").forEach((container) => {
+    sequenceAlternating(container.querySelectorAll(".doctor-poster"), 160, 105);
+  });
+
+  const appointmentForm = root.querySelector(".appointment-form");
+  if (appointmentForm) {
+    const fields = appointmentForm.querySelectorAll("label, .appointment-form__helper, .appointment-form__row, button");
+    sequence(fields, "fadeUp", 120, 90);
+  }
+
+  const reviewForm = root.querySelector(".review-form");
+  if (reviewForm) {
+    const fields = reviewForm.querySelectorAll(".review-form__field, .review-form__rating, .review-form__helper, .review-form__footer");
+    sequence(fields, "fadeUp", 140, 90);
+  }
 }
 
 function observeAnimations(root) {
@@ -119,15 +164,16 @@ function observeAnimations(root) {
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.14) {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.16) {
           entry.target.classList.add("is-inview");
-          observer.unobserve(entry.target);
+        } else if (entry.intersectionRatio <= 0.04) {
+          entry.target.classList.remove("is-inview");
         }
       });
     },
     {
-      threshold: [0, 0.14, 0.28],
-      rootMargin: "0px 0px -8% 0px"
+      threshold: [0, 0.04, 0.16, 0.32],
+      rootMargin: "0px 0px -6% 0px"
     }
   );
 
@@ -137,16 +183,14 @@ function observeAnimations(root) {
 
 export function createMotionSystem(root = document) {
   let observer = null;
-  let refreshFrame = 0;
 
-  const runRefresh = () => {
+  const refresh = () => {
     try {
       const runtime = getRuntimePerformanceProfile();
       if (runtime.lowDataMode) {
         if (observer?.disconnect) {
           observer.disconnect();
         }
-        refreshFrame = 0;
 
         root.querySelectorAll("[data-motion]").forEach((element) => {
           element.classList.add("is-inview");
@@ -163,25 +207,10 @@ export function createMotionSystem(root = document) {
       }
 
       observer = observeAnimations(root);
-      refreshFrame = 0;
     } catch (error) {
       console.error("Motion system fallback", error);
       root.querySelectorAll("[data-motion]").forEach((element) => element.classList.add("is-inview"));
-      refreshFrame = 0;
     }
-  };
-
-  const refresh = () => {
-    if (typeof window === "undefined") {
-      runRefresh();
-      return;
-    }
-
-    if (refreshFrame) {
-      window.cancelAnimationFrame(refreshFrame);
-    }
-
-    refreshFrame = window.requestAnimationFrame(runRefresh);
   };
 
   refresh();
@@ -189,9 +218,6 @@ export function createMotionSystem(root = document) {
   return {
     refresh,
     disconnect() {
-      if (refreshFrame && typeof window !== "undefined") {
-        window.cancelAnimationFrame(refreshFrame);
-      }
       observer?.disconnect?.();
     }
   };
