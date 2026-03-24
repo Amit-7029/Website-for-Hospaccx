@@ -20,6 +20,7 @@ export function getRuntimePerformanceProfile() {
   if (typeof window === "undefined") {
     return {
       lowDataMode: false,
+      reducedAnimationMode: false,
       effectiveType: "4g",
       saveData: false
     };
@@ -30,16 +31,21 @@ export function getRuntimePerformanceProfile() {
   const saveData = Boolean(connection?.saveData);
   const downlink = Number(connection?.downlink || 0);
   const deviceMemory = Number(navigator.deviceMemory || 0);
+  const reducedAnimationMode =
+    saveData ||
+    effectiveType === "slow-2g" ||
+    effectiveType === "2g" ||
+    (downlink > 0 && downlink < 0.8) ||
+    (deviceMemory > 0 && deviceMemory <= 2);
   const lowDataMode =
     saveData ||
     effectiveType === "slow-2g" ||
     effectiveType === "2g" ||
-    effectiveType === "3g" ||
-    (downlink > 0 && downlink < 1.5) ||
-    (deviceMemory > 0 && deviceMemory <= 4);
+    (downlink > 0 && downlink < 0.5);
 
   return {
     lowDataMode,
+    reducedAnimationMode,
     effectiveType,
     saveData
   };
