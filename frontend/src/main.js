@@ -277,6 +277,11 @@ function applyCmsContent() {
   const topbarShineColor = String(content.topbarShineColor || "#dbeafe").trim();
   const topbarPulseSpeedValue = Number.parseFloat(String(content.topbarPulseSpeed || "2.2"));
   const topbarPulseSpeed = Number.isFinite(topbarPulseSpeedValue) && topbarPulseSpeedValue > 0 ? topbarPulseSpeedValue : 2.2;
+  const topbarLogoEnabled = String(content.topbarLogoEnabled || "true").trim().toLowerCase() !== "false";
+  const topbarLogoGlowColor = String(content.topbarLogoGlowColor || "#4ade80").trim();
+  const topbarLogoShineColor = String(content.topbarLogoShineColor || "#dcfce7").trim();
+  const topbarLogoPulseSpeedValue = Number.parseFloat(String(content.topbarLogoPulseSpeed || "2.4"));
+  const topbarLogoPulseSpeed = Number.isFinite(topbarLogoPulseSpeedValue) && topbarLogoPulseSpeedValue > 0 ? topbarLogoPulseSpeedValue : 2.4;
   const heroMenuEffectEnabled = String(content.heroMenuEffectEnabled || "true").trim().toLowerCase() !== "false";
   const heroMenuGlowColor = String(content.heroMenuGlowColor || "#60a5fa").trim();
   const heroMenuShineColor = String(content.heroMenuShineColor || "#dbeafe").trim();
@@ -296,6 +301,9 @@ function applyCmsContent() {
   root.style.setProperty("--topbar-glow-color", topbarGlowColor);
   root.style.setProperty("--topbar-shine-color", topbarShineColor);
   root.style.setProperty("--topbar-pulse-speed", `${topbarPulseSpeed}s`);
+  root.style.setProperty("--topbar-logo-glow-color", topbarLogoGlowColor);
+  root.style.setProperty("--topbar-logo-shine-color", topbarLogoShineColor);
+  root.style.setProperty("--topbar-logo-pulse-speed", `${topbarLogoPulseSpeed}s`);
   root.style.setProperty("--hero-menu-glow-color", heroMenuGlowColor);
   root.style.setProperty("--hero-menu-shine-color", heroMenuShineColor);
   root.style.setProperty("--hero-menu-pulse-speed", `${heroMenuPulseSpeed}s`);
@@ -304,8 +312,13 @@ function applyCmsContent() {
   root.style.setProperty("--hero-corner-logo-pulse-speed", `${heroCornerLogoPulseSpeed}s`);
   document.body.classList.toggle("section-heading-effect-enabled", headingEffectEnabled);
   document.body.classList.toggle("topbar-effect-enabled", topbarEffectEnabled);
+  document.body.classList.toggle("topbar-logo-effect-enabled", topbarLogoEnabled);
   document.body.classList.toggle("hero-menu-effect-enabled", heroMenuEffectEnabled);
   document.body.classList.toggle("hero-corner-logo-effect-enabled", heroCornerLogosEnabled);
+  const topbarLogo = document.querySelector(".topbar__logo");
+  if (topbarLogo) {
+    topbarLogo.hidden = !topbarLogoEnabled;
+  }
   const heroCornerLogos = document.querySelector(".hero-corner-logos");
   if (heroCornerLogos) {
     heroCornerLogos.hidden = !heroCornerLogosEnabled;

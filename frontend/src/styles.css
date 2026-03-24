@@ -23,6 +23,9 @@
     --topbar-glow-color: #60a5fa;
     --topbar-shine-color: #dbeafe;
     --topbar-pulse-speed: 2.2s;
+    --topbar-logo-glow-color: #4ade80;
+    --topbar-logo-shine-color: #dcfce7;
+    --topbar-logo-pulse-speed: 2.4s;
     --hero-menu-glow-color: #60a5fa;
     --hero-menu-shine-color: #dbeafe;
     --hero-menu-pulse-speed: 2.3s;
@@ -758,12 +761,107 @@ a {
     z-index: 1;
     padding: 0.85rem 0;
     flex-wrap: wrap;
+    column-gap: 1.15rem;
 }
 
 .topbar__content p,
 .topbar__content a {
     position: relative;
     z-index: 1;
+}
+
+.topbar__logo {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: clamp(140px, 18vw, 220px);
+    padding: 0.3rem 0.55rem;
+    margin-top: -0.18rem;
+    border-radius: 22px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05)),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.22), rgba(15, 23, 42, 0.08));
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 12px 24px rgba(4, 10, 22, 0.2);
+    overflow: hidden;
+}
+
+.topbar__logo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    mix-blend-mode: screen;
+}
+
+.topbar-logo-effect-enabled .topbar__logo {
+    border-color: color-mix(in srgb, var(--topbar-logo-glow-color) 34%, rgba(255, 255, 255, 0.14));
+    box-shadow:
+        0 12px 26px rgba(4, 10, 22, 0.22),
+        0 0 0 1px color-mix(in srgb, var(--topbar-logo-glow-color) 18%, transparent),
+        0 0 26px color-mix(in srgb, var(--topbar-logo-glow-color) 14%, transparent);
+    animation: topbar-logo-pulse var(--topbar-logo-pulse-speed) ease-in-out infinite;
+}
+
+.topbar-logo-effect-enabled .topbar__logo::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 -14%;
+    width: 24%;
+    background: linear-gradient(
+        110deg,
+        transparent 0%,
+        color-mix(in srgb, var(--topbar-logo-shine-color) 92%, transparent) 50%,
+        transparent 100%
+    );
+    opacity: 0;
+    transform: skewX(-18deg);
+    pointer-events: none;
+    animation: topbar-logo-shine calc(var(--topbar-logo-pulse-speed) * 1.6) ease-in-out infinite;
+}
+
+.topbar-logo-effect-enabled .topbar__logo img {
+    filter:
+        drop-shadow(0 0 10px color-mix(in srgb, var(--topbar-logo-glow-color) 30%, transparent))
+        drop-shadow(0 0 18px color-mix(in srgb, var(--topbar-logo-glow-color) 18%, transparent));
+}
+
+@keyframes topbar-logo-pulse {
+    0%,
+    100% {
+        opacity: 0.95;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translate3d(0, -1px, 0) scale(1.02);
+    }
+}
+
+@keyframes topbar-logo-shine {
+    0%,
+    18% {
+        transform: translateX(-165%) skewX(-18deg);
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 0.8;
+    }
+
+    46% {
+        transform: translateX(390%) skewX(-18deg);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateX(390%) skewX(-18deg);
+        opacity: 0;
+    }
 }
 
 .topbar-effect-enabled .topbar__content p,
@@ -4280,6 +4378,11 @@ button {
         gap: 0.8rem;
     }
 
+    .topbar__logo {
+        width: clamp(132px, 34vw, 190px);
+        margin-top: 0;
+    }
+
     .topbar__links {
         justify-content: center;
     }
@@ -4291,6 +4394,12 @@ button {
 }
 
 @media (max-width: 640px) {
+    .topbar__logo {
+        width: clamp(118px, 42vw, 170px);
+        padding: 0.24rem 0.45rem;
+        border-radius: 18px;
+    }
+
     .topbar__content p,
     .topbar__content a {
         font-size: 0.92rem;
@@ -4303,5 +4412,9 @@ button {
         text-shadow:
             0 0 8px color-mix(in srgb, var(--topbar-glow-color) 26%, transparent),
             0 0 16px color-mix(in srgb, var(--topbar-glow-color) 12%, transparent);
+    }
+
+    .topbar-logo-effect-enabled .topbar__logo {
+        animation-duration: calc(var(--topbar-logo-pulse-speed) + 0.2s);
     }
 }
