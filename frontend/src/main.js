@@ -247,11 +247,27 @@ function applyCmsContent() {
   const headingShineColor = String(content.sectionHeadingShineColor || "#dbeafe").trim();
   const pulseSpeedValue = Number.parseFloat(String(content.sectionHeadingPulseSpeed || "1.9"));
   const headingPulseSpeed = Number.isFinite(pulseSpeedValue) && pulseSpeedValue > 0 ? pulseSpeedValue : 1.9;
+  const topbarEffectEnabled = String(content.topbarOverlayEnabled || "true").trim().toLowerCase() !== "false";
+  const topbarOverlayColor = String(content.topbarOverlayColor || "#0f172a").trim();
+  const topbarOverlayOpacityValue = Number.parseFloat(String(content.topbarOverlayOpacity || "0.74"));
+  const topbarOverlayOpacity = Number.isFinite(topbarOverlayOpacityValue)
+    ? Math.min(0.92, Math.max(0.2, topbarOverlayOpacityValue))
+    : 0.74;
+  const topbarGlowColor = String(content.topbarGlowColor || "#60a5fa").trim();
+  const topbarShineColor = String(content.topbarShineColor || "#dbeafe").trim();
+  const topbarPulseSpeedValue = Number.parseFloat(String(content.topbarPulseSpeed || "2.2"));
+  const topbarPulseSpeed = Number.isFinite(topbarPulseSpeedValue) && topbarPulseSpeedValue > 0 ? topbarPulseSpeedValue : 2.2;
 
   root.style.setProperty("--section-heading-glow-color", headingGlowColor);
   root.style.setProperty("--section-heading-shine-color", headingShineColor);
   root.style.setProperty("--section-heading-pulse-speed", `${headingPulseSpeed}s`);
+  root.style.setProperty("--topbar-overlay-color", topbarOverlayColor);
+  root.style.setProperty("--topbar-overlay-opacity", String(topbarOverlayOpacity));
+  root.style.setProperty("--topbar-glow-color", topbarGlowColor);
+  root.style.setProperty("--topbar-shine-color", topbarShineColor);
+  root.style.setProperty("--topbar-pulse-speed", `${topbarPulseSpeed}s`);
   document.body.classList.toggle("section-heading-effect-enabled", headingEffectEnabled);
+  document.body.classList.toggle("topbar-effect-enabled", topbarEffectEnabled);
 
   applySeoMeta(content);
 

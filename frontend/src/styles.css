@@ -18,6 +18,11 @@
     --section-heading-glow-color: #60a5fa;
     --section-heading-shine-color: #dbeafe;
     --section-heading-pulse-speed: 1.9s;
+    --topbar-overlay-color: #0f172a;
+    --topbar-overlay-opacity: 0.74;
+    --topbar-glow-color: #60a5fa;
+    --topbar-shine-color: #dbeafe;
+    --topbar-pulse-speed: 2.2s;
 }
 
 * {
@@ -35,6 +40,9 @@ body {
     background:
         radial-gradient(circle at top right, rgba(140, 133, 255, 0.22), transparent 22%),
         linear-gradient(180deg, #ffffff 0%, var(--background) 100%);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
 body.modal-open {
@@ -522,8 +530,22 @@ a {
 }
 
 .topbar {
-    background: #1b1241;
+    position: relative;
+    overflow: clip;
+    background: linear-gradient(135deg, #18122f 0%, #1e2945 55%, #162033 100%);
     color: #fff;
+}
+
+.topbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(135deg, color-mix(in srgb, var(--topbar-overlay-color) calc(var(--topbar-overlay-opacity) * 100%), transparent), transparent 62%),
+        radial-gradient(circle at 20% 50%, color-mix(in srgb, var(--topbar-glow-color) 18%, transparent), transparent 42%),
+        radial-gradient(circle at 80% 50%, color-mix(in srgb, var(--topbar-glow-color) 14%, transparent), transparent 40%);
+    opacity: 0.98;
+    pointer-events: none;
 }
 
 .topbar__content,
@@ -544,8 +566,75 @@ a {
 }
 
 .topbar__content {
+    position: relative;
+    z-index: 1;
     padding: 0.85rem 0;
     flex-wrap: wrap;
+}
+
+.topbar__content p,
+.topbar__content a {
+    position: relative;
+    z-index: 1;
+}
+
+.topbar-effect-enabled .topbar__content p,
+.topbar-effect-enabled .topbar__content a {
+    text-shadow:
+        0 0 10px color-mix(in srgb, var(--topbar-glow-color) 34%, transparent),
+        0 0 22px color-mix(in srgb, var(--topbar-glow-color) 16%, transparent);
+    animation: topbar-text-pulse var(--topbar-pulse-speed) ease-in-out infinite;
+}
+
+.topbar-effect-enabled .topbar__content a::after,
+.topbar-effect-enabled .topbar__content p::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 -16%;
+    width: 24%;
+    background: linear-gradient(
+        110deg,
+        transparent 0%,
+        color-mix(in srgb, var(--topbar-shine-color) 90%, transparent) 50%,
+        transparent 100%
+    );
+    opacity: 0;
+    transform: skewX(-18deg);
+    pointer-events: none;
+    animation: topbar-text-shine calc(var(--topbar-pulse-speed) * 1.7) ease-in-out infinite;
+}
+
+@keyframes topbar-text-pulse {
+    0%,
+    100% {
+        opacity: 0.95;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes topbar-text-shine {
+    0%,
+    18% {
+        transform: translateX(-165%) skewX(-18deg);
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 0.78;
+    }
+
+    46% {
+        transform: translateX(380%) skewX(-18deg);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateX(380%) skewX(-18deg);
+        opacity: 0;
+    }
 }
 
 .topbar__links,
@@ -1290,6 +1379,7 @@ button {
 .section-heading-effect-enabled .section__heading--compact h3 {
     position: relative;
     display: inline-block;
+    will-change: transform, opacity;
     text-shadow:
         0 0 12px color-mix(in srgb, var(--section-heading-glow-color) 42%, transparent),
         0 0 24px color-mix(in srgb, var(--section-heading-glow-color) 24%, transparent);
@@ -3883,10 +3973,57 @@ button {
     .appointment-form textarea,
     .review-form__field input,
     .review-form__field textarea,
-    .review-form__stars span {
+    .review-form__stars span,
+    .topbar__content p,
+    .topbar__content a,
+    .section__heading h2,
+    .section__heading--compact h3 {
         animation: none !important;
         transition: none !important;
         transform: none !important;
         opacity: 1 !important;
+    }
+}
+
+@media (max-width: 980px) {
+    .topbar {
+        background: linear-gradient(180deg, #171129 0%, #1c2742 100%);
+    }
+
+    .topbar::before {
+        background:
+            linear-gradient(180deg, color-mix(in srgb, var(--topbar-overlay-color) calc(var(--topbar-overlay-opacity) * 100%), transparent), transparent 82%),
+            radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--topbar-glow-color) 12%, transparent), transparent 52%);
+    }
+
+    .topbar__content {
+        justify-content: center;
+        text-align: center;
+        gap: 0.8rem;
+    }
+
+    .topbar__links {
+        justify-content: center;
+    }
+
+    .topbar-effect-enabled .topbar__content a::after,
+    .topbar-effect-enabled .topbar__content p::after {
+        width: 18%;
+    }
+}
+
+@media (max-width: 640px) {
+    .topbar__content p,
+    .topbar__content a {
+        font-size: 0.92rem;
+        line-height: 1.45;
+    }
+
+    .topbar-effect-enabled .topbar__content p,
+    .topbar-effect-enabled .topbar__content a {
+        animation-duration: calc(var(--topbar-pulse-speed) + 0.35s);
+        text-shadow:
+            0 0 8px color-mix(in srgb, var(--topbar-glow-color) 26%, transparent),
+            0 0 16px color-mix(in srgb, var(--topbar-glow-color) 12%, transparent);
     }
 }
