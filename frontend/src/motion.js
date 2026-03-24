@@ -1,3 +1,5 @@
+import { getRuntimePerformanceProfile } from "./utils/runtime-performance";
+
 export const motionVariants = {
   fadeUp: { x: 0, y: 26, scale: 0.988, duration: 880 },
   fadeIn: { x: 0, y: 0, scale: 0.992, duration: 720 },
@@ -22,7 +24,8 @@ function setMotion(el, variant = "fadeUp", options = {}) {
   }
 
   const definition = motionVariants[variant] ?? motionVariants.fadeUp;
-  const reduceMotion = matchesMedia("(prefers-reduced-motion: reduce)");
+  const runtime = getRuntimePerformanceProfile();
+  const reduceMotion = matchesMedia("(prefers-reduced-motion: reduce)") || runtime.lowDataMode;
   const compactMotion = matchesMedia("(max-width: 720px)");
   const factor = compactMotion ? 0.72 : 1;
   const x = (options.x ?? definition.x) * factor;
@@ -56,8 +59,9 @@ function sequenceAlternating(elements, baseDelay = 0, step = 110) {
 }
 
 function splitHeroHeading(root) {
+  const runtime = getRuntimePerformanceProfile();
   const heading = root.querySelector(".hero__copy h1");
-  if (!heading || heading.dataset.motionSplit === "true") {
+  if (!heading || heading.dataset.motionSplit === "true" || runtime.lowDataMode) {
     return;
   }
 
@@ -75,6 +79,7 @@ function splitHeroHeading(root) {
 }
 
 function decorateHero(root) {
+  const runtime = getRuntimePerformanceProfile();
   splitHeroHeading(root);
 
   setMotion(root.querySelector(".hero__copy .eyebrow"), "fadeIn", { delay: 50 });
@@ -86,7 +91,7 @@ function decorateHero(root) {
   setMotion(root.querySelector(".hero__panel"), "fadeUp", { delay: 300, duration: 900 });
 
   const floatingPanel = root.querySelector(".hero__panel");
-  if (floatingPanel) {
+  if (floatingPanel && !runtime.lowDataMode) {
     floatingPanel.classList.add("motion-float");
   }
 }
@@ -147,7 +152,8 @@ function decorateStaticSections(root) {
 }
 
 function observeAnimations(root) {
-  const reduceMotion = matchesMedia("(prefers-reduced-motion: reduce)");
+  const runtime = getRuntimePerformanceProfile();
+  const reduceMotion = matchesMedia("(prefers-reduced-motion: reduce)") || runtime.lowDataMode;
   const animatedElements = root.querySelectorAll("[data-motion]");
 
   if (reduceMotion || typeof IntersectionObserver !== "function") {
@@ -180,6 +186,18 @@ export function createMotionSystem(root = document) {
 
   const refresh = () => {
     try {
+      const runtime = getRuntimePerformanceProfile();
+      if (runtime.lowDataMode) {
+        if (observer?.disconnect) {
+          observer.disconnect();
+        }
+
+        root.querySelectorAll("[data-motion]").forEach((element) => {
+          element.classList.add("is-inview");
+        });
+        return;
+      }
+
       splitHeroHeading(root);
       decorateHero(root);
       decorateStaticSections(root);

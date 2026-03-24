@@ -1,9 +1,12 @@
 import { collection, getDocs } from "firebase/firestore";
 import { fallbackMediaItems } from "../data/media";
 import { getFirebaseServices, isFirebaseConfigured } from "./client";
+import { getRuntimePerformanceProfile, readCachedResource, writeCachedResource } from "../utils/runtime-performance";
 
 const FIRESTORE_MEDIA_ENDPOINT = "https://firestore.googleapis.com/v1/projects";
 const DEFAULT_FIREBASE_PROJECT_ID = "hospaccx-admin";
+const MEDIA_CACHE_KEY = "media-items";
+const MEDIA_CACHE_MAX_AGE_MS = 1000 * 60 * 20;
 
 function normalizeMediaItem(item, index = 0) {
   return {
@@ -121,47 +124,70 @@ async function loadMediaItemsFromRest(projectId) {
 
 export async function loadMediaItems() {
   const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || DEFAULT_FIREBASE_PROJECT_ID;
+  const cached = readCachedResource(MEDIA_CACHE_KEY, MEDIA_CACHE_MAX_AGE_MS);
+  const runtime = getRuntimePerformanceProfile();
+
+  if (cached?.isFresh) {
+    return cached.data;
+  }
 
   try {
     const restItems = await loadMediaItemsFromRest(projectId);
     if (restItems.length) {
-      return {
+      const result = {
         items: dedupeMediaItems(restItems),
         source: "firestore"
       };
+      writeCachedResource(MEDIA_CACHE_KEY, result);
+      return result;
     }
   } catch (error) {
     console.warn("Unable to load media through Firestore REST, falling back to SDK/local media.", error);
+    if (runtime.lowDataMode && cached?.data) {
+      return cached.data;
+    }
   }
 
   if (!isFirebaseConfigured()) {
-    return {
+    const localResult = {
       items: dedupeMediaItems(fallbackMediaItems),
       source: "local"
     };
+    writeCachedResource(MEDIA_CACHE_KEY, localResult);
+    return localResult;
   }
 
   const { firestore } = getFirebaseServices();
   if (!firestore) {
-    return {
+    const localResult = {
       items: dedupeMediaItems(fallbackMediaItems),
       source: "local"
     };
+    writeCachedResource(MEDIA_CACHE_KEY, localResult);
+    return localResult;
   }
 
   try {
     const snapshot = await getDocs(collection(firestore, "media"));
     const remoteItems = sortMediaItems(snapshot.docs.map((entry, index) => normalizeMediaItem({ id: entry.id, ...entry.data() }, index)));
 
-    return {
+    const result = {
       items: remoteItems.length ? dedupeMediaItems(remoteItems) : dedupeMediaItems(fallbackMediaItems),
       source: remoteItems.length ? "firestore" : "local"
     };
+    writeCachedResource(MEDIA_CACHE_KEY, result);
+    return result;
   } catch (error) {
     console.error("Unable to load media from Firestore, falling back to local media.", error);
-    return {
+    if (cached?.data) {
+      return cached.data;
+    }
+
+    const localResult = {
       items: dedupeMediaItems(fallbackMediaItems),
       source: "local"
     };
+    writeCachedResource(MEDIA_CACHE_KEY, localResult);
+    return localResult;
   }
 }

@@ -479,6 +479,52 @@ body.modal-open {
     }
 }
 
+.low-data-mode .hero__media-track,
+.low-data-mode .motion-float,
+.low-data-mode .hero-slide.is-active,
+.low-data-mode .hero-visual-slide.is-active,
+.low-data-mode .doctors-overlay-badge,
+.low-data-mode .section__heading h2,
+.low-data-mode .section__heading--compact h3,
+.low-data-mode .topbar__content p,
+.low-data-mode .topbar__content a {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+}
+
+.low-data-mode .hero__media-track,
+.low-data-mode .hero-slide,
+.low-data-mode .hero-visual-slide,
+.low-data-mode .topbar::before {
+    transform: none !important;
+}
+
+.low-data-mode .hero__visual-card,
+.low-data-mode .hero-menu__panel,
+.low-data-mode .feature-section,
+.low-data-mode .stats-card,
+.low-data-mode .doctors-overlay-panel,
+.low-data-mode .lightbox,
+.low-data-mode .modal-backdrop {
+    backdrop-filter: none !important;
+}
+
+.low-data-mode .section__heading h2,
+.low-data-mode .section__heading--compact h3,
+.low-data-mode .topbar__content p,
+.low-data-mode .topbar__content a {
+    text-shadow: none !important;
+}
+
+.low-data-mode .hero,
+.low-data-mode .topbar,
+.low-data-mode .service-card,
+.low-data-mode .doctor-card,
+.low-data-mode .facility-card,
+.low-data-mode .gallery-card {
+    box-shadow: none !important;
+}
+
 [data-motion] {
     opacity: 0;
     transform: translate3d(var(--motion-x, 0), var(--motion-y, 24px), 0) scale(var(--motion-scale, 1));

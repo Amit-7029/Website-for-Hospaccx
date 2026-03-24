@@ -12,6 +12,7 @@ import { DEFAULT_CMS_CONTENT, DEFAULT_HERO_CONTENT, loadCmsContent, loadDiagnost
 import { loadMediaItems } from "./firebase/media-store";
 import { createReview, loadReviews } from "./firebase/reviews-store";
 import { closeAnimatedLayer, createMotionSystem, openAnimatedLayer } from "./motion";
+import { getRuntimePerformanceProfile, scheduleDeferredTask } from "./utils/runtime-performance";
 
 const DAYS = [
   "SUNDAY",
@@ -24,6 +25,7 @@ const DAYS = [
 ];
 
 const state = {
+  performanceProfile: getRuntimePerformanceProfile(),
   doctors: [],
   departments: [],
   selectedDepartment: "",
@@ -61,6 +63,24 @@ let motion = {
 };
 let heroAutoplayTimer = 0;
 const HERO_SLIDE_DURATION_MS = 3000;
+
+function applyRuntimePerformanceProfile() {
+  const { lowDataMode, effectiveType } = state.performanceProfile;
+  document.body.classList.toggle("low-data-mode", lowDataMode);
+  document.body.dataset.connectionType = effectiveType;
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator) || window.location.protocol !== "https:") {
+    return;
+  }
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((error) => {
+      console.warn("Service worker registration skipped.", error);
+    });
+  }, { once: true });
+}
 
 function createMediaQueryList(query, matchesFallback = false) {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
@@ -426,7 +446,7 @@ function renderSectionMediaCards(containerId, section, cards, cardClassName = "s
 }
 
 function imageMarkup(src, alt, className, eager = false) {
-  return `<img src="${escapeHtml(src || MEDIA_IMAGE_FALLBACK)}" alt="${escapeHtml(alt || "Hospaccx media")}" class="${className}" loading="${eager ? "eager" : "lazy"}" onerror="this.onerror=null;this.src='${MEDIA_IMAGE_FALLBACK}'">`;
+  return `<img src="${escapeHtml(src || MEDIA_IMAGE_FALLBACK)}" alt="${escapeHtml(alt || "Hospaccx media")}" class="${className}" loading="${eager ? "eager" : "lazy"}" decoding="async" fetchpriority="${eager ? "high" : "low"}" onerror="this.onerror=null;this.src='${MEDIA_IMAGE_FALLBACK}'">`;
 }
 
 function clearHeroAutoplay() {
@@ -2550,14 +2570,16 @@ renderTreatmentPreviews();
 renderBlogPreview();
 bindGlobalLightboxControls();
 setupHeroSectionMenus();
+applyRuntimePerformanceProfile();
 motion = createMotionSystem(document);
 motion.refresh();
 setupReviewForm();
 bindDoctorModalControls();
+registerServiceWorker();
 initializeContent();
-initializeReviews();
-initializeMedia();
 initializeDoctors();
+scheduleDeferredTask(() => initializeMedia(), state.performanceProfile.lowDataMode ? 2200 : 900);
+scheduleDeferredTask(() => initializeReviews(), state.performanceProfile.lowDataMode ? 2600 : 1200);
 
 window.addEventListener("pageshow", () => {
   const params = new URLSearchParams(window.location.search);

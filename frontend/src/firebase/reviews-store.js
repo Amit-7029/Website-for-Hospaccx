@@ -1,8 +1,11 @@
 import { addDoc, collection, getDocs, orderBy, query, serverTimestamp } from "firebase/firestore";
 import { testimonials as fallbackTestimonials } from "../data/content";
 import { getFirebaseServices, isFirebaseConfigured } from "./client";
+import { getRuntimePerformanceProfile, readCachedResource, writeCachedResource } from "../utils/runtime-performance";
 
 const COLLECTION_NAME = "reviews";
+const REVIEWS_CACHE_KEY = "reviews";
+const REVIEWS_CACHE_MAX_AGE_MS = 1000 * 60 * 10;
 
 function reviewsCollection() {
   const { firestore } = getFirebaseServices();
@@ -40,13 +43,19 @@ function normalizeReview(id, data, fallbackIndex = 0) {
 }
 
 export async function loadReviews() {
+  const cached = readCachedResource(REVIEWS_CACHE_KEY, REVIEWS_CACHE_MAX_AGE_MS);
+  const runtime = getRuntimePerformanceProfile();
+  if (cached?.isFresh) {
+    return cached.data;
+  }
+
   try {
     const response = await fetch("/api/reviews", {
       method: "GET",
       headers: {
         Accept: "application/json"
       },
-      cache: "no-store"
+      cache: runtime.lowDataMode ? "force-cache" : "no-store"
     });
 
     if (response.ok) {
@@ -56,29 +65,38 @@ export async function loadReviews() {
           .map((item, index) => normalizeReview(item.id, item, index))
           .filter((review) => review.feedback);
 
-        return {
+        const result = {
           reviews: apiReviews,
           source: "firestore"
         };
+        writeCachedResource(REVIEWS_CACHE_KEY, result);
+        return result;
       }
     }
   } catch (error) {
     console.error("Review API read fallback triggered:", error);
+    if (cached?.data) {
+      return cached.data;
+    }
   }
 
   if (!isFirebaseConfigured()) {
-    return {
+    const localResult = {
       reviews: fallbackTestimonials.map((item, index) => normalizeReview(`local-${index + 1}`, item, index)),
       source: "local"
     };
+    writeCachedResource(REVIEWS_CACHE_KEY, localResult);
+    return localResult;
   }
 
   const collectionRef = reviewsCollection();
   if (!collectionRef) {
-    return {
+    const localResult = {
       reviews: fallbackTestimonials.map((item, index) => normalizeReview(`local-${index + 1}`, item, index)),
       source: "local"
     };
+    writeCachedResource(REVIEWS_CACHE_KEY, localResult);
+    return localResult;
   }
 
   const snapshot = await getDocs(query(collectionRef, orderBy("createdAt", "desc")));
@@ -87,12 +105,14 @@ export async function loadReviews() {
     .filter((review) => review.feedback)
     .filter((review) => !review.status || review.status === "approved");
 
-  return {
+  const result = {
     reviews: remoteReviews.length
       ? remoteReviews
       : fallbackTestimonials.map((item, index) => normalizeReview(`local-${index + 1}`, item, index)),
     source: remoteReviews.length ? "firestore" : "local"
   };
+  writeCachedResource(REVIEWS_CACHE_KEY, result);
+  return result;
 }
 
 export async function createReview(payload) {

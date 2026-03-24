@@ -1,7 +1,9 @@
 import { addDoc, collection } from "firebase/firestore";
 import { getFirebaseServices, isFirebaseConfigured } from "./client";
+import { getRuntimePerformanceProfile, readCachedResource, writeCachedResource } from "../utils/runtime-performance";
 
 const COLLECTION_NAME = "appointments";
+const AVAILABILITY_CACHE_MAX_AGE_MS = 1000 * 30;
 
 function appointmentsCollection() {
   const { firestore } = getFirebaseServices();
@@ -64,7 +66,19 @@ export async function createAppointment(payload) {
 }
 
 export async function fetchControlledBookingAvailability(doctorId) {
-  return requestJson(`/api/appointments/availability?doctorId=${encodeURIComponent(doctorId)}`);
+  const cacheKey = `appointment-availability:${doctorId}`;
+  const cached = readCachedResource(cacheKey, AVAILABILITY_CACHE_MAX_AGE_MS);
+  const runtime = getRuntimePerformanceProfile();
+
+  if (cached?.isFresh) {
+    return cached.data;
+  }
+
+  const result = await requestJson(`/api/appointments/availability?doctorId=${encodeURIComponent(doctorId)}`, {
+    cache: runtime.lowDataMode ? "force-cache" : "no-store"
+  });
+  writeCachedResource(cacheKey, result);
+  return result;
 }
 
 export async function sendAppointmentOtp(payload) {

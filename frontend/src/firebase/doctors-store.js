@@ -12,8 +12,11 @@ import {
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { doctors as fallbackDoctors, normalizeDoctor } from "../data/doctors";
 import { getFirebaseServices, isFirebaseConfigured } from "./client";
+import { readCachedResource, writeCachedResource } from "../utils/runtime-performance";
 
 const COLLECTION_NAME = "doctors";
+const DOCTORS_CACHE_KEY = "doctors";
+const DOCTORS_CACHE_MAX_AGE_MS = 1000 * 60 * 15;
 
 function doctorsCollection() {
   const { firestore } = getFirebaseServices();
@@ -28,35 +31,52 @@ function normalizeRemoteDoctor(id, data) {
 }
 
 export async function loadDoctors() {
+  const cached = readCachedResource(DOCTORS_CACHE_KEY, DOCTORS_CACHE_MAX_AGE_MS);
+  if (cached?.isFresh) {
+    return cached.data;
+  }
+
   if (!isFirebaseConfigured()) {
-    return {
+    const localResult = {
       doctors: fallbackDoctors,
       source: "local"
     };
+    writeCachedResource(DOCTORS_CACHE_KEY, localResult);
+    return localResult;
   }
 
   const collectionRef = doctorsCollection();
   if (!collectionRef) {
-    return {
+    const localResult = {
       doctors: fallbackDoctors,
       source: "local"
     };
+    writeCachedResource(DOCTORS_CACHE_KEY, localResult);
+    return localResult;
   }
 
   try {
     const snapshot = await getDocs(query(collectionRef, orderBy("name")));
     const remoteDoctors = snapshot.docs.map((entry) => normalizeRemoteDoctor(entry.id, entry.data()));
 
-    return {
+    const result = {
       doctors: remoteDoctors.length ? remoteDoctors : fallbackDoctors,
       source: remoteDoctors.length ? "firestore" : "local"
     };
+    writeCachedResource(DOCTORS_CACHE_KEY, result);
+    return result;
   } catch (error) {
     console.error("Unable to load doctors from Firestore, falling back to local data.", error);
-    return {
+    if (cached?.data) {
+      return cached.data;
+    }
+
+    const localResult = {
       doctors: fallbackDoctors,
       source: "local"
     };
+    writeCachedResource(DOCTORS_CACHE_KEY, localResult);
+    return localResult;
   }
 }
 

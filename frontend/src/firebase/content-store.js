@@ -2,8 +2,13 @@ import { collection, doc, getDoc, getDocs, orderBy, query } from "firebase/fires
 import { diagnosticServices } from "../data/content";
 import cmsDefaults from "../data/cms-defaults.json";
 import { getFirebaseServices, isFirebaseConfigured } from "./client";
+import { getRuntimePerformanceProfile, readCachedResource, writeCachedResource } from "../utils/runtime-performance";
 
 const DEFAULT_CMS_CONTENT = cmsDefaults;
+const CMS_CACHE_KEY = "cms-content";
+const HERO_CACHE_KEY = "hero-content";
+const SERVICES_CACHE_KEY = "services-content";
+const CACHE_MAX_AGE_MS = 1000 * 60 * 20;
 const DEFAULT_HERO_CONTENT = {
   heading: "Advanced Diagnostic Services in Sainthia",
   subheading: "Accurate Reports • Experienced Doctors • Trusted Care",
@@ -37,115 +42,158 @@ function normalizeService(service, index = 0) {
 }
 
 export async function loadCmsContent() {
+  const cached = readCachedResource(CMS_CACHE_KEY, CACHE_MAX_AGE_MS);
+  if (cached?.isFresh) {
+    return cached.data;
+  }
+
   if (!isFirebaseConfigured()) {
-    return {
+    const localResult = {
       content: DEFAULT_CMS_CONTENT,
       source: "local"
     };
+    writeCachedResource(CMS_CACHE_KEY, localResult);
+    return localResult;
   }
 
   const { firestore } = getFirebaseServices();
   if (!firestore) {
-    return {
+    const localResult = {
       content: DEFAULT_CMS_CONTENT,
       source: "local"
     };
+    writeCachedResource(CMS_CACHE_KEY, localResult);
+    return localResult;
   }
 
   const snapshot = await getDoc(doc(firestore, "cms", "website"));
   if (!snapshot.exists()) {
-    return {
+    const localResult = {
       content: DEFAULT_CMS_CONTENT,
       source: "local"
     };
+    writeCachedResource(CMS_CACHE_KEY, localResult);
+    return localResult;
   }
 
-  return {
+  const result = {
     content: {
       ...DEFAULT_CMS_CONTENT,
       ...snapshot.data()
     },
     source: "firestore"
   };
+  writeCachedResource(CMS_CACHE_KEY, result);
+  return result;
 }
 
 export async function loadHeroContent() {
+  const cached = readCachedResource(HERO_CACHE_KEY, CACHE_MAX_AGE_MS);
+  const runtime = getRuntimePerformanceProfile();
+  if (cached?.isFresh) {
+    return cached.data;
+  }
+
   if (typeof fetch === "function") {
     try {
-      const response = await fetch(`/api/content/hero?t=${Date.now()}`, {
-        cache: "no-store"
+      const response = await fetch(`/api/content/hero${runtime.lowDataMode ? "" : `?t=${Date.now()}`}`, {
+        cache: runtime.lowDataMode ? "force-cache" : "no-store"
       });
 
       if (response.ok) {
         const payload = await response.json();
-        return {
+        const result = {
           content: {
             ...DEFAULT_HERO_CONTENT,
             ...payload
           },
           source: "firestore"
         };
+        writeCachedResource(HERO_CACHE_KEY, result);
+        return result;
       }
     } catch (error) {
       console.warn("Unable to load hero content through API, falling back to SDK/local content.", error);
+      if (cached?.data) {
+        return cached.data;
+      }
     }
   }
 
   if (!isFirebaseConfigured()) {
-    return {
+    const localResult = {
       content: DEFAULT_HERO_CONTENT,
       source: "local"
     };
+    writeCachedResource(HERO_CACHE_KEY, localResult);
+    return localResult;
   }
 
   const { firestore } = getFirebaseServices();
   if (!firestore) {
-    return {
+    const localResult = {
       content: DEFAULT_HERO_CONTENT,
       source: "local"
     };
+    writeCachedResource(HERO_CACHE_KEY, localResult);
+    return localResult;
   }
 
   const snapshot = await getDoc(doc(firestore, "content", "hero"));
   if (!snapshot.exists()) {
-    return {
+    const localResult = {
       content: DEFAULT_HERO_CONTENT,
       source: "local"
     };
+    writeCachedResource(HERO_CACHE_KEY, localResult);
+    return localResult;
   }
 
-  return {
+  const result = {
     content: {
       ...DEFAULT_HERO_CONTENT,
       ...snapshot.data()
     },
     source: "firestore"
   };
+  writeCachedResource(HERO_CACHE_KEY, result);
+  return result;
 }
 
 export async function loadDiagnosticServices() {
+  const cached = readCachedResource(SERVICES_CACHE_KEY, CACHE_MAX_AGE_MS);
+  if (cached?.isFresh) {
+    return cached.data;
+  }
+
   if (!isFirebaseConfigured()) {
-    return {
+    const localResult = {
       services: diagnosticServices.map(normalizeService),
       source: "local"
     };
+    writeCachedResource(SERVICES_CACHE_KEY, localResult);
+    return localResult;
   }
 
   const { firestore } = getFirebaseServices();
   if (!firestore) {
-    return {
+    const localResult = {
       services: diagnosticServices.map(normalizeService),
       source: "local"
     };
+    writeCachedResource(SERVICES_CACHE_KEY, localResult);
+    return localResult;
   }
 
   const snapshot = await getDocs(query(collection(firestore, "services"), orderBy("title")));
   const remoteServices = snapshot.docs.map((entry, index) => normalizeService({ id: entry.id, ...entry.data() }, index));
 
-  return {
+  const result = {
     services: remoteServices.length ? remoteServices : diagnosticServices.map(normalizeService),
     source: remoteServices.length ? "firestore" : "local"
   };
+  writeCachedResource(SERVICES_CACHE_KEY, result);
+  return result;
 }
 
 export { DEFAULT_CMS_CONTENT, DEFAULT_HERO_CONTENT };
