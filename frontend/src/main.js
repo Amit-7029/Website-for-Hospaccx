@@ -166,6 +166,29 @@ function updateLink(selector, { href, text }) {
   });
 }
 
+function bindManagedImageFallbacks() {
+  document.querySelectorAll("[data-fallback-src]").forEach((element) => {
+    const fallbackSrc = element.getAttribute("data-fallback-src");
+    if (!fallbackSrc || !("src" in element)) {
+      return;
+    }
+
+    if (!element.dataset.fallbackBound) {
+      element.addEventListener("error", () => {
+        if (element.getAttribute("src") !== fallbackSrc) {
+          element.setAttribute("src", fallbackSrc);
+        }
+      });
+      element.dataset.fallbackBound = "true";
+    }
+
+    const currentSrc = element.getAttribute("src");
+    if (!currentSrc || /logo-ban\.png$/i.test(currentSrc)) {
+      element.setAttribute("src", fallbackSrc);
+    }
+  });
+}
+
 function ensureMetaTag(selector, attributes) {
   let tag = document.head.querySelector(selector);
   if (!tag) {
@@ -371,6 +394,8 @@ function applyCmsContent() {
 
     element.setAttribute("alt", content[key]);
   });
+
+  bindManagedImageFallbacks();
 
   updateTextContent("#heroHeading", content.heroHeading);
   updateTextContent("#heroDescription", content.heroDescription);

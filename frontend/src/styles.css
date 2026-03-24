@@ -758,10 +758,12 @@ a {
 
 .topbar__content {
     position: relative;
+    display: grid;
+    grid-template-columns: minmax(170px, 220px) minmax(0, 1fr) minmax(170px, 240px);
+    align-items: center;
     z-index: 1;
     padding: 0.85rem 0;
-    flex-wrap: wrap;
-    column-gap: 1.15rem;
+    column-gap: 1.35rem;
     row-gap: 0.65rem;
 }
 
@@ -771,10 +773,17 @@ a {
     z-index: 1;
 }
 
-.topbar__content > p {
-    flex: 1 1 280px;
+.topbar__center {
+    display: grid;
+    gap: 0.38rem;
+    min-width: 0;
+}
+
+.topbar__center > p {
     margin: 0;
     text-align: center;
+    font-weight: 700;
+    line-height: 1.35;
 }
 
 .topbar__logo {
@@ -797,7 +806,7 @@ a {
 }
 
 .topbar__logo--right {
-    margin-left: auto;
+    justify-self: end;
 }
 
 .topbar__logo img {
@@ -809,8 +818,10 @@ a {
 }
 
 .topbar__links {
+    display: flex;
     justify-content: center;
-    flex: 1 1 360px;
+    gap: 1rem;
+    min-width: 0;
 }
 
 .topbar-logo-effect-enabled .topbar__logo {
@@ -4389,9 +4400,16 @@ button {
     }
 
     .topbar__content {
+        display: flex;
+        flex-wrap: wrap;
         justify-content: center;
         text-align: center;
         gap: 0.8rem;
+    }
+
+    .topbar__center {
+        order: 3;
+        width: 100%;
     }
 
     .topbar__logo {
@@ -4405,11 +4423,6 @@ button {
 
     .topbar__links {
         justify-content: center;
-    }
-
-    .topbar__content > p,
-    .topbar__links {
-        flex-basis: 100%;
     }
 
     .topbar-effect-enabled .topbar__content a::after,
@@ -4427,6 +4440,10 @@ button {
 
     .topbar__content {
         row-gap: 0.7rem;
+    }
+
+    .topbar__center > p {
+        font-size: 0.96rem;
     }
 
     .topbar__content p,
