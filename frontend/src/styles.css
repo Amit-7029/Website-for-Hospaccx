@@ -188,7 +188,7 @@ body.modal-open {
 
 .hero-corner-logos {
     position: absolute;
-    top: clamp(0.8rem, 2vw, 1.35rem);
+    top: clamp(0.2rem, 1vw, 0.7rem);
     left: 0;
     right: 0;
     z-index: 4;
@@ -205,9 +205,11 @@ body.modal-open {
     max-width: 22vw;
     padding: 0.4rem 0.55rem;
     border-radius: 22px;
-    background: linear-gradient(180deg, rgba(14, 10, 35, 0.38), rgba(14, 10, 35, 0.18));
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 16px 32px rgba(12, 8, 31, 0.18);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
+        radial-gradient(circle at 50% 50%, rgba(74, 222, 128, 0.08), transparent 68%);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 14px 28px rgba(12, 8, 31, 0.14);
     backdrop-filter: blur(10px);
     pointer-events: auto;
     overflow: hidden;
@@ -232,7 +234,7 @@ body.modal-open {
 .hero-corner-logo-effect-enabled .hero-corner-logo {
     border-color: color-mix(in srgb, var(--hero-corner-logo-glow-color) 28%, rgba(255, 255, 255, 0.1));
     box-shadow:
-        0 16px 32px rgba(12, 8, 31, 0.2),
+        0 14px 28px rgba(12, 8, 31, 0.16),
         0 0 0 1px color-mix(in srgb, var(--hero-corner-logo-glow-color) 14%, transparent),
         0 0 28px color-mix(in srgb, var(--hero-corner-logo-glow-color) 12%, transparent);
     animation: hero-corner-logo-pulse var(--hero-corner-logo-pulse-speed) ease-in-out infinite;
@@ -259,6 +261,7 @@ body.modal-open {
     filter:
         drop-shadow(0 0 10px color-mix(in srgb, var(--hero-corner-logo-glow-color) 30%, transparent))
         drop-shadow(0 0 24px color-mix(in srgb, var(--hero-corner-logo-glow-color) 12%, transparent));
+    mix-blend-mode: screen;
 }
 
 @keyframes hero-corner-logo-pulse {
@@ -588,7 +591,7 @@ body.modal-open {
     }
 
     .hero-corner-logos {
-        top: 0.75rem;
+        top: 0.25rem;
     }
 
     .hero-corner-logo {
