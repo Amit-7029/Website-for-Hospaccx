@@ -131,7 +131,7 @@ function loadImageFromFile(file: File) {
   });
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
+function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality?: number) {
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
@@ -142,7 +142,7 @@ function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
 
         resolve(blob);
       },
-      "image/jpeg",
+      type,
       quality,
     );
   });
@@ -170,11 +170,19 @@ async function createInlineUploadImage(file: File) {
     throw new Error("Your browser could not process this image");
   }
 
-  context.fillStyle = "#ffffff";
-  context.fillRect(0, 0, width, height);
+  const preserveTransparency = file.type === "image/png" || file.type === "image/webp";
+  const outputType = preserveTransparency ? "image/webp" : "image/jpeg";
+
+  if (!preserveTransparency) {
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, width, height);
+  } else {
+    context.clearRect(0, 0, width, height);
+  }
+
   context.drawImage(source, 0, 0, width, height);
 
-  let blob = await canvasToBlob(canvas, 0.86);
+  let blob = await canvasToBlob(canvas, outputType, 0.86);
   const qualities = [0.8, 0.72, 0.64, 0.56, 0.48, 0.4];
 
   for (const quality of qualities) {
@@ -182,7 +190,7 @@ async function createInlineUploadImage(file: File) {
       break;
     }
 
-    blob = await canvasToBlob(canvas, quality);
+    blob = await canvasToBlob(canvas, outputType, quality);
   }
 
   if (blob.size > MAX_INLINE_IMAGE_BYTES) {
