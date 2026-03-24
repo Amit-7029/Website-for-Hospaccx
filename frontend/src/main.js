@@ -277,6 +277,11 @@ function applyCmsContent() {
   const topbarShineColor = String(content.topbarShineColor || "#dbeafe").trim();
   const topbarPulseSpeedValue = Number.parseFloat(String(content.topbarPulseSpeed || "2.2"));
   const topbarPulseSpeed = Number.isFinite(topbarPulseSpeedValue) && topbarPulseSpeedValue > 0 ? topbarPulseSpeedValue : 2.2;
+  const heroMenuEffectEnabled = String(content.heroMenuEffectEnabled || "true").trim().toLowerCase() !== "false";
+  const heroMenuGlowColor = String(content.heroMenuGlowColor || "#60a5fa").trim();
+  const heroMenuShineColor = String(content.heroMenuShineColor || "#dbeafe").trim();
+  const heroMenuPulseSpeedValue = Number.parseFloat(String(content.heroMenuPulseSpeed || "2.3"));
+  const heroMenuPulseSpeed = Number.isFinite(heroMenuPulseSpeedValue) && heroMenuPulseSpeedValue > 0 ? heroMenuPulseSpeedValue : 2.3;
 
   root.style.setProperty("--section-heading-glow-color", headingGlowColor);
   root.style.setProperty("--section-heading-shine-color", headingShineColor);
@@ -286,8 +291,12 @@ function applyCmsContent() {
   root.style.setProperty("--topbar-glow-color", topbarGlowColor);
   root.style.setProperty("--topbar-shine-color", topbarShineColor);
   root.style.setProperty("--topbar-pulse-speed", `${topbarPulseSpeed}s`);
+  root.style.setProperty("--hero-menu-glow-color", heroMenuGlowColor);
+  root.style.setProperty("--hero-menu-shine-color", heroMenuShineColor);
+  root.style.setProperty("--hero-menu-pulse-speed", `${heroMenuPulseSpeed}s`);
   document.body.classList.toggle("section-heading-effect-enabled", headingEffectEnabled);
   document.body.classList.toggle("topbar-effect-enabled", topbarEffectEnabled);
+  document.body.classList.toggle("hero-menu-effect-enabled", heroMenuEffectEnabled);
 
   applySeoMeta(content);
 

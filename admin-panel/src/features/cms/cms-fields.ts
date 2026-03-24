@@ -63,6 +63,10 @@ export const CMS_FIELD_SECTIONS: CmsFieldSection[] = [
     title: "Hero menu",
     description: "Control the 10 top navigation labels and their dropdown item labels.",
     fields: [
+      { key: "heroMenuEffectEnabled", label: "Enable hero menu glow effect" },
+      { key: "heroMenuGlowColor", label: "Hero menu glow color" },
+      { key: "heroMenuShineColor", label: "Hero menu shine color" },
+      { key: "heroMenuPulseSpeed", label: "Hero menu pulse speed (seconds)" },
       { key: "navAboutLabel", label: "About label" },
       { key: "navAboutItemOneLabel", label: "About item 1" },
       { key: "navAboutItemTwoLabel", label: "About item 2" },

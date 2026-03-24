@@ -23,6 +23,9 @@
     --topbar-glow-color: #60a5fa;
     --topbar-shine-color: #dbeafe;
     --topbar-pulse-speed: 2.2s;
+    --hero-menu-glow-color: #60a5fa;
+    --hero-menu-shine-color: #dbeafe;
+    --hero-menu-pulse-speed: 2.3s;
 }
 
 * {
@@ -484,6 +487,9 @@ body.modal-open {
 .low-data-mode .hero-slide.is-active,
 .low-data-mode .hero-visual-slide.is-active,
 .low-data-mode .doctors-overlay-badge,
+.low-data-mode .hero-menu summary,
+.low-data-mode .hero-menu__panel button,
+.low-data-mode .hero-menu__link,
 .low-data-mode .section__heading h2,
 .low-data-mode .section__heading--compact h3,
 .low-data-mode .topbar__content p,
@@ -1035,6 +1041,14 @@ button {
     backdrop-filter: blur(14px);
 }
 
+.hero-menu-effect-enabled .hero__mega-nav {
+    border-color: color-mix(in srgb, var(--hero-menu-glow-color) 32%, rgba(255, 255, 255, 0.08));
+    box-shadow:
+        0 18px 44px rgba(12, 8, 31, 0.18),
+        0 0 0 1px color-mix(in srgb, var(--hero-menu-glow-color) 14%, transparent),
+        0 0 28px color-mix(in srgb, var(--hero-menu-glow-color) 12%, transparent);
+}
+
 .hero-menu-scroll {
     overflow: visible;
     overflow-y: visible;
@@ -1088,8 +1102,38 @@ button {
     transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
+.hero-menu-effect-enabled .hero-menu summary,
+.hero-menu-effect-enabled .hero-menu__panel button,
+.hero-menu-effect-enabled .hero-menu__link {
+    position: relative;
+    overflow: hidden;
+    text-shadow:
+        0 0 10px color-mix(in srgb, var(--hero-menu-glow-color) 30%, transparent),
+        0 0 20px color-mix(in srgb, var(--hero-menu-glow-color) 14%, transparent);
+    animation: hero-menu-text-pulse var(--hero-menu-pulse-speed) ease-in-out infinite;
+}
+
 .hero-menu summary::-webkit-details-marker {
     display: none;
+}
+
+.hero-menu-effect-enabled .hero-menu summary::before,
+.hero-menu-effect-enabled .hero-menu__panel button::after,
+.hero-menu-effect-enabled .hero-menu__link::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 -18%;
+    width: 24%;
+    background: linear-gradient(
+        110deg,
+        transparent 0%,
+        color-mix(in srgb, var(--hero-menu-shine-color) 92%, transparent) 50%,
+        transparent 100%
+    );
+    opacity: 0;
+    transform: skewX(-18deg);
+    pointer-events: none;
+    animation: hero-menu-text-shine calc(var(--hero-menu-pulse-speed) * 1.7) ease-in-out infinite;
 }
 
 .hero-menu summary::after {
@@ -1125,6 +1169,13 @@ button {
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
+.hero-menu-effect-enabled .hero-menu__panel {
+    border-color: color-mix(in srgb, var(--hero-menu-glow-color) 22%, rgba(103, 61, 230, 0.12));
+    box-shadow:
+        0 26px 54px rgba(31, 19, 70, 0.2),
+        0 0 22px color-mix(in srgb, var(--hero-menu-glow-color) 10%, transparent);
+}
+
 .nav__actions .button {
     min-height: 50px;
     padding-inline: 1.3rem;
@@ -1158,6 +1209,39 @@ button {
 .hero-menu__link:hover {
     background: rgba(103, 61, 230, 0.08);
     color: var(--primary-dark);
+}
+
+@keyframes hero-menu-text-pulse {
+    0%,
+    100% {
+        opacity: 0.94;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes hero-menu-text-shine {
+    0%,
+    18% {
+        transform: translateX(-165%) skewX(-18deg);
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 0.82;
+    }
+
+    46% {
+        transform: translateX(390%) skewX(-18deg);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateX(390%) skewX(-18deg);
+        opacity: 0;
+    }
 }
 
 .hero-menu__link {
@@ -3816,6 +3900,14 @@ button {
         line-height: 1.25;
     }
 
+    .hero-menu-effect-enabled .hero-menu summary,
+    .hero-menu-effect-enabled .hero-menu__panel button,
+    .hero-menu-effect-enabled .hero-menu__link {
+        text-shadow:
+            0 0 8px color-mix(in srgb, var(--hero-menu-glow-color) 24%, transparent),
+            0 0 16px color-mix(in srgb, var(--hero-menu-glow-color) 10%, transparent);
+    }
+
     .hero__primary-cta {
         width: 100%;
     }
@@ -3999,6 +4091,9 @@ button {
     .motion-heading .hero-title-word,
     .motion-float,
     .hero-menu__panel,
+    .hero-menu summary,
+    .hero-menu__panel button,
+    .hero-menu__link,
     .service-card,
     .gallery-card,
     .testimonial-card,
