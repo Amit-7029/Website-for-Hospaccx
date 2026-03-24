@@ -53,6 +53,9 @@ export const CMS_FIELD_SECTIONS: CmsFieldSection[] = [
         { key: "topbarLogoEnabled", label: "Enable topbar logo" },
         { key: "topbarLogoUrl", label: "Topbar logo image URL", kind: "image" },
         { key: "topbarLogoAlt", label: "Topbar logo alt text" },
+        { key: "topbarRightLogoEnabled", label: "Enable right topbar logo" },
+        { key: "topbarRightLogoUrl", label: "Right topbar logo image URL", kind: "image" },
+        { key: "topbarRightLogoAlt", label: "Right topbar logo alt text" },
         { key: "topbarLogoGlowColor", label: "Topbar logo glow color" },
         { key: "topbarLogoShineColor", label: "Topbar logo shine color" },
         { key: "topbarLogoPulseSpeed", label: "Topbar logo pulse speed (seconds)" },
@@ -116,7 +119,7 @@ export const CMS_FIELD_SECTIONS: CmsFieldSection[] = [
     title: "Hero corner logos",
     description: "Manage the two top-corner hero logos, their image URLs, alt text, and green glow effect.",
     fields: [
-      { key: "heroCornerLogosEnabled", label: "Enable hero corner logos" },
+        { key: "heroCornerLogosEnabled", label: "Enable hero corner logos" },
       { key: "heroCornerLeftLogoUrl", label: "Left logo image URL", kind: "image" },
       { key: "heroCornerLeftLogoAlt", label: "Left logo alt text" },
       { key: "heroCornerRightLogoUrl", label: "Right logo image URL", kind: "image" },
