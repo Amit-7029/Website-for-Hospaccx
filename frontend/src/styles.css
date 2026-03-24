@@ -794,18 +794,14 @@ a {
     justify-content: center;
     flex: 0 0 auto;
     width: clamp(140px, 18vw, 220px);
-    padding: 0.3rem 0.55rem;
+    padding: 0.15rem 0.25rem;
     margin-top: -0.18rem;
     border-radius: 22px;
-    background:
-        linear-gradient(180deg, rgba(18, 27, 44, 0.56), rgba(18, 27, 44, 0.18)),
-        radial-gradient(circle at 50% 50%, rgba(74, 222, 128, 0.06), transparent 72%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow:
-        0 12px 24px rgba(4, 10, 22, 0.24),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(8px);
-    overflow: hidden;
+    background: transparent;
+    border: 1px solid transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    overflow: visible;
 }
 
 .topbar__logo--right {
@@ -828,11 +824,10 @@ a {
 }
 
 .topbar-logo-effect-enabled .topbar__logo {
-    border-color: color-mix(in srgb, var(--topbar-logo-glow-color) 34%, rgba(255, 255, 255, 0.14));
+    border-color: color-mix(in srgb, var(--topbar-logo-glow-color) 24%, transparent);
     box-shadow:
-        0 12px 26px rgba(4, 10, 22, 0.22),
-        0 0 0 1px color-mix(in srgb, var(--topbar-logo-glow-color) 18%, transparent),
-        0 0 26px color-mix(in srgb, var(--topbar-logo-glow-color) 14%, transparent);
+        0 0 0 1px color-mix(in srgb, var(--topbar-logo-glow-color) 14%, transparent),
+        0 0 20px color-mix(in srgb, var(--topbar-logo-glow-color) 14%, transparent);
     animation: topbar-logo-pulse var(--topbar-logo-pulse-speed) ease-in-out infinite;
 }
 

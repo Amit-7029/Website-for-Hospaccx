@@ -43,10 +43,6 @@ function normalizeService(service, index = 0) {
 
 export async function loadCmsContent() {
   const cached = readCachedResource(CMS_CACHE_KEY, CACHE_MAX_AGE_MS);
-  if (cached?.isFresh) {
-    return cached.data;
-  }
-
   if (!isFirebaseConfigured()) {
     const localResult = {
       content: DEFAULT_CMS_CONTENT,
@@ -65,9 +61,32 @@ export async function loadCmsContent() {
     writeCachedResource(CMS_CACHE_KEY, localResult);
     return localResult;
   }
+  try {
+    const snapshot = await getDoc(doc(firestore, "cms", "website"));
+    if (!snapshot.exists()) {
+      const localResult = {
+        content: DEFAULT_CMS_CONTENT,
+        source: "local"
+      };
+      writeCachedResource(CMS_CACHE_KEY, localResult);
+      return localResult;
+    }
 
-  const snapshot = await getDoc(doc(firestore, "cms", "website"));
-  if (!snapshot.exists()) {
+    const result = {
+      content: {
+        ...DEFAULT_CMS_CONTENT,
+        ...snapshot.data()
+      },
+      source: "firestore"
+    };
+    writeCachedResource(CMS_CACHE_KEY, result);
+    return result;
+  } catch (error) {
+    console.warn("Unable to load CMS content from Firestore, using cached/local content.", error);
+    if (cached?.data) {
+      return cached.data;
+    }
+
     const localResult = {
       content: DEFAULT_CMS_CONTENT,
       source: "local"
@@ -75,16 +94,6 @@ export async function loadCmsContent() {
     writeCachedResource(CMS_CACHE_KEY, localResult);
     return localResult;
   }
-
-  const result = {
-    content: {
-      ...DEFAULT_CMS_CONTENT,
-      ...snapshot.data()
-    },
-    source: "firestore"
-  };
-  writeCachedResource(CMS_CACHE_KEY, result);
-  return result;
 }
 
 export async function loadHeroContent() {
