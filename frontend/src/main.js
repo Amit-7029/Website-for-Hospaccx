@@ -282,6 +282,11 @@ function applyCmsContent() {
   const heroMenuShineColor = String(content.heroMenuShineColor || "#dbeafe").trim();
   const heroMenuPulseSpeedValue = Number.parseFloat(String(content.heroMenuPulseSpeed || "2.3"));
   const heroMenuPulseSpeed = Number.isFinite(heroMenuPulseSpeedValue) && heroMenuPulseSpeedValue > 0 ? heroMenuPulseSpeedValue : 2.3;
+  const heroCornerLogosEnabled = String(content.heroCornerLogosEnabled || "true").trim().toLowerCase() !== "false";
+  const heroCornerLogoGlowColor = String(content.heroCornerLogoGlowColor || "#4ade80").trim();
+  const heroCornerLogoShineColor = String(content.heroCornerLogoShineColor || "#dcfce7").trim();
+  const heroCornerLogoPulseSpeedValue = Number.parseFloat(String(content.heroCornerLogoPulseSpeed || "2.5"));
+  const heroCornerLogoPulseSpeed = Number.isFinite(heroCornerLogoPulseSpeedValue) && heroCornerLogoPulseSpeedValue > 0 ? heroCornerLogoPulseSpeedValue : 2.5;
 
   root.style.setProperty("--section-heading-glow-color", headingGlowColor);
   root.style.setProperty("--section-heading-shine-color", headingShineColor);
@@ -294,9 +299,17 @@ function applyCmsContent() {
   root.style.setProperty("--hero-menu-glow-color", heroMenuGlowColor);
   root.style.setProperty("--hero-menu-shine-color", heroMenuShineColor);
   root.style.setProperty("--hero-menu-pulse-speed", `${heroMenuPulseSpeed}s`);
+  root.style.setProperty("--hero-corner-logo-glow-color", heroCornerLogoGlowColor);
+  root.style.setProperty("--hero-corner-logo-shine-color", heroCornerLogoShineColor);
+  root.style.setProperty("--hero-corner-logo-pulse-speed", `${heroCornerLogoPulseSpeed}s`);
   document.body.classList.toggle("section-heading-effect-enabled", headingEffectEnabled);
   document.body.classList.toggle("topbar-effect-enabled", topbarEffectEnabled);
   document.body.classList.toggle("hero-menu-effect-enabled", heroMenuEffectEnabled);
+  document.body.classList.toggle("hero-corner-logo-effect-enabled", heroCornerLogosEnabled);
+  const heroCornerLogos = document.querySelector(".hero-corner-logos");
+  if (heroCornerLogos) {
+    heroCornerLogos.hidden = !heroCornerLogosEnabled;
+  }
 
   applySeoMeta(content);
 
@@ -330,6 +343,15 @@ function applyCmsContent() {
     if ("src" in element) {
       element.setAttribute("src", content[key]);
     }
+  });
+
+  document.querySelectorAll("[data-cms-alt]").forEach((element) => {
+    const key = element.getAttribute("data-cms-alt");
+    if (!key || !content[key]) {
+      return;
+    }
+
+    element.setAttribute("alt", content[key]);
   });
 
   updateTextContent("#heroHeading", content.heroHeading);

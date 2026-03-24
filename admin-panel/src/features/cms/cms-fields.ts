@@ -107,6 +107,20 @@ export const CMS_FIELD_SECTIONS: CmsFieldSection[] = [
     ],
   },
   {
+    title: "Hero corner logos",
+    description: "Manage the two top-corner hero logos, their image URLs, alt text, and green glow effect.",
+    fields: [
+      { key: "heroCornerLogosEnabled", label: "Enable hero corner logos" },
+      { key: "heroCornerLeftLogoUrl", label: "Left logo image URL", kind: "image" },
+      { key: "heroCornerLeftLogoAlt", label: "Left logo alt text" },
+      { key: "heroCornerRightLogoUrl", label: "Right logo image URL", kind: "image" },
+      { key: "heroCornerRightLogoAlt", label: "Right logo alt text" },
+      { key: "heroCornerLogoGlowColor", label: "Logo glow color" },
+      { key: "heroCornerLogoShineColor", label: "Logo shine color" },
+      { key: "heroCornerLogoPulseSpeed", label: "Logo pulse speed (seconds)" },
+    ],
+  },
+  {
     title: "Hero content",
     description: "Edit hero copy, CTA labels, quick access panel, QR image, and stat copy.",
     fields: [

@@ -26,6 +26,9 @@
     --hero-menu-glow-color: #60a5fa;
     --hero-menu-shine-color: #dbeafe;
     --hero-menu-pulse-speed: 2.3s;
+    --hero-corner-logo-glow-color: #4ade80;
+    --hero-corner-logo-shine-color: #dcfce7;
+    --hero-corner-logo-pulse-speed: 2.5s;
 }
 
 * {
@@ -181,6 +184,116 @@ body.modal-open {
 .hero__mega-nav {
     position: relative;
     z-index: 3;
+}
+
+.hero-corner-logos {
+    position: absolute;
+    top: clamp(0.8rem, 2vw, 1.35rem);
+    left: 0;
+    right: 0;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.hero-corner-logo {
+    position: absolute;
+    top: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(104px, 14vw, 188px);
+    max-width: 22vw;
+    padding: 0.4rem 0.55rem;
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(14, 10, 35, 0.38), rgba(14, 10, 35, 0.18));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 16px 32px rgba(12, 8, 31, 0.18);
+    backdrop-filter: blur(10px);
+    pointer-events: auto;
+    overflow: hidden;
+}
+
+.hero-corner-logo--left {
+    left: min(2vw, 1.2rem);
+}
+
+.hero-corner-logo--right {
+    right: min(2vw, 1.2rem);
+}
+
+.hero-corner-logo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0));
+}
+
+.hero-corner-logo-effect-enabled .hero-corner-logo {
+    border-color: color-mix(in srgb, var(--hero-corner-logo-glow-color) 28%, rgba(255, 255, 255, 0.1));
+    box-shadow:
+        0 16px 32px rgba(12, 8, 31, 0.2),
+        0 0 0 1px color-mix(in srgb, var(--hero-corner-logo-glow-color) 14%, transparent),
+        0 0 28px color-mix(in srgb, var(--hero-corner-logo-glow-color) 12%, transparent);
+    animation: hero-corner-logo-pulse var(--hero-corner-logo-pulse-speed) ease-in-out infinite;
+}
+
+.hero-corner-logo-effect-enabled .hero-corner-logo::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 -20%;
+    width: 28%;
+    background: linear-gradient(
+        110deg,
+        transparent 0%,
+        color-mix(in srgb, var(--hero-corner-logo-shine-color) 94%, transparent) 50%,
+        transparent 100%
+    );
+    opacity: 0;
+    transform: skewX(-18deg);
+    pointer-events: none;
+    animation: hero-corner-logo-shine calc(var(--hero-corner-logo-pulse-speed) * 1.7) ease-in-out infinite;
+}
+
+.hero-corner-logo-effect-enabled .hero-corner-logo img {
+    filter:
+        drop-shadow(0 0 10px color-mix(in srgb, var(--hero-corner-logo-glow-color) 30%, transparent))
+        drop-shadow(0 0 24px color-mix(in srgb, var(--hero-corner-logo-glow-color) 12%, transparent));
+}
+
+@keyframes hero-corner-logo-pulse {
+    0%,
+    100% {
+        opacity: 0.94;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translate3d(0, -1px, 0) scale(1.02);
+    }
+}
+
+@keyframes hero-corner-logo-shine {
+    0%,
+    18% {
+        transform: translateX(-165%) skewX(-18deg);
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 0.82;
+    }
+
+    46% {
+        transform: translateX(390%) skewX(-18deg);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateX(390%) skewX(-18deg);
+        opacity: 0;
+    }
 }
 
 .media-showcase-grid {
@@ -453,6 +566,13 @@ body.modal-open {
         bottom: 1rem;
     }
 
+    .hero-corner-logo {
+        width: clamp(88px, 18vw, 132px);
+        max-width: 28vw;
+        border-radius: 18px;
+        padding: 0.32rem 0.45rem;
+    }
+
     .media-showcase-grid {
         grid-template-columns: 1fr;
     }
@@ -465,6 +585,17 @@ body.modal-open {
 @media (max-width: 640px) {
     .hero__media-dots {
         gap: 0.4rem;
+    }
+
+    .hero-corner-logos {
+        top: 0.75rem;
+    }
+
+    .hero-corner-logo {
+        width: clamp(72px, 20vw, 104px);
+        max-width: 30vw;
+        border-radius: 16px;
+        padding: 0.25rem 0.35rem;
     }
 
     .hero-media-dot {
@@ -486,6 +617,7 @@ body.modal-open {
 .low-data-mode .motion-float,
 .low-data-mode .hero-slide.is-active,
 .low-data-mode .hero-visual-slide.is-active,
+.low-data-mode .hero-corner-logo,
 .low-data-mode .doctors-overlay-badge,
 .low-data-mode .hero-menu summary,
 .low-data-mode .hero-menu__panel button,
@@ -501,6 +633,7 @@ body.modal-open {
 .low-data-mode .hero__media-track,
 .low-data-mode .hero-slide,
 .low-data-mode .hero-visual-slide,
+.low-data-mode .hero-corner-logo,
 .low-data-mode .topbar::before {
     transform: none !important;
 }
@@ -4090,6 +4223,7 @@ button {
     [data-motion],
     .motion-heading .hero-title-word,
     .motion-float,
+    .hero-corner-logo,
     .hero-menu__panel,
     .hero-menu summary,
     .hero-menu__panel button,
