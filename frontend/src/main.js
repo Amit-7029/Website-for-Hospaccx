@@ -241,6 +241,18 @@ function applyCmsContent() {
     return;
   }
 
+  const root = document.documentElement;
+  const headingEffectEnabled = String(content.sectionHeadingEffectEnabled || "true").trim().toLowerCase() !== "false";
+  const headingGlowColor = String(content.sectionHeadingGlowColor || "#60a5fa").trim();
+  const headingShineColor = String(content.sectionHeadingShineColor || "#dbeafe").trim();
+  const pulseSpeedValue = Number.parseFloat(String(content.sectionHeadingPulseSpeed || "1.9"));
+  const headingPulseSpeed = Number.isFinite(pulseSpeedValue) && pulseSpeedValue > 0 ? pulseSpeedValue : 1.9;
+
+  root.style.setProperty("--section-heading-glow-color", headingGlowColor);
+  root.style.setProperty("--section-heading-shine-color", headingShineColor);
+  root.style.setProperty("--section-heading-pulse-speed", `${headingPulseSpeed}s`);
+  document.body.classList.toggle("section-heading-effect-enabled", headingEffectEnabled);
+
   applySeoMeta(content);
 
   document.querySelectorAll("[data-cms]").forEach((element) => {

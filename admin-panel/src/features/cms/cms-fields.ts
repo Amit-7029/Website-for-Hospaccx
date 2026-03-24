@@ -17,6 +17,16 @@ export type CmsFieldSection = {
 
 export const CMS_FIELD_SECTIONS: CmsFieldSection[] = [
   {
+    title: "Heading effects",
+    description: "Control the glow, shine, and pulse styling used on section headings across the website below the hero.",
+    fields: [
+      { key: "sectionHeadingEffectEnabled", label: "Enable heading glow effect" },
+      { key: "sectionHeadingGlowColor", label: "Heading glow color" },
+      { key: "sectionHeadingShineColor", label: "Heading shine color" },
+      { key: "sectionHeadingPulseSpeed", label: "Heading pulse speed (seconds)" },
+    ],
+  },
+  {
     title: "SEO",
     description: "Control homepage metadata used by search engines and social previews.",
     fields: [

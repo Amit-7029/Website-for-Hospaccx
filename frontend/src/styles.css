@@ -15,6 +15,9 @@
     --radius-xl: 32px;
     --radius-lg: 24px;
     --radius-md: 16px;
+    --section-heading-glow-color: #60a5fa;
+    --section-heading-shine-color: #dbeafe;
+    --section-heading-pulse-speed: 1.9s;
 }
 
 * {
@@ -1280,6 +1283,71 @@ button {
     line-height: 1.02;
     letter-spacing: -0.03em;
     text-wrap: balance;
+}
+
+.section-heading-effect-enabled .section__heading h2,
+.section-heading-effect-enabled .doctors-overlay-intro h2,
+.section-heading-effect-enabled .section__heading--compact h3 {
+    position: relative;
+    display: inline-block;
+    text-shadow:
+        0 0 12px color-mix(in srgb, var(--section-heading-glow-color) 42%, transparent),
+        0 0 24px color-mix(in srgb, var(--section-heading-glow-color) 24%, transparent);
+    animation: section-heading-pulse var(--section-heading-pulse-speed) ease-in-out infinite;
+}
+
+.section-heading-effect-enabled .section__heading h2::after,
+.section-heading-effect-enabled .doctors-overlay-intro h2::after,
+.section-heading-effect-enabled .section__heading--compact h3::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 -24%;
+    width: 34%;
+    background: linear-gradient(
+        110deg,
+        transparent 0%,
+        color-mix(in srgb, var(--section-heading-shine-color) 90%, transparent) 50%,
+        transparent 100%
+    );
+    opacity: 0;
+    transform: skewX(-18deg);
+    pointer-events: none;
+    animation: section-heading-shine calc(var(--section-heading-pulse-speed) * 1.6) ease-in-out infinite;
+}
+
+@keyframes section-heading-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.96;
+    }
+
+    50% {
+        transform: scale(1.018);
+        opacity: 1;
+    }
+}
+
+@keyframes section-heading-shine {
+    0%,
+    18% {
+        transform: translateX(-160%) skewX(-18deg);
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 0.88;
+    }
+
+    46% {
+        transform: translateX(335%) skewX(-18deg);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateX(335%) skewX(-18deg);
+        opacity: 0;
+    }
 }
 
 .section__heading .eyebrow {
