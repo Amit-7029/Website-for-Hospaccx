@@ -5,7 +5,7 @@ import { getRuntimePerformanceProfile, readCachedResource, writeCachedResource }
 
 const FIRESTORE_MEDIA_ENDPOINT = "https://firestore.googleapis.com/v1/projects";
 const DEFAULT_FIREBASE_PROJECT_ID = "hospaccx-admin";
-const MEDIA_CACHE_KEY = "media-items";
+const MEDIA_CACHE_KEY = "media-items-v2";
 const MEDIA_CACHE_MAX_AGE_MS = 1000 * 60 * 20;
 
 function normalizeMediaItem(item, index = 0) {
@@ -127,10 +127,6 @@ export async function loadMediaItems() {
   const cached = readCachedResource(MEDIA_CACHE_KEY, MEDIA_CACHE_MAX_AGE_MS);
   const runtime = getRuntimePerformanceProfile();
 
-  if (cached?.isFresh) {
-    return cached.data;
-  }
-
   try {
     const restItems = await loadMediaItemsFromRest(projectId);
     if (restItems.length) {
@@ -143,7 +139,7 @@ export async function loadMediaItems() {
     }
   } catch (error) {
     console.warn("Unable to load media through Firestore REST, falling back to SDK/local media.", error);
-    if (runtime.lowDataMode && cached?.data) {
+    if (cached?.data) {
       return cached.data;
     }
   }
