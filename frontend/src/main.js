@@ -2367,6 +2367,48 @@ function setupAppointmentForm() {
   const termsAccept = document.getElementById("appointmentTermsAccept");
   const termsHint = document.getElementById("appointmentTermsHint");
 
+  const appointmentTermsSections = [
+    {
+      title: "\u09ac\u09be\u0982\u09b2\u09be",
+      items: [
+        "\u09aa\u09cd\u09b0\u09a4\u09bf\u099f\u09bf \u09b0\u09cb\u0997\u09c0\u09b0 \u099c\u09a8\u09cd\u09af \u09b6\u09c1\u09a7\u09c1\u09ae\u09be\u09a4\u09cd\u09b0 \u098f\u0995\u099f\u09bf \u0985\u09cd\u09af\u09be\u09aa\u09af\u09bc\u09c7\u09a8\u09cd\u099f\u09ae\u09c7\u09a8\u09cd\u099f \u0985\u09a8\u09c1\u09ae\u09cb\u09a6\u09bf\u09a4\u0964",
+        "\u0985\u09a8\u09c1\u0997\u09cd\u09b0\u09b9 \u0995\u09b0\u09c7 \u09b0\u09cb\u0997\u09c0\u09b0 \u09b8\u09a0\u09bf\u0995 \u09a8\u09be\u09ae \u098f\u09ac\u0982 \u099c\u09a8\u09cd\u09ae \u09a4\u09be\u09b0\u09bf\u0996 \u09aa\u09cd\u09b0\u09a6\u09be\u09a8 \u0995\u09b0\u09c1\u09a8\u0964",
+        "\u09a8\u09be\u09ae \u0993 \u099c\u09a8\u09cd\u09ae \u09a4\u09be\u09b0\u09bf\u0996 \u09af\u09be\u099a\u09be\u0987\u09af\u09bc\u09c7\u09b0 \u099c\u09a8\u09cd\u09af \u09b9\u09be\u09b8\u09aa\u09be\u09a4\u09be\u09b2\u09c7 \u0986\u09b8\u09be\u09b0 \u09b8\u09ae\u09af\u09bc \u0986\u09a7\u09be\u09b0 \u0995\u09be\u09b0\u09cd\u09a1, \u09ad\u09cb\u099f\u09be\u09b0 \u0995\u09be\u09b0\u09cd\u09a1, PAN \u0995\u09be\u09b0\u09cd\u09a1 \u0985\u09a5\u09ac\u09be \u09a1\u09cd\u09b0\u09be\u0987\u09ad\u09bf\u0982 \u09b2\u09be\u0987\u09b8\u09c7\u09a8\u09cd\u09b8\u09c7\u09b0 \u09ae\u09a7\u09cd\u09af\u09c7 \u09af\u09c7\u0995\u09cb\u09a8\u09cb \u098f\u0995\u099f\u09bf \u09ac\u09c8\u09a7 \u09aa\u09b0\u09bf\u099a\u09af\u09bc\u09aa\u09a4\u09cd\u09b0 \u09b8\u0999\u09cd\u0997\u09c7 \u09a8\u09bf\u09af\u09bc\u09c7 \u0986\u09b8\u09a4\u09c7 \u09b9\u09ac\u09c7\u0964",
+        "\u09ad\u09c1\u09b2 \u09a4\u09a5\u09cd\u09af \u09aa\u09cd\u09b0\u09a6\u09be\u09a8 \u0995\u09b0\u09b2\u09c7 \u09b9\u09be\u09b8\u09aa\u09be\u09a4\u09be\u09b2\u09c7 \u09aa\u09cc\u0981\u099b\u09be\u09a8\u09cb\u09b0 \u09aa\u09b0 \u0985\u09cd\u09af\u09be\u09aa\u09af\u09bc\u09c7\u09a8\u09cd\u099f\u09ae\u09c7\u09a8\u09cd\u099f \u09ac\u09be\u09a4\u09bf\u09b2 \u0995\u09b0\u09be \u09b9\u09ac\u09c7\u0964",
+        "\u09ac\u09c1\u0995\u09bf\u0982 \u0995\u09b0\u09be\u09b0 \u09aa\u09b0 \u0995\u09cb\u09a8\u09cb \u09aa\u09b0\u09bf\u09ac\u09b0\u09cd\u09a4\u09a8 \u0997\u09cd\u09b0\u09b9\u09a3\u09af\u09cb\u0997\u09cd\u09af \u09a8\u09af\u09bc\u0964",
+      ],
+    },
+    {
+      title: "English",
+      items: [
+        "Each patient is allowed only one appointment.",
+        "Please provide correct Patient Name and Date of Birth.",
+        "Please bring any one valid ID proof to verify the Patient Name and Date of Birth: Aadhaar Card, Voter ID Card, PAN Card, or Driving Licence.",
+        "If incorrect details are provided, the appointment will be rejected at the hospital.",
+        "No changes will be accepted after booking.",
+      ],
+    },
+  ];
+
+  const renderAppointmentTermsContent = () => {
+    if (!termsContent) {
+      return;
+    }
+
+    termsContent.innerHTML = appointmentTermsSections
+      .map(
+        (section) => `
+          <section class="terms-modal__section">
+            <h4>${escapeHtml(section.title)}</h4>
+            ${section.items.map((item) => `<p>${escapeHtml(item)}</p>`).join("")}
+          </section>
+        `
+      )
+      .join("");
+  };
+
+  renderAppointmentTermsContent();
+
   const closeTermsModal = () => {
     if (termsModal) {
       termsModal.hidden = true;
