@@ -390,12 +390,13 @@ export async function consumeVerifiedOtp({ requestId, phone, doctorId, selectedD
   );
 }
 
-function buildClinicWhatsappUrl({ name, phone, doctorName, selectedDate, selectedTime }) {
+function buildClinicWhatsappUrl({ name, phone, dateOfBirth, doctorName, selectedDate, selectedTime }) {
   const message = [
     "Hello, a controlled booking has been completed.",
     "",
     `Name: ${name}`,
     `Phone: ${phone}`,
+    `Date of Birth: ${dateOfBirth || "Not provided"}`,
     `Doctor: ${doctorName}`,
     `Date: ${selectedDate}`,
     `Time: ${selectedTime || "By appointment"}`,
@@ -488,7 +489,7 @@ export async function createControlledAppointment({ name, dateOfBirth, phone, do
     updatedAt: timestamp,
   });
 
-  const whatsappBody = `Hello ${cleanText(name)},\nYour appointment with ${doctor.name} is confirmed.\n\nDate: ${selectedSlot.label}\nHospital: Banerjee Diagnostic Foundation\n\nPlease arrive on time.`;
+  const whatsappBody = `Hello ${cleanText(name)},\nYour appointment with ${doctor.name} is confirmed.\n\nDate of Birth: ${cleanText(dateOfBirth)}\nDate: ${selectedSlot.label}\nHospital: Banerjee Diagnostic Foundation\n\nPlease arrive on time.`;
   const whatsappSent = await sendWhatsAppConfirmation(phone, whatsappBody).catch((error) => {
     console.error("Unable to send WhatsApp confirmation:", error);
     return false;
@@ -500,6 +501,7 @@ export async function createControlledAppointment({ name, dateOfBirth, phone, do
     clinicWhatsappUrl: buildClinicWhatsappUrl({
       name,
       phone,
+      dateOfBirth,
       doctorName: doctor.name,
       selectedDate: selectedSlot.label,
       selectedTime,
