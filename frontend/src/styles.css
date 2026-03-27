@@ -4470,6 +4470,39 @@ button {
     .lightbox {
         backdrop-filter: none;
     }
+
+    .doctors-overlay-intro,
+    .doctors-overlay-intro .section__heading,
+    .doctors-overlay-intro .section__note,
+    .doctors-overlay-panel,
+    .doctors-overlay-panel .filter-bar,
+    .doctors-overlay-panel .filter-bar__label,
+    #doctorDataSource {
+        text-align: left;
+    }
+
+    .doctors-overlay-intro {
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .doctors-overlay-badge {
+        align-self: flex-start;
+        margin-top: 0.35rem;
+    }
+
+    .doctors-overlay-panel .card-actions {
+        width: auto;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .doctors-overlay-panel .doctor-card__action,
+    .doctors-overlay-panel .doctor-card__cta {
+        width: auto;
+        max-width: none;
+        flex: 1 1 180px;
+    }
 }
 
 @media (max-width: 720px) {
@@ -4679,6 +4712,22 @@ button {
     .button,
     button {
         font-size: 0.94rem;
+    }
+
+    .doctors-overlay-intro,
+    .doctors-overlay-intro .section__heading,
+    .doctors-overlay-intro .section__note {
+        text-align: left;
+    }
+
+    .doctors-overlay-panel .card-actions {
+        flex-direction: row;
+    }
+
+    .doctors-overlay-panel .doctor-card__action,
+    .doctors-overlay-panel .doctor-card__cta {
+        width: auto;
+        flex: 1 1 140px;
     }
 }
 
