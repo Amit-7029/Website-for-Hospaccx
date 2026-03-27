@@ -1673,12 +1673,42 @@ function bindGlobalLightboxControls() {
 function setupHeroSectionMenus() {
   const menuButtons = document.querySelectorAll("[data-scroll-target]");
   const menus = document.querySelectorAll(".hero-menu");
+  const menuToggle = document.querySelector("[data-hero-menu-toggle]");
+  const megaNav = document.getElementById("heroMegaNav");
   const hoverEnabled = createMediaQueryList("(hover: hover) and (pointer: fine) and (min-width: 981px)");
+  const mobileMenuEnabled = createMediaQueryList("(max-width: 768px)");
   const closeTimers = new WeakMap();
 
-  if (!menuButtons.length) {
+  if (!menuButtons.length || !megaNav) {
     return;
   }
+
+  const closeMobileMenu = () => {
+    megaNav.classList.remove("is-open");
+    if (menuToggle instanceof HTMLElement) {
+      menuToggle.setAttribute("aria-expanded", "false");
+    }
+  };
+
+  const syncMobileMenuState = () => {
+    if (!mobileMenuEnabled.matches) {
+      megaNav.classList.remove("is-open");
+    }
+
+    if (menuToggle instanceof HTMLElement) {
+      const expanded = mobileMenuEnabled.matches && megaNav.classList.contains("is-open");
+      menuToggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+    }
+  };
+
+  menuToggle?.addEventListener("click", () => {
+    if (!mobileMenuEnabled.matches) {
+      return;
+    }
+
+    megaNav.classList.toggle("is-open");
+    syncMobileMenuState();
+  });
 
   menuButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -1691,10 +1721,27 @@ function setupHeroSectionMenus() {
       menus.forEach((menu) => {
         menu.removeAttribute("open");
       });
+      closeMobileMenu();
+    });
+  });
+
+  document.querySelectorAll(".hero-menu__link").forEach((link) => {
+    link.addEventListener("click", () => {
+      menus.forEach((menu) => {
+        menu.removeAttribute("open");
+      });
+      closeMobileMenu();
     });
   });
 
   document.addEventListener("click", (event) => {
+    if (mobileMenuEnabled.matches && menuToggle instanceof HTMLElement && megaNav.classList.contains("is-open")) {
+      const target = event.target;
+      if (target instanceof Node && !megaNav.contains(target) && !menuToggle.contains(target)) {
+        closeMobileMenu();
+      }
+    }
+
     menus.forEach((menu) => {
       if (!menu.contains(event.target)) {
         menu.removeAttribute("open");
@@ -1751,6 +1798,8 @@ function setupHeroSectionMenus() {
 
   attachHoverHandlers();
   bindMediaQueryChange(hoverEnabled, attachHoverHandlers);
+  bindMediaQueryChange(mobileMenuEnabled, syncMobileMenuState);
+  syncMobileMenuState();
 }
 
 function populateDepartmentSelect() {

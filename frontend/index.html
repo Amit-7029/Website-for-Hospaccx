@@ -87,11 +87,19 @@
             <div class="nav__actions">
                 <a href="tel:+919732029834" class="button button--secondary button--emergency" data-main-phone-link data-cms="emergencyCallLabel">Emergency Call</a>
                 <a href="#appointment" class="button button--accent" data-cms="heroPrimaryCtaLabel">Book Appointment</a>
+                <button type="button" class="nav__menu-toggle" data-hero-menu-toggle aria-expanded="false" aria-controls="heroMegaNav">
+                    <span class="nav__menu-toggle-icon" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                    <span class="nav__menu-toggle-label">Menu</span>
+                </button>
             </div>
         </div>
     </nav>
 
-    <div class="container hero__mega-nav">
+    <div class="container hero__mega-nav" id="heroMegaNav">
         <div class="hero-menu-scroll">
             <div class="hero-menu-bar">
                 <details class="hero-menu">

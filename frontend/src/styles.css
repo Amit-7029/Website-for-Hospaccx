@@ -1148,6 +1148,42 @@ button {
     gap: 0.8rem;
 }
 
+.nav__menu-toggle {
+    display: none;
+    align-items: center;
+    gap: 0.8rem;
+    min-height: 50px;
+    padding: 0.9rem 1.15rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
+}
+
+.nav__menu-toggle:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.nav__menu-toggle-icon {
+    display: inline-grid;
+    gap: 4px;
+}
+
+.nav__menu-toggle-icon span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+}
+
+.nav__menu-toggle-label {
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
 .hero__actions--compact {
     gap: 1rem;
     align-items: center;
@@ -4204,6 +4240,238 @@ button {
     }
 }
 
+@media (max-width: 768px) {
+    .container {
+        width: min(1180px, calc(100% - 2.5rem));
+    }
+
+    .section {
+        padding: 4.5rem 0;
+    }
+
+    .section + .section {
+        margin-top: 0.45rem;
+    }
+
+    .section__heading,
+    .doctors-overlay-intro,
+    .appointment-copy {
+        text-align: center;
+    }
+
+    .section__heading h2,
+    .doctors-overlay-intro h2,
+    .appointment-copy h2,
+    .page-hero h1 {
+        font-size: clamp(2rem, 8vw, 2.7rem);
+        line-height: 1.08;
+    }
+
+    .section__note,
+    .services__intro,
+    .appointment-copy p,
+    .doctors-overlay-intro .section__note,
+    .hero__description {
+        font-size: 0.98rem;
+    }
+
+    .hero__layout,
+    .about-grid,
+    .appointment-layout,
+    .contact-layout,
+    .admin-layout,
+    .department-grid,
+    .career-grid,
+    .service-grid,
+    .gallery-grid,
+    .doctor-grid,
+    .testimonial-grid,
+    .facility-grid,
+    .trust-grid,
+    .resource-grid,
+    .two-card-grid,
+    .media-showcase-grid,
+    .floating-info-card,
+    .doctor-poster-grid,
+    .service-grid--diagnostic,
+    .testimonial-grid--reviews,
+    .profile-card,
+    .detail-card,
+    .profile-card__meta,
+    .detail-card__grid,
+    .reviews-shell,
+    .gallery-page__toolbar,
+    .doctor-gallery-toolbar,
+    .emergency-strip__content {
+        grid-template-columns: 1fr !important;
+    }
+
+    .hero__side {
+        order: 2;
+    }
+
+    .hero__copy {
+        order: 1;
+    }
+
+    .hero__panel,
+    .career-card,
+    .career-detail-card,
+    .career-apply-card,
+    .about-card,
+    .department-card,
+    .service-card,
+    .gallery-card,
+    .doctor-card,
+    .testimonial-card,
+    .appointment-form,
+    .reviews-summary,
+    .review-form-card,
+    .info-card,
+    .confirmation-card,
+    .media-feature-card,
+    .doctor-poster,
+    .floating-info-card,
+    .map-card {
+        padding: 1.25rem;
+    }
+
+    .hero__actions,
+    .nav__actions,
+    .card-actions,
+    .contact-actions,
+    .review-form__footer,
+    .footer__highlight-actions,
+    .section__actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .button,
+    button,
+    .doctor-card__action,
+    .doctor-card__cta,
+    .doctor-poster__button,
+    .career-card__cta,
+    .slider-button {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .hero__career-link,
+    .button--accent,
+    .button--secondary,
+    .button--ghost,
+    .button--emergency {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .nav__actions .button {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .nav__menu-toggle {
+        display: inline-flex;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .hero__mega-nav {
+        display: none;
+        margin-top: 0.35rem;
+        padding: 0.9rem;
+        backdrop-filter: none;
+    }
+
+    .hero__mega-nav.is-open {
+        display: block;
+    }
+
+    .hero-menu-scroll {
+        overflow: visible;
+    }
+
+    .hero-menu summary {
+        min-height: 52px;
+        padding: 0.9rem 1rem;
+        font-size: 0.98rem;
+    }
+
+    .hero-menu__panel {
+        box-shadow: 0 18px 34px rgba(31, 19, 70, 0.12);
+    }
+
+    .hero__visual-card,
+    .hero__visual-image,
+    .hero-slide,
+    .hero-slide__image,
+    .hero__media-shell {
+        max-width: 100%;
+    }
+
+    .gallery-card img,
+    .gallery-card--large img,
+    .appointment-trust-card__media img,
+    .profile-card__image,
+    .doctor-poster__image,
+    .hero-slide__image,
+    .media-feature-card__image {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+    }
+
+    .gallery-card img,
+    .gallery-card--large img {
+        height: 220px;
+        object-fit: cover;
+    }
+
+    .appointment-form__row,
+    .about-card__stats,
+    .filter-bar,
+    .doctor-gallery-toolbar,
+    .gallery-page__toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-bar,
+    .doctor-gallery-toolbar,
+    .gallery-page__toolbar {
+        display: grid;
+        gap: 0.85rem;
+    }
+
+    .filter-bar__select,
+    .search-field,
+    .select-field {
+        min-width: 100%;
+        width: 100%;
+    }
+
+    .topbar__logo,
+    .topbar__logo--right {
+        justify-self: center;
+    }
+
+    .hero__panel,
+    .hero__stats article,
+    .hero__mega-nav,
+    .media-feature-card,
+    .doctor-poster,
+    .appointment-trust-card,
+    .section--teal-feature,
+    .section--floating .floating-info-card,
+    .modal-backdrop,
+    .terms-modal__backdrop,
+    .lightbox {
+        backdrop-filter: none;
+    }
+}
+
 @media (max-width: 720px) {
     .brand__line {
         font-size: 1.9rem;
@@ -4338,6 +4606,79 @@ button {
 
     .doctor-poster__body {
         padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        width: min(1180px, calc(100% - 2rem));
+    }
+
+    .section {
+        padding: 4rem 0;
+    }
+
+    .brand__line {
+        font-size: 1.75rem;
+    }
+
+    .brand__tag {
+        font-size: 0.72rem;
+        letter-spacing: 0.18em;
+    }
+
+    .hero__copy h1 {
+        font-size: clamp(2.2rem, 11vw, 2.8rem);
+    }
+
+    .section__heading h2,
+    .doctors-overlay-intro h2,
+    .appointment-copy h2,
+    .page-hero h1 {
+        font-size: clamp(1.8rem, 9vw, 2.35rem);
+    }
+
+    .subtitle,
+    .section__note,
+    .services__intro,
+    .appointment-copy p,
+    .doctor-card p,
+    .service-card p,
+    .testimonial-card p,
+    .info-card,
+    .topbar__content p,
+    .topbar__content a {
+        font-size: 0.95rem;
+        line-height: 1.68;
+    }
+
+    .hero__panel,
+    .career-card,
+    .career-detail-card,
+    .career-apply-card,
+    .about-card,
+    .department-card,
+    .service-card,
+    .gallery-card,
+    .doctor-card,
+    .testimonial-card,
+    .appointment-form,
+    .reviews-summary,
+    .review-form-card,
+    .info-card,
+    .confirmation-card,
+    .media-feature-card,
+    .doctor-poster,
+    .map-card {
+        padding: 1.05rem;
+    }
+
+    .hero-menu summary,
+    .hero-menu__panel button,
+    .hero-menu__link,
+    .button,
+    button {
+        font-size: 0.94rem;
     }
 }
 
