@@ -2586,7 +2586,7 @@ function setupAppointmentForm() {
           message: `Date of Birth: ${String(formData.get("dateOfBirth") || "").trim()} | Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
         });
 
-        window.location.href = result.clinicWhatsappUrl;
+        redirectToWhatsApp(result.clinicWhatsappUrl);
         return;
       }
 
@@ -2627,7 +2627,7 @@ function setupAppointmentForm() {
       `Preferred Time: ${selectedTime}`
     ].join("\n");
 
-    window.location.href = "https://wa.me/917384251751?text=" + encodeURIComponent(message);
+    redirectToWhatsApp("https://wa.me/917384251751?text=" + encodeURIComponent(message));
   });
 }
 
@@ -2656,6 +2656,38 @@ function setAppointmentSubmitState(isSubmitting) {
 
   submitButton.disabled = isSubmitting;
   submitButton.textContent = isSubmitting ? "Submitting..." : cmsValue("appointmentButtonLabel", "Submit Appointment");
+}
+
+function redirectToWhatsApp(url) {
+  const safeUrl = String(url || "").trim();
+  if (!safeUrl) {
+    return;
+  }
+
+  try {
+    window.location.assign(safeUrl);
+  } catch (error) {
+    console.error("Primary WhatsApp redirect failed:", error);
+  }
+
+  window.setTimeout(() => {
+    if (document.visibilityState === "hidden") {
+      return;
+    }
+
+    try {
+      const fallbackLink = document.createElement("a");
+      fallbackLink.href = safeUrl;
+      fallbackLink.target = "_self";
+      fallbackLink.rel = "noopener noreferrer";
+      fallbackLink.style.display = "none";
+      document.body.appendChild(fallbackLink);
+      fallbackLink.click();
+      fallbackLink.remove();
+    } catch (error) {
+      console.error("Fallback WhatsApp redirect failed:", error);
+    }
+  }, 200);
 }
 
 async function saveAppointmentWithTimeout(payload, timeoutMs = 1800) {
