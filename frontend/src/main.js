@@ -2562,6 +2562,7 @@ function setupAppointmentForm() {
     const selectedDepartment = String(formData.get("department") || "");
     const selectedDoctor = String(formData.get("doctor") || "");
     const doctor = state.doctors.find((entry) => entry.name === selectedDoctor);
+    const preparedWhatsAppWindow = prepareWhatsAppRedirect();
     setAppointmentSubmitState(true);
 
     try {
@@ -2586,7 +2587,7 @@ function setupAppointmentForm() {
           message: `Date of Birth: ${String(formData.get("dateOfBirth") || "").trim()} | Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
         });
 
-        redirectToWhatsApp(result.clinicWhatsappUrl);
+        redirectToWhatsApp(result.clinicWhatsappUrl, preparedWhatsAppWindow);
         return;
       }
 
@@ -2608,6 +2609,7 @@ function setupAppointmentForm() {
       });
     } catch (error) {
       console.error("Unable to save appointment to Firestore:", error);
+      cleanupPreparedWhatsAppRedirect(preparedWhatsAppWindow);
       setAppointmentOtpStatus(error instanceof Error ? error.message : "Unable to save appointment.", "error");
       setAppointmentSubmitState(false);
       return;
@@ -2627,7 +2629,7 @@ function setupAppointmentForm() {
       `Preferred Time: ${selectedTime}`
     ].join("\n");
 
-    redirectToWhatsApp("https://wa.me/917384251751?text=" + encodeURIComponent(message));
+    redirectToWhatsApp("https://wa.me/917384251751?text=" + encodeURIComponent(message), preparedWhatsAppWindow);
   });
 }
 
@@ -2658,10 +2660,80 @@ function setAppointmentSubmitState(isSubmitting) {
   submitButton.textContent = isSubmitting ? "Submitting..." : cmsValue("appointmentButtonLabel", "Submit Appointment");
 }
 
-function redirectToWhatsApp(url) {
+function shouldPreopenWhatsAppRedirect() {
+  const userAgent = navigator.userAgent || "";
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(userAgent);
+}
+
+function prepareWhatsAppRedirect() {
+  if (!shouldPreopenWhatsAppRedirect()) {
+    return null;
+  }
+
+  try {
+    const popup = window.open("", "_blank");
+    if (!popup) {
+      return null;
+    }
+
+    popup.document.write(`<!doctype html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>Opening WhatsApp</title>
+          <style>
+            body {
+              margin: 0;
+              min-height: 100vh;
+              display: grid;
+              place-items: center;
+              padding: 24px;
+              background: #0f172a;
+              color: #ffffff;
+              font: 600 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          Opening WhatsApp...
+        </body>
+      </html>`);
+    popup.document.close();
+    return popup;
+  } catch (error) {
+    console.error("Unable to prepare WhatsApp redirect window:", error);
+    return null;
+  }
+}
+
+function cleanupPreparedWhatsAppRedirect(preparedWindow) {
+  if (!preparedWindow || preparedWindow.closed) {
+    return;
+  }
+
+  try {
+    preparedWindow.close();
+  } catch (error) {
+    console.error("Unable to close prepared WhatsApp window:", error);
+  }
+}
+
+function redirectToWhatsApp(url, preparedWindow = null) {
   const safeUrl = String(url || "").trim();
   if (!safeUrl) {
+    cleanupPreparedWhatsAppRedirect(preparedWindow);
     return;
+  }
+
+  if (preparedWindow && !preparedWindow.closed) {
+    try {
+      preparedWindow.location.replace(safeUrl);
+      return;
+    } catch (error) {
+      console.error("Prepared WhatsApp redirect failed:", error);
+    }
   }
 
   try {
