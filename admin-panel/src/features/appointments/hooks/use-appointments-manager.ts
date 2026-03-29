@@ -112,12 +112,23 @@ export function useAppointmentsManager() {
     return timeMatch?.[1]?.trim() ?? "";
   };
 
+  const getBookedDateValue = (appointment: Appointment) => {
+    if (appointment.selectedDate) {
+      return appointment.selectedDate;
+    }
+
+    const message = String(appointment.message ?? "");
+    const dateMatch = message.match(/Preferred Date:\s*([^|]+)/i);
+    return dateMatch?.[1]?.trim() ?? appointment.date ?? "";
+  };
+
   const exportCsv = () => {
     const csv = unparse(
       filteredItems.map((item) => ({
         Name: item.name,
         "Phone Number": item.phone,
         DOB: getDobValue(item),
+        "Appointment Date": getBookedDateValue(item),
         "Slot Number / Time": getSlotOrTimeValue(item),
         Status: item.status,
         Department: item.department ?? "",
