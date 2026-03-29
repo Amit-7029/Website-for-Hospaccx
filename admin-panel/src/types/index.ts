@@ -193,6 +193,7 @@ export interface Appointment {
   id: string;
   name: string;
   phone: string;
+  dateOfBirth?: string;
   date: string;
   selectedDate?: string;
   selectedTime?: string;

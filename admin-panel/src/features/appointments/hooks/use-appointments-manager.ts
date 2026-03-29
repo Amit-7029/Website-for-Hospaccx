@@ -91,15 +91,37 @@ export function useAppointmentsManager() {
     }
   };
 
+  const getDobValue = (appointment: Appointment) => {
+    if (appointment.dateOfBirth) {
+      return appointment.dateOfBirth;
+    }
+
+    const message = String(appointment.message ?? "");
+    const dobMatch = message.match(/Date of Birth:\s*([^|]+)/i);
+    return dobMatch?.[1]?.trim() ?? "";
+  };
+
+  const getSlotOrTimeValue = (appointment: Appointment) => {
+    const selectedTime = String(appointment.selectedTime ?? "").trim();
+    if (selectedTime) {
+      return selectedTime;
+    }
+
+    const message = String(appointment.message ?? "");
+    const timeMatch = message.match(/Preferred Time:\s*([^|]+)/i);
+    return timeMatch?.[1]?.trim() ?? "";
+  };
+
   const exportCsv = () => {
     const csv = unparse(
       filteredItems.map((item) => ({
         Name: item.name,
-        Phone: item.phone,
-        Date: item.date,
-        Doctor: item.doctor ?? "",
+        "Phone Number": item.phone,
+        DOB: getDobValue(item),
+        "Slot Number / Time": getSlotOrTimeValue(item),
         Status: item.status,
-        Message: item.message ?? "",
+        Department: item.department ?? "",
+        Doctor: item.doctor ?? "",
       })),
     );
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
