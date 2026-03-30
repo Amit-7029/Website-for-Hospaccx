@@ -254,6 +254,8 @@
   "appointmentButtonLabel": "Submit Appointment",
   "appointmentLoadingLabel": "Booking...",
   "appointmentSuccessMessage": "Appointment booked successfully",
+  "appointmentAutoResetEnabled": "true",
+  "appointmentSuccessRedirectDelayMs": "180",
   "appointmentErrorRequired": "Please fill all required fields.",
   "appointmentErrorTerms": "Please accept Terms & Conditions to continue",
   "appointmentErrorGeneric": "We could not complete your booking right now. Please try again.",

@@ -63,6 +63,7 @@ let motion = {
 };
 let heroAutoplayTimer = 0;
 const HERO_SLIDE_DURATION_MS = 3000;
+const APPOINTMENT_RESET_STORAGE_KEY = "hospaccx-appointment-reset-pending";
 
 function applyRuntimePerformanceProfile() {
   const { lowDataMode, effectiveType } = state.performanceProfile;
@@ -2009,6 +2010,60 @@ function setAppointmentFeedback(message = "", tone = "") {
   element.hidden = !message;
 }
 
+function shouldAutoResetAppointmentForm() {
+  return String(cmsValue("appointmentAutoResetEnabled", "true")).trim().toLowerCase() !== "false";
+}
+
+function getAppointmentSuccessRedirectDelay() {
+  const value = Number.parseInt(String(cmsValue("appointmentSuccessRedirectDelayMs", "180")), 10);
+  if (!Number.isFinite(value) || value < 0) {
+    return 180;
+  }
+
+  return Math.min(value, 1500);
+}
+
+function markAppointmentResetPending() {
+  if (!shouldAutoResetAppointmentForm()) {
+    return;
+  }
+
+  try {
+    window.sessionStorage.setItem(APPOINTMENT_RESET_STORAGE_KEY, "true");
+  } catch (error) {
+    console.warn("Unable to store appointment reset flag.", error);
+  }
+}
+
+function consumeAppointmentResetPending() {
+  try {
+    const pending = window.sessionStorage.getItem(APPOINTMENT_RESET_STORAGE_KEY) === "true";
+    if (pending) {
+      window.sessionStorage.removeItem(APPOINTMENT_RESET_STORAGE_KEY);
+    }
+    return pending;
+  } catch (error) {
+    console.warn("Unable to read appointment reset flag.", error);
+    return false;
+  }
+}
+
+function resetAppointmentFormUi() {
+  const form = document.getElementById("whatsappAppointmentForm");
+  const termsCheckbox = document.getElementById("appointmentTermsCheckbox");
+
+  if (form instanceof HTMLFormElement) {
+    form.reset();
+  }
+
+  if (termsCheckbox instanceof HTMLInputElement) {
+    termsCheckbox.checked = false;
+  }
+
+  resetAppointmentSelections();
+  setAppointmentSubmitState(false);
+}
+
 function normalizeAppointmentPhone(value) {
   const digits = String(value || "").replace(/\D/g, "");
   if (!digits) {
@@ -2770,10 +2825,12 @@ function setupAppointmentForm() {
           message: `Date of Birth: ${formValues.dateOfBirth} | Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
         });
 
+        markAppointmentResetPending();
+        resetAppointmentFormUi();
         setAppointmentFeedback(cmsValue("appointmentSuccessMessage", "Appointment booked successfully"), "success");
         window.setTimeout(() => {
           redirectToWhatsApp(result.clinicWhatsappUrl, preparedWhatsAppWindow);
-        }, 180);
+        }, getAppointmentSuccessRedirectDelay());
         return;
       }
 
@@ -2809,6 +2866,8 @@ function setupAppointmentForm() {
       setAppointmentSubmitState(false);
     }
 
+    markAppointmentResetPending();
+    resetAppointmentFormUi();
     setAppointmentFeedback(cmsValue("appointmentSuccessMessage", "Appointment booked successfully"), "success");
     const message = [
       "Hello, I want to book an appointment.",
@@ -2824,7 +2883,7 @@ function setupAppointmentForm() {
 
     window.setTimeout(() => {
       redirectToWhatsApp("https://wa.me/917384251751?text=" + encodeURIComponent(message), preparedWhatsAppWindow);
-    }, 180);
+    }, getAppointmentSuccessRedirectDelay());
   });
 }
 
@@ -3053,6 +3112,12 @@ scheduleDeferredTask(() => initializeReviews(), state.performanceProfile.lowData
 window.addEventListener("pageshow", () => {
   const params = new URLSearchParams(window.location.search);
   setAppointmentSubmitState(false);
+  if (consumeAppointmentResetPending()) {
+    populateDepartmentSelect();
+    resetAppointmentFormUi();
+    return;
+  }
+
   if (!params.get("doctor")) {
     populateDepartmentSelect();
     resetAppointmentSelections();

@@ -359,6 +359,8 @@ export const CMS_FIELD_SECTIONS: CmsFieldSection[] = [
       { key: "appointmentButtonLabel", label: "Appointment button label" },
       { key: "appointmentLoadingLabel", label: "Booking loading label" },
       { key: "appointmentSuccessMessage", label: "Success message" },
+      { key: "appointmentAutoResetEnabled", label: "Auto reset form after success" },
+      { key: "appointmentSuccessRedirectDelayMs", label: "Success redirect delay (ms)" },
       { key: "appointmentErrorRequired", label: "Required fields error" },
       { key: "appointmentErrorTerms", label: "Terms error" },
       { key: "appointmentErrorGeneric", label: "Generic booking error", kind: "textarea" },
