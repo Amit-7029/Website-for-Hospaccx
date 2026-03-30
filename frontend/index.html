@@ -674,16 +674,19 @@
                     <span data-cms="appointmentNameLabel">Name</span>
                     <input type="text" id="name" name="name" placeholder="Your full name" required data-cms-placeholder="appointmentNamePlaceholder">
                 </label>
+                <p class="appointment-form__field-error" id="appointmentNameError" hidden></p>
 
                 <label for="dateOfBirth">
                     <span>Date of Birth</span>
                     <input type="date" id="dateOfBirth" name="dateOfBirth" required>
                 </label>
+                <p class="appointment-form__field-error" id="appointmentDateOfBirthError" hidden></p>
 
                 <label for="phone">
                     <span data-cms="appointmentPhoneLabel">Phone Number</span>
                     <input type="text" id="phone" name="phone" placeholder="Enter your phone number" required data-cms-placeholder="appointmentPhonePlaceholder">
                 </label>
+                <p class="appointment-form__field-error" id="appointmentPhoneError" hidden></p>
 
                 <label for="department">
                     <span data-cms="appointmentDepartmentLabel">Department</span>
@@ -691,6 +694,7 @@
                         <option value="">Select a department</option>
                     </select>
                 </label>
+                <p class="appointment-form__field-error" id="appointmentDepartmentError" hidden></p>
 
                 <label for="doctor">
                     <span data-cms="appointmentDoctorLabel">Select Doctor</span>
@@ -698,6 +702,7 @@
                         <option value="">Select a department first</option>
                     </select>
                 </label>
+                <p class="appointment-form__field-error" id="appointmentDoctorError" hidden></p>
 
                 <p class="appointment-form__helper" id="doctorScheduleHelper" data-cms="appointmentDoctorHelper">
                     Select a doctor to view available timing and OPD days.
@@ -719,6 +724,10 @@
                         </select>
                     </label>
                 </div>
+                <div class="appointment-form__row appointment-form__row--errors" aria-hidden="true">
+                    <p class="appointment-form__field-error" id="appointmentDateError" hidden></p>
+                    <p class="appointment-form__field-error" id="appointmentTimeError" hidden></p>
+                </div>
 
                 <div class="appointment-terms" id="appointmentTermsBlock">
                     <label class="appointment-terms__label" for="appointmentTermsCheckbox" id="appointmentTermsTrigger">
@@ -729,6 +738,7 @@
                 </div>
 
                 <button type="submit" class="button button--secondary" data-cms="appointmentButtonLabel">Submit Appointment</button>
+                <p class="appointment-form__feedback" id="appointmentFeedback" hidden aria-live="polite"></p>
             </form>
         </div>
     </section>

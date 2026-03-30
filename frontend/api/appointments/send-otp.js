@@ -7,13 +7,13 @@ export default async function handler(req, res) {
 
   try {
     const payload = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const { doctorId, selectedDate, phone, name } = sanitizeAppointmentPayload(payload);
+    const { doctorId, selectedDate, phone, name, dateOfBirth } = sanitizeAppointmentPayload(payload);
 
-    if (!doctorId || !selectedDate || phone.length < 10 || name.length < 2) {
+    if (!doctorId || !selectedDate || phone.length < 10 || name.length < 2 || dateOfBirth.length < 8) {
       return json(res, 400, { error: "Incomplete OTP request" });
     }
 
-    const validation = await validateControlledBookingRequest({ doctorId, selectedDate, phone, name });
+    const validation = await validateControlledBookingRequest({ doctorId, selectedDate, phone, name, dateOfBirth });
     if (validation.availability.otpRequired && !validation.availability.otpConfigured) {
       return json(res, 503, {
         error: "OTP service is not configured yet. Please disable OTP for this doctor in admin or contact reception.",

@@ -1961,6 +1961,160 @@ function setAppointmentTermsError(message = "") {
   element.hidden = !message;
 }
 
+const APPOINTMENT_FIELD_ERROR_IDS = {
+  name: "appointmentNameError",
+  dateOfBirth: "appointmentDateOfBirthError",
+  phone: "appointmentPhoneError",
+  department: "appointmentDepartmentError",
+  doctor: "appointmentDoctorError",
+  date: "appointmentDateError",
+  time: "appointmentTimeError",
+};
+
+function setAppointmentFieldError(fieldName, message = "") {
+  const elementId = APPOINTMENT_FIELD_ERROR_IDS[fieldName];
+  if (!elementId) {
+    return;
+  }
+
+  const element = document.getElementById(elementId);
+  const field = document.getElementById(fieldName);
+  if (!element) {
+    return;
+  }
+
+  element.textContent = message;
+  element.hidden = !message;
+  if (field instanceof HTMLElement) {
+    field.toggleAttribute("aria-invalid", Boolean(message));
+  }
+}
+
+function clearAppointmentFieldError(fieldName) {
+  setAppointmentFieldError(fieldName, "");
+}
+
+function clearAllAppointmentFieldErrors() {
+  Object.keys(APPOINTMENT_FIELD_ERROR_IDS).forEach((fieldName) => clearAppointmentFieldError(fieldName));
+}
+
+function setAppointmentFeedback(message = "", tone = "") {
+  const element = document.getElementById("appointmentFeedback");
+  if (!element) {
+    return;
+  }
+
+  element.textContent = message;
+  element.dataset.tone = tone || "";
+  element.hidden = !message;
+}
+
+function normalizeAppointmentPhone(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+  if (!digits) {
+    return "";
+  }
+
+  return digits.length > 10 ? digits.slice(-10) : digits;
+}
+
+function mapAppointmentErrorMessage(message) {
+  const normalized = String(message || "").trim().toLowerCase();
+
+  if (!normalized) {
+    return cmsValue("appointmentErrorGeneric", "We could not complete your booking right now. Please try again.");
+  }
+
+  if (normalized.includes("this mobile number already has an appointment")) {
+    return cmsValue("appointmentErrorDuplicatePhone", "This mobile number already has an appointment.");
+  }
+
+  if (normalized.includes("an appointment already exists with this name and date of birth")) {
+    return cmsValue("appointmentErrorDuplicateNameDob", "An appointment already exists with this name and date of birth.");
+  }
+
+  if (normalized.includes("please accept terms")) {
+    return cmsValue("appointmentErrorTerms", "Please accept Terms & Conditions to continue");
+  }
+
+  if (normalized.includes("no slots available")) {
+    return cmsValue("appointmentErrorNoSlots", "No slots are available for the selected date.");
+  }
+
+  if (normalized.includes("booking is currently closed")) {
+    return cmsValue("appointmentErrorBookingClosed", "Booking is currently closed for this doctor.");
+  }
+
+  if (normalized.includes("invalid otp")) {
+    return cmsValue("appointmentErrorInvalidOtp", "The OTP entered is not valid. Please try again.");
+  }
+
+  if (normalized.includes("otp expired")) {
+    return cmsValue("appointmentErrorOtpExpired", "This OTP has expired. Please request a new one.");
+  }
+
+  if (normalized.includes("valid 10-digit mobile number")) {
+    return cmsValue("appointmentErrorInvalidPhone", "Please enter a valid 10-digit mobile number.");
+  }
+
+  if (normalized.includes("full name")) {
+    return cmsValue("appointmentErrorInvalidName", "Please enter the patient's full name.");
+  }
+
+  if (normalized.includes("date of birth")) {
+    return cmsValue("appointmentErrorInvalidDob", "Please select a valid date of birth.");
+  }
+
+  if (normalized.includes("required fields") || normalized.includes("incomplete booking request")) {
+    return cmsValue("appointmentErrorRequired", "Please fill all required fields.");
+  }
+
+  return String(message);
+}
+
+function validateAppointmentFormValues(values) {
+  const errors = {};
+  const normalizedPhone = normalizeAppointmentPhone(values.phone);
+
+  if (!values.name || !values.dateOfBirth || !values.phone || !values.department || !values.doctor || !values.date || !values.time) {
+    errors.form = cmsValue("appointmentErrorRequired", "Please fill all required fields.");
+  }
+
+  if (!values.name.trim()) {
+    errors.name = cmsValue("appointmentErrorNameRequired", "Please enter the patient's name.");
+  } else if (values.name.trim().length < 2) {
+    errors.name = cmsValue("appointmentErrorInvalidName", "Please enter the patient's full name.");
+  }
+
+  if (!values.dateOfBirth) {
+    errors.dateOfBirth = cmsValue("appointmentErrorDobRequired", "Please select the patient's date of birth.");
+  }
+
+  if (!values.phone.trim()) {
+    errors.phone = cmsValue("appointmentErrorPhoneRequired", "Please enter a mobile number.");
+  } else if (normalizedPhone.length !== 10) {
+    errors.phone = cmsValue("appointmentErrorInvalidPhone", "Please enter a valid 10-digit mobile number.");
+  }
+
+  if (!values.department) {
+    errors.department = cmsValue("appointmentErrorDepartmentRequired", "Please select a department.");
+  }
+
+  if (!values.doctor) {
+    errors.doctor = cmsValue("appointmentErrorDoctorRequired", "Please select a doctor.");
+  }
+
+  if (!values.date) {
+    errors.date = cmsValue("appointmentErrorDateRequired", "Please choose an appointment date.");
+  }
+
+  if (!values.time) {
+    errors.time = cmsValue("appointmentErrorTimeRequired", "Please choose a time or slot.");
+  }
+
+  return errors;
+}
+
 function updateAppointmentOtpPanel() {
   const panel = document.getElementById("appointmentOtpPanel");
   if (!panel) {
@@ -2517,6 +2671,15 @@ function setupAppointmentForm() {
     closeTermsModal();
   });
 
+  ["name", "dateOfBirth", "phone", "department", "doctor", "date", "time"].forEach((fieldName) => {
+    const field = document.getElementById(fieldName);
+    const eventName = field instanceof HTMLSelectElement ? "change" : "input";
+    field?.addEventListener(eventName, () => {
+      clearAppointmentFieldError(fieldName);
+      setAppointmentFeedback("");
+    });
+  });
+
   departmentSelect?.addEventListener("change", (event) => {
     populateDoctorSelect(event.target.value);
   });
@@ -2543,13 +2706,13 @@ function setupAppointmentForm() {
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!form.reportValidity()) {
-      return;
-    }
+    clearAllAppointmentFieldErrors();
+    setAppointmentFeedback("");
+    setAppointmentOtpStatus("");
 
     const hasAcceptedTerms = termsCheckbox instanceof HTMLInputElement ? termsCheckbox.checked : false;
     if (!hasAcceptedTerms) {
-      setAppointmentTermsError("Please accept Terms & Conditions to continue");
+      setAppointmentTermsError(cmsValue("appointmentErrorTerms", "Please accept Terms & Conditions to continue"));
       openTermsModal();
       return;
     }
@@ -2557,6 +2720,26 @@ function setupAppointmentForm() {
     setAppointmentTermsError("");
 
     const formData = new FormData(form);
+    const formValues = {
+      name: String(formData.get("name") || "").trim(),
+      dateOfBirth: String(formData.get("dateOfBirth") || "").trim(),
+      phone: String(formData.get("phone") || "").trim(),
+      department: String(formData.get("department") || "").trim(),
+      doctor: String(formData.get("doctor") || "").trim(),
+      date: String(formData.get("date") || "").trim(),
+      time: String(formData.get("time") || "").trim(),
+    };
+    const validationErrors = validateAppointmentFormValues(formValues);
+    Object.entries(validationErrors).forEach(([fieldName, message]) => {
+      if (fieldName !== "form") {
+        setAppointmentFieldError(fieldName, message);
+      }
+    });
+    if (validationErrors.form) {
+      setAppointmentFeedback(validationErrors.form, "error");
+      return;
+    }
+
     const selectedDate = String(formData.get("date") || "");
     const selectedTime = String(formData.get("time") || "");
     const selectedDepartment = String(formData.get("department") || "");
@@ -2580,21 +2763,24 @@ function setupAppointmentForm() {
           doctorId: doctor.id,
           selectedDate,
           selectedTime,
-          name: String(formData.get("name") || "").trim(),
-          dateOfBirth: String(formData.get("dateOfBirth") || "").trim(),
-          phone: String(formData.get("phone") || "").trim(),
+          name: formValues.name,
+          dateOfBirth: formValues.dateOfBirth,
+          phone: formValues.phone,
           termsAccepted: true,
-          message: `Date of Birth: ${String(formData.get("dateOfBirth") || "").trim()} | Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
+          message: `Date of Birth: ${formValues.dateOfBirth} | Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
         });
 
-        redirectToWhatsApp(result.clinicWhatsappUrl, preparedWhatsAppWindow);
+        setAppointmentFeedback(cmsValue("appointmentSuccessMessage", "Appointment booked successfully"), "success");
+        window.setTimeout(() => {
+          redirectToWhatsApp(result.clinicWhatsappUrl, preparedWhatsAppWindow);
+        }, 180);
         return;
       }
 
       await saveAppointmentWithTimeout({
-        name: String(formData.get("name") || "").trim(),
-        dateOfBirth: String(formData.get("dateOfBirth") || "").trim(),
-        phone: String(formData.get("phone") || "").trim(),
+        name: formValues.name,
+        dateOfBirth: formValues.dateOfBirth,
+        phone: formValues.phone,
         date: buildAppointmentDateTime(selectedDate, selectedTime),
         doctor: selectedDoctor,
         doctorId: doctor?.id || "",
@@ -2602,7 +2788,7 @@ function setupAppointmentForm() {
         selectedDate,
         selectedTime,
         termsAccepted: true,
-        message: `Date of Birth: ${String(formData.get("dateOfBirth") || "").trim()} | Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
+        message: `Date of Birth: ${formValues.dateOfBirth} | Department: ${selectedDepartment} | Preferred Date: ${selectedDate} | Preferred Time: ${selectedTime}`,
         status: "pending",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -2610,26 +2796,35 @@ function setupAppointmentForm() {
     } catch (error) {
       console.error("Unable to save appointment to Firestore:", error);
       cleanupPreparedWhatsAppRedirect(preparedWhatsAppWindow);
-      setAppointmentOtpStatus(error instanceof Error ? error.message : "Unable to save appointment.", "error");
-      setAppointmentSubmitState(false);
+      const friendlyMessage = mapAppointmentErrorMessage(error instanceof Error ? error.message : "");
+      if (friendlyMessage === cmsValue("appointmentErrorDuplicatePhone", "This mobile number already has an appointment.")) {
+        setAppointmentFieldError("phone", friendlyMessage);
+      } else if (friendlyMessage === cmsValue("appointmentErrorDuplicateNameDob", "An appointment already exists with this name and date of birth.")) {
+        setAppointmentFieldError("name", friendlyMessage);
+        setAppointmentFieldError("dateOfBirth", friendlyMessage);
+      }
+      setAppointmentFeedback(friendlyMessage, "error");
       return;
     } finally {
       setAppointmentSubmitState(false);
     }
 
+    setAppointmentFeedback(cmsValue("appointmentSuccessMessage", "Appointment booked successfully"), "success");
     const message = [
       "Hello, I want to book an appointment.",
       "",
-      `Name: ${formData.get("name")}`,
-      `Date of Birth: ${formData.get("dateOfBirth")}`,
-      `Phone: ${formData.get("phone")}`,
+      `Name: ${formValues.name}`,
+      `Date of Birth: ${formValues.dateOfBirth}`,
+      `Phone: ${formValues.phone}`,
       `Department: ${selectedDepartment}`,
       `Doctor: ${selectedDoctor}`,
       `Preferred Date: ${selectedDate}`,
       `Preferred Time: ${selectedTime}`
     ].join("\n");
 
-    redirectToWhatsApp("https://wa.me/917384251751?text=" + encodeURIComponent(message), preparedWhatsAppWindow);
+    window.setTimeout(() => {
+      redirectToWhatsApp("https://wa.me/917384251751?text=" + encodeURIComponent(message), preparedWhatsAppWindow);
+    }, 180);
   });
 }
 
@@ -2645,6 +2840,9 @@ function setupInitialFormState() {
     timeSelect.disabled = true;
   }
   setAppointmentSlotStatus("");
+  clearAllAppointmentFieldErrors();
+  setAppointmentFeedback("");
+  setAppointmentTermsError("");
   updateAppointmentOtpPanel();
 }
 
@@ -2657,7 +2855,9 @@ function setAppointmentSubmitState(isSubmitting) {
   }
 
   submitButton.disabled = isSubmitting;
-  submitButton.textContent = isSubmitting ? "Submitting..." : cmsValue("appointmentButtonLabel", "Submit Appointment");
+  submitButton.textContent = isSubmitting
+    ? cmsValue("appointmentLoadingLabel", "Booking...")
+    : cmsValue("appointmentButtonLabel", "Submit Appointment");
 }
 
 function shouldPreopenWhatsAppRedirect() {

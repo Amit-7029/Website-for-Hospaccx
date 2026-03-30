@@ -12,6 +12,21 @@ function sanitizeText(value) {
     .trim();
 }
 
+function normalizePhone(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+  if (!digits) {
+    return "";
+  }
+
+  return digits.length > 10 ? digits.slice(-10) : digits;
+}
+
+function normalizeName(value) {
+  return sanitizeText(value)
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
 function isTermsAccepted(value) {
   return value === true || value === "true" || value === "on" || value === 1 || value === "1";
 }
@@ -25,7 +40,7 @@ export default async function handler(req, res) {
     const payload = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     const name = sanitizeText(payload?.name);
     const dateOfBirth = sanitizeText(payload?.dateOfBirth);
-    const phone = sanitizeText(payload?.phone);
+    const phone = normalizePhone(payload?.phone);
     const date = sanitizeText(payload?.date);
     const doctor = sanitizeText(payload?.doctor);
     const doctorId = sanitizeText(payload?.doctorId);
@@ -35,8 +50,24 @@ export default async function handler(req, res) {
     const message = sanitizeText(payload?.message);
     const termsAccepted = isTermsAccepted(payload?.termsAccepted);
 
-    if (name.length < 2 || dateOfBirth.length < 8 || phone.length < 8 || date.length < 10) {
-      return json(res, 400, { error: "Invalid appointment payload" });
+    if (!name || !dateOfBirth || !phone || !date || !doctor || !department || !selectedDate || !selectedTime) {
+      return json(res, 400, { error: "Please fill all required fields." });
+    }
+
+    if (name.length < 2) {
+      return json(res, 400, { error: "Please enter the patient's full name." });
+    }
+
+    if (dateOfBirth.length < 8) {
+      return json(res, 400, { error: "Please select a valid date of birth." });
+    }
+
+    if (phone.length !== 10) {
+      return json(res, 400, { error: "Please enter a valid 10-digit mobile number." });
+    }
+
+    if (date.length < 10) {
+      return json(res, 400, { error: "Please select a valid appointment date and time." });
     }
 
     if (!termsAccepted) {
@@ -44,6 +75,21 @@ export default async function handler(req, res) {
     }
 
     const db = getFirebaseAdminDb();
+    const existingAppointments = await db.collection("appointments").get();
+    const normalizedName = normalizeName(name);
+    const duplicatePhone = existingAppointments.docs.some((entry) => normalizePhone(entry.data()?.phone) === phone);
+    if (duplicatePhone) {
+      return json(res, 409, { error: "This mobile number already has an appointment." });
+    }
+
+    const duplicateNameDob = existingAppointments.docs.some((entry) => {
+      const data = entry.data();
+      return normalizeName(data?.name) === normalizedName && sanitizeText(data?.dateOfBirth) === dateOfBirth;
+    });
+    if (duplicateNameDob) {
+      return json(res, 409, { error: "An appointment already exists with this name and date of birth." });
+    }
+
     const timestamp = new Date().toISOString();
     const created = await db.collection("appointments").add({
       name,

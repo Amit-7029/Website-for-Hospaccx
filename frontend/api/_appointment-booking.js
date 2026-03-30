@@ -11,6 +11,12 @@ function cleanText(value) {
     .trim();
 }
 
+function normalizeName(value) {
+  return cleanText(value)
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
 function asBoolean(value) {
   return value === true || value === "true" || value === "on" || value === 1 || value === "1";
 }
@@ -152,16 +158,36 @@ export async function getControlledAvailability(doctorId) {
   };
 }
 
-async function getDuplicateAppointments({ doctorId, phone }) {
+async function getGlobalBookingConflicts({ name, dateOfBirth, phone }) {
   const db = getFirebaseAdminDb();
   const normalizedPhone = normalizePhone(phone);
-  const snapshot = await db.collection("appointments").where("doctorId", "==", doctorId).get();
-  return snapshot.docs
-    .map((entry) => ({ id: entry.id, ...entry.data() }))
-    .filter((entry) => normalizePhone(entry.phone) === normalizedPhone);
+  const normalizedName = normalizeName(name);
+  const normalizedDob = cleanText(dateOfBirth);
+  const snapshot = await db.collection("appointments").get();
+
+  let hasPhoneConflict = false;
+  let hasNameDobConflict = false;
+
+  snapshot.docs.some((entry) => {
+    const data = entry.data();
+    if (!hasPhoneConflict && normalizePhone(data?.phone) === normalizedPhone) {
+      hasPhoneConflict = true;
+    }
+
+    if (!hasNameDobConflict && normalizeName(data?.name) === normalizedName && cleanText(data?.dateOfBirth) === normalizedDob) {
+      hasNameDobConflict = true;
+    }
+
+    return hasPhoneConflict && hasNameDobConflict;
+  });
+
+  return {
+    hasPhoneConflict,
+    hasNameDobConflict,
+  };
 }
 
-export async function validateControlledBookingRequest({ doctorId, name, phone, selectedDate, selectedTime = "" }) {
+export async function validateControlledBookingRequest({ doctorId, name, dateOfBirth, phone, selectedDate, selectedTime = "" }) {
   const availability = await getControlledAvailability(doctorId);
   if (!availability.controlled) {
     throw new Error("This doctor is not configured for controlled booking");
@@ -188,15 +214,13 @@ export async function validateControlledBookingRequest({ doctorId, name, phone, 
     throw new Error("This slot has already been booked");
   }
 
-  const duplicates = await getDuplicateAppointments({ doctorId, phone });
-  const normalizedName = cleanText(name).toLowerCase();
-
-  if (duplicates.some((entry) => cleanText(entry.name).toLowerCase() === normalizedName)) {
-    throw new Error("Already booked with this name and mobile number");
+  const conflicts = await getGlobalBookingConflicts({ name, dateOfBirth, phone });
+  if (conflicts.hasPhoneConflict) {
+    throw new Error("This mobile number already has an appointment.");
   }
 
-  if (duplicates.length) {
-    throw new Error("This mobile number already has a booking");
+  if (conflicts.hasNameDobConflict) {
+    throw new Error("An appointment already exists with this name and date of birth.");
   }
 
   return {
