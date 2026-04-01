@@ -32,9 +32,6 @@ function normalizeRemoteDoctor(id, data) {
 
 export async function loadDoctors() {
   const cached = readCachedResource(DOCTORS_CACHE_KEY, DOCTORS_CACHE_MAX_AGE_MS);
-  if (cached?.isFresh) {
-    return cached.data;
-  }
 
   if (!isFirebaseConfigured()) {
     const localResult = {
