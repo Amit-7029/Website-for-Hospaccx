@@ -99,9 +99,6 @@ export async function loadCmsContent() {
 export async function loadHeroContent() {
   const cached = readCachedResource(HERO_CACHE_KEY, CACHE_MAX_AGE_MS);
   const runtime = getRuntimePerformanceProfile();
-  if (cached?.isFresh) {
-    return cached.data;
-  }
 
   if (typeof fetch === "function") {
     try {
@@ -171,9 +168,6 @@ export async function loadHeroContent() {
 
 export async function loadDiagnosticServices() {
   const cached = readCachedResource(SERVICES_CACHE_KEY, CACHE_MAX_AGE_MS);
-  if (cached?.isFresh) {
-    return cached.data;
-  }
 
   if (!isFirebaseConfigured()) {
     const localResult = {

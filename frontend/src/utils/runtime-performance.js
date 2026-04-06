@@ -1,4 +1,4 @@
-const CACHE_PREFIX = "hospaccx-runtime-cache";
+const CACHE_PREFIX = "hospaccx-runtime-cache-v2";
 
 function safeStorage() {
   if (typeof window === "undefined") {

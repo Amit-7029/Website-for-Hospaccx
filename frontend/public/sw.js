@@ -1,5 +1,5 @@
-const STATIC_CACHE = "hospaccx-static-v1";
-const IMAGE_CACHE = "hospaccx-images-v1";
+const STATIC_CACHE = "hospaccx-static-v2";
+const IMAGE_CACHE = "hospaccx-images-v2";
 const STATIC_ASSET_PATTERN = /\.(?:js|css|woff2?|png|jpg|jpeg|webp|avif|svg|ico)$/i;
 
 self.addEventListener("install", (event) => {

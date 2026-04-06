@@ -45,9 +45,6 @@ function normalizeReview(id, data, fallbackIndex = 0) {
 export async function loadReviews() {
   const cached = readCachedResource(REVIEWS_CACHE_KEY, REVIEWS_CACHE_MAX_AGE_MS);
   const runtime = getRuntimePerformanceProfile();
-  if (cached?.isFresh) {
-    return cached.data;
-  }
 
   try {
     const response = await fetch("/api/reviews", {
